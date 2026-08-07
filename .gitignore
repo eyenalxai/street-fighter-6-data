@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+
+# Local env files
+.env*
+!.env.example
+
+# Misc
+.DS_Store
+*.pem
+
+# Oxlint
+.oxc_cache
+
+# IDEs
+.vscode
+.idea
+
+# Typescript
+**/*.d.ts
+tsconfig.tsbuildinfo
+
+# Tanstack Start
+.tanstack
+*.gen.ts
+
+# Build
+dist
