@@ -9,6 +9,9 @@ node_modules
 .DS_Store
 *.pem
 
+# Downloaded Buckler stats (large raw JSON)
+data/
+
 # Oxlint
 .oxc_cache
 

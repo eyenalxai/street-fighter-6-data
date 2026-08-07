@@ -113,6 +113,7 @@ export default defineConfig({
     "**/*.config.{js,ts,mjs,cjs}",
     "**/tsconfig.tsbuildinfo",
     "src/components/ui/**",
+    "scripts/**",
   ],
   settings: {
     react: {
