@@ -2,6 +2,7 @@ import { defineConfig } from "oxlint"
 
 export default defineConfig({
   plugins: ["typescript", "unicorn", "oxc", "promise", "import", "node", "react", "react-perf"],
+  jsPlugins: [{ name: "react-doctor", specifier: "oxlint-plugin-react-doctor" }],
   categories: {
     correctness: "error",
     suspicious: "error",
@@ -60,6 +61,7 @@ export default defineConfig({
     "unicorn/prefer-ternary": "error",
     "no-negated-condition": "error",
     "typescript/array-type": "error",
+    "typescript/consistent-type-definitions": ["error", "type"],
     "arrow-body-style": ["error", "as-needed", { requireReturnForObjectLiteral: true }],
     "import/prefer-default-export": "off",
     "import/no-namespace": "off",
@@ -96,6 +98,9 @@ export default defineConfig({
     "react/hook-use-state": "off",
     "react/forbid-component-props": "off",
     "react/function-component-definition": "off",
+    "react-doctor/no-usememo-simple-expression": "error",
+    "react-doctor/jsx-no-new-object-as-prop": "error",
+    "react-doctor/no-array-index-as-key": "error",
   },
   env: {
     builtin: true,
@@ -119,6 +124,12 @@ export default defineConfig({
       files: ["src/routes/**/*.{ts,tsx}"],
       rules: {
         "import/group-exports": "off",
+      },
+    },
+    {
+      files: ["src/app-router.tsx"],
+      rules: {
+        "typescript/consistent-type-definitions": "off",
       },
     },
     {
