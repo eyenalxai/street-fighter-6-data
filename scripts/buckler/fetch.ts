@@ -29,7 +29,7 @@ async function waitForRateLimit(): Promise<void> {
   lastRequestAt = Date.now()
 }
 
-const sleep = (ms: number): Promise<void> => Bun.sleep(ms)
+const sleep = async (ms: number): Promise<void> => Bun.sleep(ms)
 
 export async function fetchDatasetPeriod(
   dataset: DatasetConfig,
