@@ -37,7 +37,6 @@ const ignorePatterns = [
   "**/node_modules/**",
   "**/dist/**",
   "**/.output/**",
-  "**/drizzle/**",
   "**/*.d.ts",
   "**/*.config.{js,ts,mjs,cjs}",
   "**/tsconfig.tsbuildinfo",
@@ -58,15 +57,6 @@ const routeFileOverrides: OverridesConfig = [
     files: ["src/routes/**/*.{ts,tsx}"],
     rules: {
       "import/group-exports": "off",
-    },
-  },
-]
-
-const environmentFileOverrides: OverridesConfig = [
-  {
-    files: ["src/lib/env/server-env.ts"],
-    rules: {
-      "node/no-process-env": "off",
     },
   },
 ]
@@ -93,12 +83,7 @@ const createOxlintConfig = (): OxlintConfig => {
     },
     ignorePatterns,
     settings,
-    overrides: [
-      ...schemaFileOverrides,
-      ...routeFileOverrides,
-      ...environmentFileOverrides,
-      ...toolingFileOverrides,
-    ],
+    overrides: [...schemaFileOverrides, ...routeFileOverrides, ...toolingFileOverrides],
   }
 }
 

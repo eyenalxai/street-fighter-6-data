@@ -1,28 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { createFileRoute } from "@tanstack/react-router"
 
 const Home = () => (
-  <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
-    <Card>
-      <CardHeader>
-        <CardTitle>Stuff App</CardTitle>
-        <CardDescription>Public and authenticated flows with Better Auth.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-wrap gap-3">
-        <Button render={<Link to="/stuff" />}>View Public Stuff</Button>
-        <Button render={<Link to="/upload" />} variant="secondary">
-          Upload Stuff
-        </Button>
-        <Button render={<Link to="/sign-in" />} variant="outline">
-          Sign In
-        </Button>
-        <Button render={<Link to="/sign-up" />} variant="outline">
-          Sign Up
-        </Button>
-      </CardContent>
-    </Card>
+  <main className="flex min-h-screen items-center justify-center">
+    <h1 className="text-4xl font-semibold">Hello</h1>
   </main>
 )
 

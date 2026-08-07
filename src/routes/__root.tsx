@@ -1,8 +1,7 @@
 /// <reference types="vite/client" />
-import type { QueryClient } from "@tanstack/react-query"
 import type { ReactNode } from "react"
 
-import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router"
+import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
 
 import { Providers } from "@/components/providers"
 import appCss from "@/styles.css?url"
@@ -27,9 +26,13 @@ const RootComponent = () => (
   </RootDocument>
 )
 
-export const Route = createRootRouteWithContext<{
-  queryClient: QueryClient
-}>()({
+const NotFound = () => (
+  <main className="flex min-h-screen items-center justify-center">
+    <p className="text-muted-foreground">Page not found</p>
+  </main>
+)
+
+export const Route = createRootRoute({
   head: () => {
     return {
       meta: [
@@ -41,11 +44,12 @@ export const Route = createRootRouteWithContext<{
           content: "width=device-width, initial-scale=1",
         },
         {
-          title: "TanStack Start Starter",
+          title: "Street Fighter 6 Data",
         },
       ],
       links: [{ rel: "stylesheet", href: appCss }],
     }
   },
   component: RootComponent,
+  notFoundComponent: NotFound,
 })
