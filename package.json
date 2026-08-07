@@ -10,7 +10,7 @@
     "routes:generate": "tsr generate",
     "check": "oxfmt && oxlint --type-aware --fix && tsc --noEmit --pretty",
     "sync": "bun scripts/sync-buckler.ts",
-    "sync:dry": "bun scripts/sync-buckler.ts --dry-run"
+    "normalize": "bun scripts/normalize-buckler.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

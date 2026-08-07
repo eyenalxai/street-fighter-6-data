@@ -1,11 +1,16 @@
 #!/usr/bin/env bun
 
-import type { DatasetId, ReportingPeriod, SyncOptions } from "./buckler/types.ts"
-
-import { API_BASE, DATASETS, DATASET_MAP, LANG } from "./buckler/datasets.ts"
-import { fetchDatasetPeriod, serializeSnapshot } from "./buckler/fetch.ts"
-import { filterFromPeriod, generatePeriods } from "./buckler/periods.ts"
-import { snapshotExists, snapshotRelPath, writeSnapshot } from "./buckler/storage.ts"
+import {
+  API_BASE,
+  DATASETS,
+  DATASET_MAP,
+  LANG,
+  type DatasetId,
+  type ReportingPeriod,
+} from "./lib/buckler/datasets.ts"
+import { fetchDatasetPeriod, serializeSnapshot } from "./lib/buckler/fetch.ts"
+import { generatePeriods } from "./lib/buckler/periods.ts"
+import { snapshotExists, snapshotRelPath, writeSnapshot } from "./lib/buckler/storage.ts"
 
 type SyncStats = {
   downloaded: number
@@ -14,12 +19,10 @@ type SyncStats = {
   errors: number
 }
 
-type LogAction = "download" | "skip" | "unavailable" | "error" | "dry-run"
-
 const formatBytes = (bytes: number): string => bytes.toLocaleString("en-US")
 
 const logLine = (
-  action: LogAction,
+  action: string,
   datasetId: DatasetId,
   period: ReportingPeriod,
   detail?: string,
@@ -38,79 +41,17 @@ const logLine = (
   console.log(`${" ".repeat(12)} ${api}`)
 }
 
-function parseArgs(argv: string[]): SyncOptions {
-  const options: SyncOptions = {
-    dryRun: false,
-    force: false,
-    verbose: false,
-  }
-
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index]
-    switch (arg) {
-      case "--dry-run": {
-        options.dryRun = true
-        break
-      }
-      case "--force": {
-        options.force = true
-        break
-      }
-      case "--verbose": {
-        options.verbose = true
-        break
-      }
-      case "--dataset": {
-        const value = argv[index + 1]
-        index += 1
-        if (value === undefined || value === "" || !(value in DATASET_MAP)) {
-          throw new Error(`Unknown dataset: ${value ?? "(missing)"}`)
-        }
-        options.dataset = value as DatasetId
-        break
-      }
-      case "--from": {
-        const value = argv[index + 1]
-        index += 1
-        if (value === undefined || value === "" || !/^\d{6}$/u.test(value)) {
-          throw new Error(`Invalid --from period: ${value ?? "(missing)"}`)
-        }
-        options.from = value as ReportingPeriod
-        break
-      }
-      default: {
-        throw new Error(`Unknown argument: ${arg}`)
-      }
-    }
-  }
-
-  return options
-}
-
-async function syncDataset(
-  datasetId: DatasetId,
-  options: SyncOptions,
-  stats: SyncStats,
-): Promise<void> {
+async function syncDataset(datasetId: DatasetId, stats: SyncStats): Promise<void> {
   const dataset = DATASET_MAP[datasetId]
-  const periods = filterFromPeriod(generatePeriods(dataset), options.from)
+  const periods = generatePeriods(dataset)
 
   console.log(`\n[${datasetId}] ${dataset.label} — ${periods.length} reporting period(s)`)
 
   for (const period of periods) {
     const exists = await snapshotExists(datasetId, period)
 
-    if (exists && !options.force) {
+    if (exists) {
       stats.skipped += 1
-      if (options.verbose) {
-        logLine("skip", datasetId, period, "already on disk")
-      }
-      continue
-    }
-
-    if (options.dryRun) {
-      logLine("dry-run", datasetId, period, "would download")
-      stats.downloaded += 1
       continue
     }
 
@@ -136,8 +77,6 @@ async function syncDataset(
 }
 
 async function main(): Promise<void> {
-  const options = parseArgs(process.argv.slice(2))
-  const datasets = options.dataset ? [options.dataset] : DATASETS.map((d) => d.id)
   const stats: SyncStats = {
     downloaded: 0,
     skipped: 0,
@@ -145,10 +84,10 @@ async function main(): Promise<void> {
     errors: 0,
   }
 
-  console.log(options.dryRun ? "SF6 Buckler sync (dry run)" : "SF6 Buckler sync")
+  console.log("SF6 Buckler sync")
 
-  for (const datasetId of datasets) {
-    await syncDataset(datasetId, options, stats)
+  for (const dataset of DATASETS) {
+    await syncDataset(dataset.id, stats)
   }
 
   console.log("\nSummary:")

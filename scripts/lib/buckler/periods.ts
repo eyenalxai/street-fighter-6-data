@@ -1,5 +1,4 @@
-import type { DatasetConfig } from "./datasets.ts"
-import type { ReportingPeriod } from "./types.ts"
+import type { DatasetConfig, ReportingPeriod } from "./datasets.ts"
 
 function padMonth(month: number): string {
   return String(month).padStart(2, "0")
@@ -41,18 +40,4 @@ export function generatePeriods(dataset: DatasetConfig, now = new Date()): Repor
   }
 
   return periods.slice(0, Math.max(0, periods.length - trailingExclusion))
-}
-
-export function comparePeriods(a: ReportingPeriod, b: ReportingPeriod): number {
-  return a.localeCompare(b)
-}
-
-export function filterFromPeriod(
-  periods: ReportingPeriod[],
-  from?: ReportingPeriod,
-): ReportingPeriod[] {
-  if (!from) {
-    return periods
-  }
-  return periods.filter((period) => comparePeriods(period, from) >= 0)
 }

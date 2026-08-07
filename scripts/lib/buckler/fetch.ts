@@ -1,7 +1,4 @@
-import type { DatasetConfig } from "./datasets.ts"
-import type { FetchResult, ReportingPeriod } from "./types.ts"
-
-import { API_BASE, LANG, SITE_BASE } from "./datasets.ts"
+import { API_BASE, LANG, SITE_BASE, type DatasetConfig, type ReportingPeriod } from "./datasets.ts"
 
 const USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
@@ -12,6 +9,10 @@ const RETRY_DELAY_MS = 1000
 const REQUEST_DELAY_MS = 500
 
 let lastRequestAt = 0
+
+type FetchResult =
+  | { ok: true; data: unknown; status: number }
+  | { ok: false; status: number; error: string }
 
 function apiUrl(dataset: DatasetConfig, period: ReportingPeriod): string {
   return `${API_BASE}/${LANG}/stats/${dataset.id}/${period}`

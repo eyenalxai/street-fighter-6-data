@@ -1,4 +1,6 @@
-import type { DatasetId } from "./types.ts"
+export type DatasetId = "usagerate" | "dia" | "usagerate_master" | "dia_master"
+
+export type ReportingPeriod = `${number}${number}${number}${number}${number}${number}`
 
 export type DatasetConfig = {
   id: DatasetId
@@ -46,3 +48,6 @@ export const DATASET_MAP = Object.fromEntries(
 export const LANG = "en"
 export const API_BASE = "https://www.streetfighter.com/6/buckler/api"
 export const SITE_BASE = "https://www.streetfighter.com/6/buckler"
+
+export const USAGE_DATASETS = ["usagerate", "usagerate_master"] as const satisfies DatasetId[]
+export const DIA_DATASETS = ["dia", "dia_master"] as const satisfies DatasetId[]
