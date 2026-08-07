@@ -1,6 +1,6 @@
 # Street Fighter 6 Data
 
-A client-only TanStack Start app with file-based routing, Tailwind CSS v4, and shadcn/ui components.
+A full-stack TanStack Start app with file-based routing, oRPC, TanStack Query, Tailwind CSS v4, and shadcn/ui components.
 
 ## Quick start
 

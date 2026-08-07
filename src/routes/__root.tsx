@@ -1,7 +1,9 @@
 /// <reference types="vite/client" />
 import type { ReactNode } from "react"
 
-import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router"
+
+import type { RouterContext } from "@/lib/query-client"
 
 import { Providers } from "@/components/providers"
 import appCss from "@/styles.css?url"
@@ -32,7 +34,7 @@ const NotFound = () => (
   </main>
 )
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => {
     return {
       meta: [
