@@ -1,5 +1,5 @@
 {
-  "name": "tanstack-template",
+  "name": "street-fighter-6-data",
   "type": "module",
   "scripts": {
     "dev": "bun --bun vite dev --host",
