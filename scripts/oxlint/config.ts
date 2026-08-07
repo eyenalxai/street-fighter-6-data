@@ -1,7 +1,6 @@
 import type { OxlintConfig } from "oxlint"
 
-import { baseRules } from "./base-rules.ts"
-import { frontendRuleOverrides } from "./frontend-rules.ts"
+import { rules } from "./rules.ts"
 
 type PluginConfig = NonNullable<OxlintConfig["plugins"]>
 type SettingsConfig = NonNullable<OxlintConfig["settings"]>
@@ -43,15 +42,6 @@ const ignorePatterns = [
   "src/components/ui/**",
 ]
 
-const schemaFileOverrides: OverridesConfig = [
-  {
-    files: ["**/schema.ts", "**/schema/**/*.ts"],
-    rules: {
-      "oxc/no-barrel-file": "off",
-    },
-  },
-]
-
 const routeFileOverrides: OverridesConfig = [
   {
     files: ["src/routes/**/*.{ts,tsx}"],
@@ -74,16 +64,13 @@ const createOxlintConfig = (): OxlintConfig => {
   return {
     plugins,
     categories,
-    rules: {
-      ...baseRules,
-      ...frontendRuleOverrides,
-    },
+    rules,
     env: {
       builtin: true,
     },
     ignorePatterns,
     settings,
-    overrides: [...schemaFileOverrides, ...routeFileOverrides, ...toolingFileOverrides],
+    overrides: [...routeFileOverrides, ...toolingFileOverrides],
   }
 }
 
