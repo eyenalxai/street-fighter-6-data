@@ -36,6 +36,11 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-wr-strong: var(--wr-strong);
+  --color-wr-good: var(--wr-good);
+  --color-wr-even: var(--wr-even);
+  --color-wr-bad: var(--wr-bad);
+  --color-wr-weak: var(--wr-weak);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -101,6 +106,11 @@
   --success-foreground: var(--color-emerald-700);
   --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-700);
+  --wr-strong: oklch(0.52 0.15 145);
+  --wr-good: oklch(0.62 0.12 145);
+  --wr-even: oklch(0.48 0 0);
+  --wr-bad: oklch(0.64 0.14 65);
+  --wr-weak: oklch(0.55 0.18 25);
 }
 
 .dark {
@@ -142,6 +152,11 @@
   --success-foreground: var(--color-emerald-400);
   --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-400);
+  --wr-strong: oklch(0.76 0.14 145);
+  --wr-good: oklch(0.7 0.11 145);
+  --wr-even: oklch(0.72 0 0);
+  --wr-bad: oklch(0.78 0.13 65);
+  --wr-weak: oklch(0.72 0.17 25);
 }
 
 @layer base {

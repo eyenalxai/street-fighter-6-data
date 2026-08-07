@@ -46,7 +46,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
           content: "width=device-width, initial-scale=1",
         },
         {
-          title: "Street Fighter 6 Data",
+          title: "SF6 Ranked Lab",
+        },
+        {
+          name: "description",
+          content: "Ranked Street Fighter 6 matchup analytics from Buckler reporting periods.",
         },
       ],
       links: [{ rel: "stylesheet", href: appCss }],

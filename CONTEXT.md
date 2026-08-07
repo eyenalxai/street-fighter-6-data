@@ -1,29 +1,33 @@
 # Street Fighter 6 Data
 
-Raw ranked-match statistics published by Capcom's Buckler's Boot Camp stats pages.
+Ranked Street Fighter 6 matchup analytics built from Capcom's Buckler's Boot Camp
+battle-diagram snapshots.
 
 ## Language
 
 **Reporting period**:
 A calendar month of published stats, keyed as `YYYYMM`.
-_Avoid_: date, month filter
+Avoid calling this a date.
 
-**Dataset**:
-One of the four Buckler stats API endpoints: `usagerate`, `dia`, `usagerate_master`, or `dia_master`.
-_Avoid_: page, tab
+**Ranked snapshot**:
+One processed `dia` JSON file for one reporting period. The first release uses
+ranked leagues 1–8 only. In the UI, **Master** means ranked league 8; it does
+not mean the separate `dia_master` endpoint.
 
-**Ranked stats**:
-Stats across ranked leagues 1–8, plus league 0 (All ranks combined).
-_Avoid_: normal stats
+**Matchup average**:
+The unweighted mean of the available reported matchup win rates for a character.
+Unavailable and mirror cells are excluded.
 
-**Master stats**:
-Stats for Master-tier leagues (36, 40, 41, 42). The `_master` suffix on API paths denotes this tier, not a separate version of the data.
-_Avoid_: master version, master copy
+**Control matchup**:
+One validated pair of player and opponent controls: Combined, Classic vs
+Classic, Classic vs Modern, Modern vs Classic, or Modern vs Modern. The
+application does not approximate unsupported All-vs-specific combinations.
 
-**Control view**:
-How usage or diagram data splits Classic vs Modern. This is a dimension inside the API JSON, not a separate download.
-_Avoid_: control filter URL
+**Period Compare**:
+The comparison view between two reporting periods. Use this term instead of
+Date Compare.
 
-**Snapshot**:
-One raw JSON file for one dataset and one reporting period.
-_Avoid_: export, dump
+**Snapshot storage**:
+Raw downloads remain in ignored `data/raw/**`. Deterministically normalized
+`data/processed/**` snapshots are committed application data and are validated
+with Zod at the server boundary before analytics runs.

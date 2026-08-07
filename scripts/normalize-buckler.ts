@@ -11,7 +11,6 @@ import { normalizeDia } from "./lib/buckler/normalize-dia.ts"
 import { normalizeUsage } from "./lib/buckler/normalize-usage.ts"
 import {
   listRawSnapshots,
-  processedExists,
   processedRelPath,
   readSnapshot,
   writeProcessed,
@@ -19,7 +18,6 @@ import {
 
 type NormalizeStats = {
   normalized: number
-  skipped: number
   errors: number
 }
 
@@ -51,11 +49,6 @@ async function normalizePeriod(
   period: ReportingPeriod,
   stats: NormalizeStats,
 ): Promise<void> {
-  if (await processedExists(datasetId, period)) {
-    stats.skipped += 1
-    return
-  }
-
   try {
     const raw = await readSnapshot(datasetId, period)
     const processed = isUsageDataset(datasetId)
@@ -93,7 +86,6 @@ async function normalizeDataset(datasetId: DatasetId, stats: NormalizeStats): Pr
 async function main(): Promise<void> {
   const stats: NormalizeStats = {
     normalized: 0,
-    skipped: 0,
     errors: 0,
   }
 
@@ -105,7 +97,6 @@ async function main(): Promise<void> {
 
   console.log("\nSummary:")
   console.log(`  normalized: ${stats.normalized}`)
-  console.log(`  skipped:    ${stats.skipped}`)
   console.log(`  errors:     ${stats.errors}`)
 
   if (stats.errors > 0) {

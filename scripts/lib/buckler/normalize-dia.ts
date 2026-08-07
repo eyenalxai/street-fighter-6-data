@@ -39,7 +39,7 @@ function parseWinRate(value: string): number | null {
   if (value === "-" || value === "-.---" || value === "") {
     return null
   }
-  return Math.round((Number(value) / 100) * 10_000) / 10_000
+  return Math.round((Number(value) / 10) * 10_000) / 10_000
 }
 
 function playerKey(record: RawDiaRecord): ProcessedDiaPlayer {

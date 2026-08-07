@@ -1,0 +1,2 @@
+# Processed Buckler snapshots are compacted by the Bun normalizer.
+data/processed/**

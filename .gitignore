@@ -10,7 +10,7 @@ node_modules
 *.pem
 
 # Downloaded Buckler stats (large raw JSON)
-data/
+data/raw/
 
 # Oxlint
 .oxc_cache

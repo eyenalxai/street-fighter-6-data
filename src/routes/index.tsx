@@ -1,27 +1,37 @@
-import { useQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, useLoaderData } from "@tanstack/react-router"
 
-import { orpc } from "@/lib/orpc/client"
+import { Dashboard } from "@/components/sf6/dashboard"
+import { metaQueryOptions, prefetchDashboardQuery, resolvePeriod } from "@/lib/sf6/query-options"
+import { DashboardSearchSchema } from "@/lib/sf6/search"
 
-const Home = () => {
-  const health = useQuery(orpc.health.queryOptions())
+const viewsUsingCharacter = new Set(["trends", "ranks", "matchups", "counterpicks", "similarity"])
+const viewsUsingOpponent = new Set(["matchups", "counterpicks"])
 
-  return (
-    <main className="flex min-h-screen items-center justify-center">
-      <section className="space-y-4 text-center">
-        <h1 className="text-4xl font-semibold">oRPC fetch test</h1>
-        {health.isPending ? <p>Loading health status...</p> : null}
-        {health.isError ? (
-          <p className="text-destructive">
-            Request failed: {health.error instanceof Error ? health.error.message : "Unknown error"}
-          </p>
-        ) : null}
-        {health.data ? <p>Server status: {health.data.status}</p> : null}
-      </section>
-    </main>
-  )
+const DashboardRoute = () => {
+  const { meta, period, search } = useLoaderData({ from: "/" })
+  return <Dashboard meta={meta} period={period} search={search} />
 }
 
-export const Route = createFileRoute("/")({
-  component: Home,
+const Route = createFileRoute("/")({
+  validateSearch: DashboardSearchSchema,
+  loaderDeps: ({ search }) => {
+    return {
+      view: search.view,
+      period: search.view === "trends" ? undefined : search.period,
+      league: search.league,
+      controls: search.view === "control" ? undefined : search.controls,
+      character: viewsUsingCharacter.has(search.view) ? search.character : undefined,
+      opponent: viewsUsingOpponent.has(search.view) ? search.opponent : undefined,
+    }
+  },
+  loader: async ({ context: { queryClient }, deps }) => {
+    const meta = await queryClient.ensureQueryData(metaQueryOptions())
+    const search = DashboardSearchSchema.parse(deps)
+    const period = resolvePeriod(search.period, meta.periods, meta.latestPeriod)
+    void prefetchDashboardQuery(queryClient, search, meta, period)
+    return { meta, period, search }
+  },
+  component: DashboardRoute,
 })
+
+export { Route }

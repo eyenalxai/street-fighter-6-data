@@ -23,27 +23,16 @@ export function processedRelPath(dataset: DatasetId, period: ReportingPeriod): s
   return path.join("data", "processed", dataset, `${period}.json`)
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath)
-    return true
-  } catch {
-    return false
-  }
-}
-
 export async function snapshotExists(
   dataset: DatasetId,
   period: ReportingPeriod,
 ): Promise<boolean> {
-  return fileExists(snapshotPath(dataset, period))
-}
-
-export async function processedExists(
-  dataset: DatasetId,
-  period: ReportingPeriod,
-): Promise<boolean> {
-  return fileExists(processedPath(dataset, period))
+  try {
+    await access(snapshotPath(dataset, period))
+    return true
+  } catch {
+    return false
+  }
 }
 
 export async function listRawSnapshots(dataset: DatasetId): Promise<ReportingPeriod[]> {
