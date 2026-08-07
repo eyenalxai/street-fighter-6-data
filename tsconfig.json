@@ -28,6 +28,6 @@
     "noUncheckedSideEffectImports": true,
 
     "lib": ["ES2025", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"]
+    "types": ["bun", "vite/client"]
   }
 }
