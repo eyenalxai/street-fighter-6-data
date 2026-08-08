@@ -15,10 +15,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   formatChartTooltipLabel,
-  safeTooltipName,
 } from "@/components/ui/chart-tooltip"
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
-import { CHART_TICK_FORMATTERS, CHART_TOOLTIP_VALUE_FORMATTERS } from "@/lib/sf6/charts/format"
+import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type MatchupProfilePoint = {
   name: string
@@ -26,6 +25,7 @@ type MatchupProfilePoint = {
   winRate: number
 }
 const MATCHUP_PROFILE_CONFIG = {
+  usage: { label: "Opponent usage" },
   winRate: { label: "Matchup win rate", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
@@ -64,13 +64,7 @@ const MatchupProfileChart = ({ data }: { data: readonly MatchupProfilePoint[] })
         <ReferenceLine y={50} stroke="var(--muted-foreground)" strokeDasharray="2 2" />
         <ChartTooltip
           content={
-            <ChartTooltipContent
-              labelFormatter={formatChartTooltipLabel}
-              formatter={(value, name) => [
-                typeof value === "number" ? CHART_TOOLTIP_VALUE_FORMATTERS.percent(value) : "—",
-                safeTooltipName(name),
-              ]}
-            />
+            <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
           }
         />
         <Scatter name="Matchups" data={data} fill="var(--color-winRate)" />

@@ -15,10 +15,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   formatChartTooltipLabel,
-  safeTooltipName,
 } from "@/components/ui/chart-tooltip"
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
-import { CHART_TICK_FORMATTERS, CHART_TOOLTIP_VALUE_FORMATTERS } from "@/lib/sf6/charts/format"
+import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type AverageWinRatePopularityPoint = {
   characterId: string
@@ -30,6 +29,7 @@ type AverageWinRatePopularityPoint = {
 }
 const PERFORMANCE_POPULARITY_CONFIG = {
   averageWinRate: { label: "Average win rate", color: "var(--chart-1)" },
+  usage: { label: "Usage share" },
 } satisfies ChartConfig
 
 const AverageWinRatePopularityChart = ({
@@ -87,13 +87,7 @@ const AverageWinRatePopularityChart = ({
         )}
         <ChartTooltip
           content={
-            <ChartTooltipContent
-              labelFormatter={formatChartTooltipLabel}
-              formatter={(value, name) => [
-                typeof value === "number" ? CHART_TOOLTIP_VALUE_FORMATTERS.percent(value) : "—",
-                safeTooltipName(name),
-              ]}
-            />
+            <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
           }
         />
         <Scatter name="Characters" data={data} fill="var(--color-averageWinRate)" />

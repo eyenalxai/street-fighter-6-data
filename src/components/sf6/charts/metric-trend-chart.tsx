@@ -18,9 +18,9 @@ import {
   analyticsYAxisLabel,
 } from "@/components/sf6/charts/analytics-chart"
 import { ChartLegendContent } from "@/components/ui/chart-legend"
-import { ChartTooltip, ChartTooltipContent, safeTooltipName } from "@/components/ui/chart-tooltip"
+import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart-tooltip"
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
-import { CHART_TICK_FORMATTERS, CHART_VALUE_FORMATTERS } from "@/lib/sf6/charts/format"
+import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type MetricTrendSeries = {
   key: string
@@ -74,7 +74,6 @@ const MetricTrendChart = ({
     [data, referenceValue, series],
   )
   const tickFormatter = CHART_TICK_FORMATTERS[valueFormat]
-  const formatter = CHART_VALUE_FORMATTERS[valueFormat]
   if (data.length === 0 || series.length === 0) {
     return emptyLabel ?? null
   }
@@ -108,16 +107,7 @@ const MetricTrendChart = ({
             label={referenceLabel}
           />
         )}
-        <ChartTooltip
-          content={
-            <ChartTooltipContent
-              formatter={(value, name) => [
-                formatter(typeof value === "number" ? value : null),
-                safeTooltipName(name),
-              ]}
-            />
-          }
-        />
+        <ChartTooltip content={<ChartTooltipContent valueFormat={valueFormat} />} />
         <Legend
           {...ANALYTICS_LINE_CHART_LEGEND_PROPS}
           content={<ChartLegendContent verticalAlign="top" />}

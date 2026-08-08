@@ -6,8 +6,10 @@ import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart-container"
+import type { ChartValueFormat } from "@/lib/sf6/charts/format"
 
 import { useChart } from "@/components/ui/chart-container"
+import { CHART_TOOLTIP_VALUE_FORMATTERS } from "@/lib/sf6/charts/format"
 import { cn } from "@/lib/utils"
 
 type TooltipNameType = number | string
@@ -31,10 +33,18 @@ const getPayloadConfigFromPayload = (config: ChartConfig, payload: unknown, key:
   return configLabelKey in config ? config[configLabelKey] : config[key]
 }
 
-const ChartTooltip = RechartsPrimitive.Tooltip
+const formatTooltipValue = (value: unknown, valueFormat?: ChartValueFormat): React.ReactNode => {
+  if (value == null) return null
+  if (typeof value === "number" && valueFormat) {
+    return CHART_TOOLTIP_VALUE_FORMATTERS[valueFormat](value)
+  }
+  if (typeof value === "number") {
+    return value.toLocaleString()
+  }
+  return String(value)
+}
 
-const safeTooltipName = (value: unknown): string =>
-  typeof value === "string" ? value : String(value ?? "")
+const ChartTooltip = RechartsPrimitive.Tooltip
 
 const formatChartTooltipLabel = (_label: unknown, payload: unknown): string => {
   if (!Array.isArray(payload)) return ""
@@ -55,10 +65,10 @@ const ChartTooltipContent = ({
   label,
   labelFormatter,
   labelClassName,
-  formatter,
   color,
   nameKey,
   labelKey,
+  valueFormat,
 }: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
   React.ComponentProps<"div"> & {
     hideLabel?: boolean
@@ -66,9 +76,10 @@ const ChartTooltipContent = ({
     indicator?: "line" | "dot" | "dashed"
     nameKey?: string
     labelKey?: string
+    valueFormat?: ChartValueFormat
   } & Omit<
     RechartsPrimitive.DefaultTooltipContentProps<TooltipValueType, TooltipNameType>,
-    "accessibilityLayer"
+    "accessibilityLayer" | "formatter"
   >) => {
   const { config } = useChart()
   const tooltipLabel = React.useMemo(() => {
@@ -91,7 +102,7 @@ const ChartTooltipContent = ({
   return (
     <div
       className={cn(
-        "grid min-w-32 items-start gap-1.5 rounded-none border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+        "grid min-w-40 items-start gap-1.5 rounded-none border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
         className,
       )}
     >
@@ -111,54 +122,43 @@ const ChartTooltipContent = ({
                   indicator === "dot" && "items-center",
                 )}
               >
-                {formatter && item.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload)
+                {itemConfig?.icon ? (
+                  <itemConfig.icon />
                 ) : (
-                  <>
-                    {itemConfig?.icon ? (
-                      <itemConfig.icon />
-                    ) : (
-                      !hideIndicator && (
-                        <div
-                          className={cn(
-                            "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
-                            indicator === "dot" && "h-2.5 w-2.5",
-                            indicator === "line" && "w-1",
-                            indicator === "dashed" &&
-                              "w-0 border-[1.5px] border-dashed bg-transparent",
-                            nestLabel && indicator === "dashed" && "my-0.5",
-                          )}
-                          style={
-                            {
-                              "--color-bg": indicatorColor,
-                              "--color-border": indicatorColor,
-                            } as React.CSSProperties
-                          }
-                        />
-                      )
-                    )}
+                  !hideIndicator && (
                     <div
                       className={cn(
-                        "flex flex-1 justify-between leading-none",
-                        nestLabel ? "items-end" : "items-center",
+                        "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
+                        indicator === "dot" && "h-2.5 w-2.5",
+                        indicator === "line" && "w-1",
+                        indicator === "dashed" && "w-0 border-[1.5px] border-dashed bg-transparent",
+                        nestLabel && indicator === "dashed" && "my-0.5",
                       )}
-                    >
-                      <div className="grid gap-1.5">
-                        {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
-                          {itemConfig?.label ?? item.name}
-                        </span>
-                      </div>
-                      {item.value != null ? (
-                        <span className="font-mono font-medium text-foreground tabular-nums">
-                          {typeof item.value === "number"
-                            ? item.value.toLocaleString()
-                            : String(item.value)}
-                        </span>
-                      ) : null}
-                    </div>
-                  </>
+                      style={
+                        {
+                          "--color-bg": indicatorColor,
+                          "--color-border": indicatorColor,
+                        } as React.CSSProperties
+                      }
+                    />
+                  )
                 )}
+                <div
+                  className={cn(
+                    "flex min-w-0 flex-1 items-center justify-between gap-4 leading-none",
+                    nestLabel && "items-end",
+                  )}
+                >
+                  <div className="grid min-w-0 gap-1.5">
+                    {nestLabel ? tooltipLabel : null}
+                    <span className="text-muted-foreground">{itemConfig?.label ?? item.name}</span>
+                  </div>
+                  {item.value != null ? (
+                    <span className="shrink-0 font-mono font-medium text-foreground tabular-nums">
+                      {formatTooltipValue(item.value, valueFormat)}
+                    </span>
+                  ) : null}
+                </div>
               </div>
             )
           })}
@@ -167,4 +167,4 @@ const ChartTooltipContent = ({
   )
 }
 
-export { ChartTooltip, ChartTooltipContent, formatChartTooltipLabel, safeTooltipName }
+export { ChartTooltip, ChartTooltipContent, formatChartTooltipLabel }

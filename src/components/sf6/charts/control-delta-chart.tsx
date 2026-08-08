@@ -15,10 +15,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   formatChartTooltipLabel,
-  safeTooltipName,
 } from "@/components/ui/chart-tooltip"
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
-import { CHART_TICK_FORMATTERS, CHART_TOOLTIP_VALUE_FORMATTERS } from "@/lib/sf6/charts/format"
+import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type ControlDeltaPoint = {
   name: string
@@ -26,6 +25,7 @@ type ControlDeltaPoint = {
   usageDelta: number
 }
 const CONTROL_DELTA_CONFIG = {
+  usageDelta: { label: "Usage difference" },
   averageWinRateDelta: { label: "Win rate change", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
@@ -68,12 +68,7 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
           content={
             <ChartTooltipContent
               labelFormatter={formatChartTooltipLabel}
-              formatter={(value, name) => [
-                typeof value === "number"
-                  ? CHART_TOOLTIP_VALUE_FORMATTERS.percentagePoints(value)
-                  : "—",
-                safeTooltipName(name),
-              ]}
+              valueFormat="percentagePoints"
             />
           }
         />
