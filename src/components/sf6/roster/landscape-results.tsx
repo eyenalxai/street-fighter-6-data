@@ -42,10 +42,8 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
             data={timeData}
             series={[{ key: "spread", label: "Performance spread", color: "var(--chart-1)" }]}
             xAxisLabel="Reporting period"
-            yDomain={[0, "auto"]}
-            tickFormatter={(value) => `${value.toFixed(0)} pp`}
+            valueFormat="percentagePoints"
             valueLabel="Performance spread (percentage points)"
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)} pp`)}
           />
         </AnalyticsPanel>
         <AnalyticsPanel
@@ -56,10 +54,8 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
             data={timeData}
             series={[{ key: "diversity", label: "Effective roster size", color: "var(--chart-2)" }]}
             xAxisLabel="Reporting period"
-            yDomain={[0, "auto"]}
-            tickFormatter={(value) => value.toFixed(0)}
+            valueFormat="number"
             valueLabel="Effective roster size (characters)"
-            formatter={(value) => (value === null ? "—" : value.toFixed(1))}
           />
         </AnalyticsPanel>
         <AnalyticsPanel
@@ -70,10 +66,8 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
             data={rankData}
             series={[{ key: "spread", label: "Performance spread", color: "var(--chart-3)" }]}
             xAxisLabel="Rank"
-            yDomain={[0, "auto"]}
-            tickFormatter={(value) => `${value.toFixed(0)} pp`}
+            valueFormat="percentagePoints"
             valueLabel="Performance spread (percentage points)"
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)} pp`)}
           />
         </AnalyticsPanel>
         <AnalyticsPanel
@@ -84,10 +78,8 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
             data={rankData}
             series={[{ key: "diversity", label: "Effective roster size", color: "var(--chart-4)" }]}
             xAxisLabel="Rank"
-            yDomain={[0, "auto"]}
-            tickFormatter={(value) => value.toFixed(0)}
+            valueFormat="number"
             valueLabel="Effective roster size (characters)"
-            formatter={(value) => (value === null ? "—" : value.toFixed(1))}
           />
         </AnalyticsPanel>
       </div>

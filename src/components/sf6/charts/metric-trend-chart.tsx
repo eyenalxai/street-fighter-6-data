@@ -4,15 +4,23 @@ import { useMemo } from "react"
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart-container"
+import type { ChartValueFormat } from "@/lib/sf6/charts/format"
 
 import {
   AnalyticsChart,
+  ANALYTICS_ANGLED_X_AXIS_HEIGHT,
   ANALYTICS_AXIS_TICK,
-  ANALYTICS_CHART_MARGIN,
+  ANALYTICS_LINE_CHART_LEGEND_PROPS,
+  ANALYTICS_LINE_CHART_MARGIN,
   ANALYTICS_X_AXIS_TICK,
+  ANALYTICS_Y_AXIS_WIDTH,
+  analyticsAngledXAxisLabel,
+  analyticsYAxisLabel,
 } from "@/components/sf6/charts/analytics-chart"
 import { ChartLegendContent } from "@/components/ui/chart-legend"
 import { ChartTooltip, ChartTooltipContent, safeTooltipName } from "@/components/ui/chart-tooltip"
+import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
+import { CHART_TICK_FORMATTERS, CHART_VALUE_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type MetricTrendSeries = {
   key: string
@@ -23,31 +31,24 @@ type MetricTrendPoint = {
   label: string
   [key: string]: number | string | null
 }
-type MetricTrendDomain = [number | "auto", number | "auto"]
 
 const MetricTrendChart = ({
   data,
   series,
   xAxisLabel,
-  yDomain,
-  tickFormatter,
+  valueFormat,
   valueLabel,
-  formatter,
   referenceValue,
   referenceLabel,
-  referencePeriods,
   emptyLabel,
 }: {
   data: readonly MetricTrendPoint[]
   series: readonly MetricTrendSeries[]
   xAxisLabel: string
-  yDomain: MetricTrendDomain
-  tickFormatter: (value: number) => string
+  valueFormat: ChartValueFormat
   valueLabel: string
-  formatter: (value: number | null) => string
   referenceValue?: number
   referenceLabel?: string
-  referencePeriods?: readonly string[]
   emptyLabel?: ReactNode
 }): ReactNode => {
   const config = useMemo(
@@ -57,27 +58,45 @@ const MetricTrendChart = ({
       ) satisfies ChartConfig,
     [series],
   )
+  const yDomain = useMemo(
+    () =>
+      computeAxisDomain(
+        collectRecordValues(
+          data,
+          series.map((item) => item.key),
+        ),
+        {
+          anchors: referenceValue === undefined ? [] : [referenceValue],
+        },
+      ),
+    [data, referenceValue, series],
+  )
+  const tickFormatter = CHART_TICK_FORMATTERS[valueFormat]
+  const formatter = CHART_VALUE_FORMATTERS[valueFormat]
   if (data.length === 0 || series.length === 0) {
     return emptyLabel ?? null
   }
   return (
     <AnalyticsChart config={config} className="h-90">
-      <LineChart accessibilityLayer data={data} margin={ANALYTICS_CHART_MARGIN}>
+      <LineChart accessibilityLayer data={data} margin={ANALYTICS_LINE_CHART_MARGIN}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
         <XAxis
           dataKey="label"
           tick={ANALYTICS_X_AXIS_TICK}
           angle={-40}
           textAnchor="end"
-          height={50}
+          height={ANALYTICS_ANGLED_X_AXIS_HEIGHT}
           interval={0}
-          label={xAxisLabel}
+          tickMargin={8}
+          label={analyticsAngledXAxisLabel(xAxisLabel)}
         />
         <YAxis
           domain={yDomain}
+          width={ANALYTICS_Y_AXIS_WIDTH}
           tick={ANALYTICS_AXIS_TICK}
           tickFormatter={tickFormatter}
-          label={valueLabel}
+          tickMargin={4}
+          label={analyticsYAxisLabel(valueLabel)}
         />
         {referenceValue === undefined ? null : (
           <ReferenceLine
@@ -87,15 +106,6 @@ const MetricTrendChart = ({
             label={referenceLabel}
           />
         )}
-        {referencePeriods?.map((period) => (
-          <ReferenceLine
-            key={period}
-            x={period}
-            stroke="var(--muted-foreground)"
-            strokeDasharray="2 2"
-            label={period}
-          />
-        ))}
         <ChartTooltip
           content={
             <ChartTooltipContent
@@ -106,7 +116,10 @@ const MetricTrendChart = ({
             />
           }
         />
-        <Legend content={<ChartLegendContent />} />
+        <Legend
+          {...ANALYTICS_LINE_CHART_LEGEND_PROPS}
+          content={<ChartLegendContent verticalAlign="top" />}
+        />
         {series.map((item) => (
           <Line
             key={item.key}
@@ -124,4 +137,4 @@ const MetricTrendChart = ({
   )
 }
 
-export { MetricTrendChart, type MetricTrendDomain, type MetricTrendPoint, type MetricTrendSeries }
+export { MetricTrendChart, type MetricTrendPoint, type MetricTrendSeries }

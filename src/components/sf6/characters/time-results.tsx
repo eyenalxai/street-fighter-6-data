@@ -99,14 +99,12 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
               }
             })}
             xAxisLabel="Reporting period"
-            yDomain={[0, 100]}
-            tickFormatter={(value) => `${value.toFixed(0)}%`}
+            valueFormat="percent"
             valueLabel={
               performanceMetric === "weighted"
                 ? "Popularity-weighted performance"
                 : "Average win rate"
             }
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
             referenceValue={50}
             referenceLabel="50%"
           />
@@ -119,10 +117,8 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
             data={usageData}
             series={series}
             xAxisLabel="Reporting period"
-            yDomain={[0, "auto"]}
-            tickFormatter={(value) => `${value.toFixed(0)}%`}
+            valueFormat="percent"
             valueLabel="Usage share"
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
           />
         </AnalyticsPanel>
       </div>

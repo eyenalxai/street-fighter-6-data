@@ -58,10 +58,8 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
             data={performanceData}
             series={chartSeries}
             xAxisLabel="Rank"
-            yDomain={[0, 100]}
-            tickFormatter={(value) => `${value.toFixed(0)}%`}
+            valueFormat="percent"
             valueLabel="Average win rate"
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
             referenceValue={50}
             referenceLabel="50%"
           />
@@ -74,10 +72,8 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
             data={usageData}
             series={chartSeries}
             xAxisLabel="Rank"
-            yDomain={[0, "auto"]}
-            tickFormatter={(value) => `${value.toFixed(0)}%`}
+            valueFormat="percent"
             valueLabel="Usage share"
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
           />
         </AnalyticsPanel>
       </div>

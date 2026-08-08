@@ -58,7 +58,18 @@ const getEffectivePlayerControl = (rank: RankId, requested: PlayerControl): Play
 const getControlComparisonRank = (rank: RankId): RankId =>
   isMasterSubdivisionRank(rank) ? "all-master" : rank
 
+const filterPeriodsInRange = (
+  periods: readonly ReportingPeriod[],
+  fromPeriod: ReportingPeriod,
+  toPeriod: ReportingPeriod,
+): ReportingPeriod[] => {
+  const start = fromPeriod <= toPeriod ? fromPeriod : toPeriod
+  const end = fromPeriod <= toPeriod ? toPeriod : fromPeriod
+  return periods.filter((period) => period >= start && period <= end)
+}
+
 export {
+  filterPeriodsInRange,
   getControlComparisonRank,
   getEffectiveControls,
   getEffectivePlayerControl,

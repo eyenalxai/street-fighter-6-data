@@ -127,40 +127,28 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
       <div className="grid gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Focused performance persistence"
-          description="Full available monthly history is shown; selected endpoints are marked, and later movement appears when later snapshots exist."
+          description="Average win rate for the selected characters across the chosen reporting-period range."
         >
           <MetricTrendChart
             data={performanceData}
             series={focusSeries}
             xAxisLabel="Reporting period"
-            yDomain={[0, 100]}
-            tickFormatter={(value) => `${value.toFixed(0)}%`}
+            valueFormat="percent"
             valueLabel="Average win rate"
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
             referenceValue={50}
             referenceLabel="50%"
-            referencePeriods={[
-              formatReportingPeriod(data.fromPeriod),
-              formatReportingPeriod(data.toPeriod),
-            ]}
           />
         </AnalyticsPanel>
         <AnalyticsPanel
           title="Focused popularity persistence"
-          description="Full available monthly history is shown; inspect reversion or sustained movement after the selected change when later snapshots exist."
+          description="Usage share for the selected characters across the chosen reporting-period range."
         >
           <MetricTrendChart
             data={usageData}
             series={focusSeries}
             xAxisLabel="Reporting period"
-            yDomain={[0, "auto"]}
-            tickFormatter={(value) => `${value.toFixed(0)}%`}
+            valueFormat="percent"
             valueLabel="Usage share"
-            formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
-            referencePeriods={[
-              formatReportingPeriod(data.fromPeriod),
-              formatReportingPeriod(data.toPeriod),
-            ]}
           />
         </AnalyticsPanel>
       </div>

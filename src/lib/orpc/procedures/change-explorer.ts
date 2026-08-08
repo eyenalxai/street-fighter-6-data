@@ -11,7 +11,7 @@ import {
   ReportingPeriodSchema,
   UniqueCharacterIdsSchema,
 } from "@/lib/sf6/model"
-import { getPeriodsForRank } from "@/lib/sf6/rank-selection"
+import { filterPeriodsInRange, getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { RankIdSchema } from "@/lib/sf6/ranks"
 import { getSnapshotPeriodAvailability } from "@/lib/sf6/snapshot-periods.server"
 
@@ -95,7 +95,8 @@ const changeExplorerProcedure = os
           beforeUsage: before?.usage ?? null,
         }
       })
-      const focusEntries = await getPeriodEntries(periods, input.rank, input.playerControl)
+      const focusPeriods = filterPeriodsInRange(periods, fromPeriod, toPeriod)
+      const focusEntries = await getPeriodEntries(focusPeriods, input.rank, input.playerControl)
       return {
         fromPeriod,
         toPeriod,
