@@ -125,6 +125,7 @@ export default defineConfig({
       files: ["src/routes/**/*.{ts,tsx}"],
       rules: {
         "import/group-exports": "off",
+        "typescript/only-throw-error": "off",
       },
     },
     {

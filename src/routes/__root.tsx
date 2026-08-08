@@ -9,14 +9,18 @@ import { Providers } from "@/components/providers"
 import appCss from "@/styles.css?url"
 
 const RootDocument = ({ children }: Readonly<{ children: ReactNode }>) => (
-  <html>
+  <html lang="en">
     <head>
       <HeadContent />
     </head>
     <body>
-      <Providers attribute="class" defaultTheme="system" enableSystem>
-        {children}
-      </Providers>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
+      <Providers>{children}</Providers>
       <Scripts />
     </body>
   </html>
@@ -30,7 +34,10 @@ const RootComponent = () => (
 
 const NotFound = () => (
   <main className="flex min-h-screen items-center justify-center">
-    <p className="text-muted-foreground">Page not found</p>
+    <div className="flex flex-col items-center gap-2 text-center">
+      <h1 className="text-lg font-semibold">Page not found</h1>
+      <p className="text-muted-foreground">The requested analytics page does not exist.</p>
+    </div>
   </main>
 )
 

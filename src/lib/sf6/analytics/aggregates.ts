@@ -22,7 +22,7 @@ type RankPoint = {
 type RankHeatmapRow = {
   characterId: CharacterId
   points: RankPoint[]
-  spread: number | null
+  range: number | null
 }
 type ControlComparisonRow = {
   characterId: CharacterId
@@ -95,17 +95,18 @@ const getRankHeatmap = (
       return {
         characterId,
         points,
-        spread: minimum === null || maximum === null ? null : round(maximum - minimum),
+        range: minimum === null || maximum === null ? null : round(maximum - minimum),
       }
     })
-    .toSorted((left, right) => (right.spread ?? -1) - (left.spread ?? -1))
+    .toSorted((left, right) => (right.range ?? -1) - (left.range ?? -1))
 
-const getBalancedControlAverage = (
+const getPlayerControlAverage = (
   snapshot: ProcessedDiaSnapshot,
   league: LeagueId,
   characterId: CharacterId,
   playerControl: "C" | "M",
 ): number | null => {
+  // Average both opponent control styles while holding the player's style constant.
   const matchupIds: ControlMatchup[] =
     playerControl === "C"
       ? ["classic-classic", "classic-modern"]
@@ -125,8 +126,8 @@ const getControlComparison = (
 ): ControlComparisonRow[] =>
   getAvailableAcrossLeagues(snapshot, "combined")
     .map((characterId) => {
-      const classic = getBalancedControlAverage(snapshot, league, characterId, "C")
-      const modern = getBalancedControlAverage(snapshot, league, characterId, "M")
+      const classic = getPlayerControlAverage(snapshot, league, characterId, "C")
+      const modern = getPlayerControlAverage(snapshot, league, characterId, "M")
       return {
         characterId,
         classic,

@@ -15,20 +15,4 @@ const mean = (values: readonly number[]): number | null => {
   return total / values.length
 }
 
-const standardDeviation = (values: readonly number[]): number => {
-  const average = mean(values)
-  if (average === null || values.length < 2) {
-    return 0
-  }
-
-  let squaredDistance = 0
-  for (const value of values) {
-    squaredDistance += (value - average) ** 2
-  }
-  return Math.sqrt(squaredDistance / values.length)
-}
-
-const numericValues = (values: readonly (number | null)[]): number[] =>
-  values.filter((value): value is number => value !== null)
-
-export { mean, numericValues, round, standardDeviation }
+export { mean, round }

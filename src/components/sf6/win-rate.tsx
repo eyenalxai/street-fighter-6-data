@@ -19,18 +19,17 @@ const wrToken = (value: number | null | undefined): string => {
   return "text-wr-weak"
 }
 
-const wrBg = (value: number | null | undefined): string => {
-  if (value === null || value === undefined) {
-    return "var(--muted)"
-  }
-  const clamped = Math.max(40, Math.min(60, value))
-  const distance = Math.abs(clamped - 50) / 10
-  const color = clamped >= 50 ? "var(--wr-strong)" : "var(--wr-weak)"
-  return `color-mix(in oklch, var(--card) ${100 - distance * 78}%, ${color})`
-}
-
 const formatWr = (value: number | null | undefined): string =>
   value === null || value === undefined ? "—" : `${value.toFixed(1)}%`
+
+const formatPercentagePoints = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) {
+    return "—"
+  }
+
+  const sign = value < 0 ? "−" : value > 0 ? "+" : ""
+  return `${sign}${Math.abs(value).toFixed(1)} pp`
+}
 
 const WinRate = ({
   value,
@@ -64,9 +63,9 @@ const DeltaValue = ({ value, className }: { value: number | null; className?: st
         className,
       )}
     >
-      {value === null ? "—" : `${value > 0 ? "+" : ""}${value.toFixed(1)}`}
+      {formatPercentagePoints(value)}
     </span>
   )
 }
 
-export { DeltaValue, formatWr, wrBg, WinRate, wrToken }
+export { DeltaValue, formatPercentagePoints, formatWr, WinRate, wrToken }

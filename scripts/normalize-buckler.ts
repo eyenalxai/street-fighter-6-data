@@ -1,14 +1,7 @@
 #!/usr/bin/env bun
 
-import {
-  DATASETS,
-  DIA_DATASETS,
-  USAGE_DATASETS,
-  type DatasetId,
-  type ReportingPeriod,
-} from "./lib/buckler/datasets.ts"
+import { DATASETS, type DatasetId, type ReportingPeriod } from "./lib/buckler/datasets.ts"
 import { normalizeDia } from "./lib/buckler/normalize-dia.ts"
-import { normalizeUsage } from "./lib/buckler/normalize-usage.ts"
 import {
   listRawSnapshots,
   processedRelPath,
@@ -22,12 +15,6 @@ type NormalizeStats = {
 }
 
 const formatBytes = (bytes: number): string => bytes.toLocaleString("en-US")
-
-const isUsageDataset = (datasetId: DatasetId): boolean =>
-  (USAGE_DATASETS as readonly DatasetId[]).includes(datasetId)
-
-const isDiaDataset = (datasetId: DatasetId): boolean =>
-  (DIA_DATASETS as readonly DatasetId[]).includes(datasetId)
 
 const logLine = (
   action: string,
@@ -51,13 +38,7 @@ async function normalizePeriod(
 ): Promise<void> {
   try {
     const raw = await readSnapshot(datasetId, period)
-    const processed = isUsageDataset(datasetId)
-      ? normalizeUsage(raw)
-      : isDiaDataset(datasetId)
-        ? normalizeDia(raw)
-        : (() => {
-            throw new Error(`Unknown dataset: ${datasetId}`)
-          })()
+    const processed = normalizeDia(raw)
 
     const bytes = await writeProcessed(datasetId, period, processed)
     stats.normalized += 1
@@ -91,9 +72,11 @@ async function main(): Promise<void> {
 
   console.log("SF6 Buckler normalize")
 
-  for (const dataset of DATASETS) {
-    await normalizeDataset(dataset.id, stats)
+  const dataset = DATASETS[0]
+  if (dataset === undefined) {
+    throw new Error("No Buckler dataset is configured")
   }
+  await normalizeDataset(dataset.id, stats)
 
   console.log("\nSummary:")
   console.log(`  normalized: ${stats.normalized}`)

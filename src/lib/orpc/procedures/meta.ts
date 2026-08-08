@@ -11,6 +11,7 @@ import {
   LEAGUES,
   ReportingPeriodSchema,
 } from "@/lib/sf6/model"
+import { sortCharactersByName } from "@/lib/sf6/presentation"
 import { getAvailablePeriods, getSnapshot } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
@@ -21,11 +22,6 @@ const MetaOutputSchema = z.object({
   characters: CharacterSchema.array(),
   leagues: LeagueSchema.array(),
   controls: ControlMatchupOptionSchema.array(),
-  counts: z.object({
-    characters: z.number().int().nonnegative(),
-    periods: z.number().int().nonnegative(),
-    leagues: z.number().int().nonnegative(),
-  }),
 })
 
 const metaProcedure = os
@@ -41,18 +37,15 @@ const metaProcedure = os
 
       const latestSnapshot = await getSnapshot(latestPeriod)
       const currentIds = new Set(getAvailableCharacterIds(latestSnapshot, "8", "combined"))
-      const characters = CHARACTERS.filter((character) => currentIds.has(character.id))
+      const characters = sortCharactersByName(
+        CHARACTERS.filter((character) => currentIds.has(character.id)),
+      )
       return {
         latestPeriod,
         periods,
         characters,
         leagues: LEAGUES,
         controls: CONTROL_MATCHUPS,
-        counts: {
-          characters: characters.length,
-          periods: periods.length,
-          leagues: LEAGUES.length,
-        },
       }
     }),
   )

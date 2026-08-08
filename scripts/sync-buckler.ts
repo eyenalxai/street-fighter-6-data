@@ -86,9 +86,11 @@ async function main(): Promise<void> {
 
   console.log("SF6 Buckler sync")
 
-  for (const dataset of DATASETS) {
-    await syncDataset(dataset.id, stats)
+  const dataset = DATASETS[0]
+  if (dataset === undefined) {
+    throw new Error("No Buckler dataset is configured")
   }
+  await syncDataset(dataset.id, stats)
 
   console.log("\nSummary:")
   console.log(`  downloaded:  ${stats.downloaded}`)

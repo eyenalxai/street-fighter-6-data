@@ -2,20 +2,27 @@ import { os } from "@orpc/server"
 import * as z from "zod"
 
 import {
-  getControlCells,
-  getCounterpicks,
+  getControlMatchupResults,
   getMatchupCell,
-  getMatchupSpread,
+  getOpponentWinRates,
 } from "@/lib/sf6/analytics/matchups"
-import { CharacterIdSchema } from "@/lib/sf6/model"
+import {
+  CharacterIdSchema,
+  ControlMatchupSchema,
+  LeagueIdSchema,
+  ReportingPeriodSchema,
+} from "@/lib/sf6/model"
 import { getSnapshot } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
-import { AnalyticsInputSchema, ControlCellSchema, MatchupRowSchema } from "./shared"
+import { ControlMatchupResultSchema, MatchupRowSchema } from "./shared"
 
-const MatchupsInputSchema = AnalyticsInputSchema.extend({
+const MatchupsInputSchema = z.object({
+  period: ReportingPeriodSchema,
+  league: LeagueIdSchema,
   character: CharacterIdSchema,
   opponent: CharacterIdSchema,
+  opponentListControls: ControlMatchupSchema,
 })
 const MatchupCellSchema = z.object({
   playerId: CharacterIdSchema,
@@ -25,15 +32,9 @@ const MatchupCellSchema = z.object({
 })
 const MatchupsOutputSchema = z.object({
   headToHead: MatchupCellSchema,
-  controls: ControlCellSchema.array(),
+  controlMatchups: ControlMatchupResultSchema.array(),
   best: MatchupRowSchema.array(),
   worst: MatchupRowSchema.array(),
-  counterpicks: z
-    .object({
-      counterId: CharacterIdSchema,
-      counterWinRate: z.number().min(0).max(100),
-    })
-    .array(),
 })
 
 const matchupsProcedure = os
@@ -42,29 +43,34 @@ const matchupsProcedure = os
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
       const snapshot = await getSnapshot(input.period)
-      const spread = getMatchupSpread(snapshot, input.league, input.controls, input.character)
+      const opponentResults = getOpponentWinRates(
+        snapshot,
+        input.league,
+        input.opponentListControls,
+        input.character,
+      )
       return {
         headToHead: getMatchupCell(
           snapshot,
           input.league,
-          input.controls,
+          "combined",
           input.character,
           input.opponent,
         ),
-        controls: getControlCells(snapshot, input.league, input.character, input.opponent),
-        best: spread.slice(0, 6).map(({ opponentId, winRate }) => {
+        controlMatchups: getControlMatchupResults(
+          snapshot,
+          input.league,
+          input.character,
+          input.opponent,
+        ),
+        best: opponentResults.slice(0, 6).map(({ opponentId, winRate }) => {
           return { opponentId, winRate }
         }),
-        worst: spread
+        worst: opponentResults
           .toReversed()
           .slice(0, 6)
           .map(({ opponentId, winRate }) => {
             return { opponentId, winRate }
-          }),
-        counterpicks: getCounterpicks(snapshot, input.league, input.controls, input.character)
-          .slice(0, 6)
-          .map(({ counterId, counterWinRate }) => {
-            return { counterId, counterWinRate }
           }),
       }
     }),

@@ -15,7 +15,7 @@ import { withSnapshotErrors } from "./execute.server"
 const TrendsInputSchema = z.object({
   league: LeagueIdSchema,
   controls: ControlMatchupSchema,
-  characters: CharacterIdSchema.array().min(1).max(5),
+  characters: CharacterIdSchema.array().min(1),
 })
 const TrendsPointSchema = z.object({
   period: ReportingPeriodSchema,

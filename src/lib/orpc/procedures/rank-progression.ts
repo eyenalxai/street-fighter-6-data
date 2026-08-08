@@ -2,13 +2,19 @@ import { os } from "@orpc/server"
 import * as z from "zod"
 
 import { getRankHeatmap, getRankProgression } from "@/lib/sf6/analytics/aggregates"
-import { CharacterIdSchema, LeagueIdSchema } from "@/lib/sf6/model"
+import {
+  CharacterIdSchema,
+  ControlMatchupSchema,
+  LeagueIdSchema,
+  ReportingPeriodSchema,
+} from "@/lib/sf6/model"
 import { getSnapshot } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
-import { AnalyticsInputSchema } from "./shared"
 
-const RankProgressionInputSchema = AnalyticsInputSchema.extend({
+const RankProgressionInputSchema = z.object({
+  period: ReportingPeriodSchema,
+  controls: ControlMatchupSchema,
   character: CharacterIdSchema,
 })
 const RankPointSchema = z.object({
@@ -23,7 +29,7 @@ const RankProgressionOutputSchema = z.object({
     .object({
       characterId: CharacterIdSchema,
       points: RankPointSchema.array(),
-      spread: z.number().min(0).max(100).nullable(),
+      range: z.number().min(0).max(100).nullable(),
     })
     .array(),
 })

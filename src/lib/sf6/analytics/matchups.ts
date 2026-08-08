@@ -17,22 +17,18 @@ type MatchupAverageRow = {
   characterId: CharacterId
   winRate: number
 }
-type MatchupSpreadRow = {
+type OpponentWinRateRow = {
   opponentId: CharacterId
   winRate: number
 }
-type CounterpickRow = {
-  counterId: CharacterId
-  counterWinRate: number
-}
-type CounterpickCoverageRow = {
+type CounterpickCandidateRow = {
   characterId: CharacterId
   averageWinRate: number | null
   worstWinRate: number | null
-  coveredCount: number
+  atOrAbove50Count: number
   matchups: { opponentId: CharacterId; winRate: number | null }[]
 }
-type ControlCell = {
+type ControlMatchupResult = {
   controlMatchup: Exclude<ControlMatchup, "combined">
   label: string
   winRate: number | null
@@ -148,6 +144,7 @@ const getMatchupAverage = (
   controlMatchup: ControlMatchup,
   characterId: CharacterId,
 ): MatchupAverageRow | null => {
+  // This is the mean of reported, non-mirror win rates against available opponents.
   const values: number[] = []
   for (const opponentId of getAvailableCharacterIds(snapshot, league, controlMatchup)) {
     if (opponentId !== characterId) {
@@ -172,12 +169,12 @@ const getLeaderboard = (
     .filter((row): row is MatchupAverageRow => row !== null)
     .toSorted((left, right) => right.winRate - left.winRate)
 
-const getMatchupSpread = (
+const getOpponentWinRates = (
   snapshot: ProcessedDiaSnapshot,
   league: LeagueId,
   controlMatchup: ControlMatchup,
   characterId: CharacterId,
-): MatchupSpreadRow[] =>
+): OpponentWinRateRow[] =>
   getAvailableCharacterIds(snapshot, league, controlMatchup)
     .filter((opponentId) => opponentId !== characterId)
     .map((opponentId) => {
@@ -186,38 +183,21 @@ const getMatchupSpread = (
         ? { opponentId, winRate: cell.winRate }
         : null
     })
-    .filter((row): row is MatchupSpreadRow => row !== null)
+    .filter((row): row is OpponentWinRateRow => row !== null)
     .toSorted((left, right) => right.winRate - left.winRate)
 
-const getCounterpicks = (
+const getCounterpickCandidates = (
   snapshot: ProcessedDiaSnapshot,
   league: LeagueId,
   controlMatchup: ControlMatchup,
-  targetId: CharacterId,
-): CounterpickRow[] =>
-  getAvailableCharacterIds(snapshot, league, controlMatchup)
-    .filter((counterId) => counterId !== targetId)
-    .map((counterId) => {
-      const cell = getMatchupCell(snapshot, league, controlMatchup, counterId, targetId)
-      return cell.status === "numeric" && cell.winRate !== null
-        ? { counterId, counterWinRate: cell.winRate }
-        : null
-    })
-    .filter((row): row is CounterpickRow => row !== null)
-    .toSorted((left, right) => right.counterWinRate - left.counterWinRate)
-
-const getCounterpickCoverage = (
-  snapshot: ProcessedDiaSnapshot,
-  league: LeagueId,
-  controlMatchup: ControlMatchup,
-  threats: readonly CharacterId[],
-): CounterpickCoverageRow[] => {
+  opponents: readonly CharacterId[],
+): CounterpickCandidateRow[] => {
   const available = getAvailableCharacterIds(snapshot, league, controlMatchup)
-  const validThreats = threats.filter((threatId) => available.includes(threatId))
+  const validOpponents = opponents.filter((opponentId) => available.includes(opponentId))
   return available
-    .filter((characterId) => !validThreats.includes(characterId))
+    .filter((characterId) => !validOpponents.includes(characterId))
     .map((characterId) => {
-      const matchups = validThreats.map((opponentId) => {
+      const matchups = validOpponents.map((opponentId) => {
         const cell = getMatchupCell(snapshot, league, controlMatchup, characterId, opponentId)
         return {
           opponentId,
@@ -232,7 +212,7 @@ const getCounterpickCoverage = (
         characterId,
         averageWinRate: average === null ? null : round(average),
         worstWinRate: values.length === 0 ? null : round(Math.min(...values)),
-        coveredCount: values.filter((value) => value >= 50).length,
+        atOrAbove50Count: values.filter((value) => value >= 50).length,
         matchups,
       }
     })
@@ -241,12 +221,12 @@ const getCounterpickCoverage = (
     )
 }
 
-const getControlCells = (
+const getControlMatchupResults = (
   snapshot: ProcessedDiaSnapshot,
   league: LeagueId,
   playerId: CharacterId,
   opponentId: CharacterId,
-): ControlCell[] =>
+): ControlMatchupResult[] =>
   CONTROL_MATCHUPS.flatMap((controlMatchup) =>
     controlMatchup.id === "combined"
       ? []
@@ -262,18 +242,16 @@ const getControlCells = (
 
 export {
   getAvailableCharacterIds,
-  getControlCells,
-  getCounterpicks,
+  getControlMatchupResults,
   getLeaderboard,
   getMatchupAverage,
   getMatchupCell,
-  getMatchupSpread,
-  type ControlCell,
+  getOpponentWinRates,
+  type ControlMatchupResult,
   type MatchupAverageRow,
   type MatchupCell,
-  type MatchupSpreadRow,
-  type CounterpickRow,
-  getCounterpickCoverage,
-  type CounterpickCoverageRow,
+  type OpponentWinRateRow,
+  getCounterpickCandidates,
+  type CounterpickCandidateRow,
   type MatchupStatus,
 }

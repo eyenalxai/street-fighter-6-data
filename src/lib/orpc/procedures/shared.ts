@@ -20,10 +20,10 @@ const MatchupRowSchema = z.object({
   opponentId: CharacterIdSchema,
   winRate: z.number().min(0).max(100),
 })
-const ControlCellSchema = z.object({
+const ControlMatchupResultSchema = z.object({
   controlMatchup: ControlMatchupSchema.exclude(["combined"]),
   label: z.string(),
   winRate: z.number().min(0).max(100).nullable(),
 })
 
-export { AnalyticsInputSchema, CharacterMetricSchema, ControlCellSchema, MatchupRowSchema }
+export { AnalyticsInputSchema, CharacterMetricSchema, ControlMatchupResultSchema, MatchupRowSchema }
