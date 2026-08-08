@@ -1,0 +1,32 @@
+import type { PlayerControl } from "@/lib/sf6/model"
+import type { MetaData } from "@/lib/sf6/query-options"
+
+import { SelectField } from "@/components/sf6/filters/select-field"
+import { PlayerControlSchema } from "@/lib/sf6/model"
+
+const PlayerControlField = ({
+  value,
+  controls,
+  onChange,
+  disabled = false,
+}: {
+  value: PlayerControl
+  controls: MetaData["playerControls"]
+  onChange: (value: PlayerControl) => void
+  disabled?: boolean
+}) => (
+  <SelectField
+    label="Player controls"
+    value={value}
+    options={controls.map((control) => {
+      return { value: control.id, label: control.label }
+    })}
+    onChange={(next) => {
+      onChange(PlayerControlSchema.parse(next))
+    }}
+    description={disabled ? "Master subdivisions combine all control styles." : undefined}
+    disabled={disabled}
+  />
+)
+
+export { PlayerControlField }

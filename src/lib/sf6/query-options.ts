@@ -10,13 +10,16 @@ import { resolveNearestPeriod } from "./rank-selection"
 
 type AppClient = RouterClient<typeof router>
 type MetaData = Awaited<ReturnType<AppClient["meta"]>>
-type LeaderboardInput = Parameters<AppClient["leaderboard"]>[0]
-type TrendsInput = Parameters<AppClient["trends"]>[0]
-type RankProgressionInput = Parameters<AppClient["rankProgression"]>[0]
-type ControlComparisonInput = Parameters<AppClient["controlComparison"]>[0]
-type MatchupsInput = Parameters<AppClient["matchups"]>[0]
-type CounterpicksInput = Parameters<AppClient["counterpicks"]>[0]
-type PeriodComparisonInput = Parameters<AppClient["periodComparison"]>[0]
+type RosterOverviewData = Awaited<ReturnType<AppClient["rosterOverview"]>>
+type CharacterExplorerData = Awaited<ReturnType<AppClient["characterExplorer"]>>
+type MatchupExplorerData = Awaited<ReturnType<AppClient["matchupExplorer"]>>
+type CounterpickPlannerData = Awaited<ReturnType<AppClient["counterpickPlanner"]>>
+type ChangeExplorerData = Awaited<ReturnType<AppClient["changeExplorer"]>>
+type RosterOverviewInput = Parameters<AppClient["rosterOverview"]>[0]
+type CharacterExplorerInput = Parameters<AppClient["characterExplorer"]>[0]
+type MatchupExplorerInput = Parameters<AppClient["matchupExplorer"]>[0]
+type CounterpickPlannerInput = Parameters<AppClient["counterpickPlanner"]>[0]
+type ChangeExplorerInput = Parameters<AppClient["changeExplorer"]>[0]
 
 const metaQueryOptions = () => {
   return {
@@ -24,18 +27,16 @@ const metaQueryOptions = () => {
     staleTime: Infinity,
   }
 }
-const leaderboardQueryOptions = (input: LeaderboardInput) =>
-  orpc.leaderboard.queryOptions({ input })
-const trendsQueryOptions = (input: TrendsInput) => orpc.trends.queryOptions({ input })
-const rankProgressionQueryOptions = (input: RankProgressionInput) =>
-  orpc.rankProgression.queryOptions({ input })
-const controlComparisonQueryOptions = (input: ControlComparisonInput) =>
-  orpc.controlComparison.queryOptions({ input })
-const matchupsQueryOptions = (input: MatchupsInput) => orpc.matchups.queryOptions({ input })
-const counterpicksQueryOptions = (input: CounterpicksInput) =>
-  orpc.counterpicks.queryOptions({ input })
-const periodComparisonQueryOptions = (input: PeriodComparisonInput) =>
-  orpc.periodComparison.queryOptions({ input })
+const rosterOverviewQueryOptions = (input: RosterOverviewInput) =>
+  orpc.rosterOverview.queryOptions({ input })
+const characterExplorerQueryOptions = (input: CharacterExplorerInput) =>
+  orpc.characterExplorer.queryOptions({ input })
+const matchupExplorerQueryOptions = (input: MatchupExplorerInput) =>
+  orpc.matchupExplorer.queryOptions({ input })
+const counterpickPlannerQueryOptions = (input: CounterpickPlannerInput) =>
+  orpc.counterpickPlanner.queryOptions({ input })
+const changeExplorerQueryOptions = (input: ChangeExplorerInput) =>
+  orpc.changeExplorer.queryOptions({ input })
 
 const resolvePeriod = (
   requested: ReportingPeriod | undefined,
@@ -43,14 +44,17 @@ const resolvePeriod = (
 ): ReportingPeriod => resolveNearestPeriod(requested, available)
 
 export {
-  controlComparisonQueryOptions,
-  counterpicksQueryOptions,
-  leaderboardQueryOptions,
-  matchupsQueryOptions,
+  changeExplorerQueryOptions,
+  characterExplorerQueryOptions,
+  counterpickPlannerQueryOptions,
+  matchupExplorerQueryOptions,
   metaQueryOptions,
-  periodComparisonQueryOptions,
-  rankProgressionQueryOptions,
+  rosterOverviewQueryOptions,
   resolvePeriod,
-  trendsQueryOptions,
   type MetaData,
+  type RosterOverviewData,
+  type CharacterExplorerData,
+  type MatchupExplorerData,
+  type CounterpickPlannerData,
+  type ChangeExplorerData,
 }

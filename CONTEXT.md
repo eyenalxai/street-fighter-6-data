@@ -67,7 +67,12 @@ period's average win rate minus the earlier period's average win rate.
 **Snapshot storage**:
 Raw downloads remain in ignored `data/raw/**`. Deterministically normalized
 snapshots under `data/processed/**` are committed historical data. Active
-matchup analytics reads `dia` and `dia_master`; `usagerate` and
-`usagerate_master` are retained archives outside the active matchup UI. All
-four family inventories determine the latest complete reporting period. Active
-matchup snapshots are validated with Zod before analytics uses them.
+analytics reads all four retained families: `dia` and `dia_master` provide
+reported matchup cells, while `usagerate` and `usagerate_master` provide
+character usage shares. Usage `ot=0`, `ot=1`, and `ot=2` mean all control styles,
+Classic players, and Modern players respectively. Master subdivision usage does
+not separate control styles and is therefore exposed as combined only. All four
+family inventories determine the latest complete reporting period. Every
+snapshot family is validated with Zod before analytics uses it, and
+popularity-weighted metrics are estimates based on usage share rather than
+match volume.

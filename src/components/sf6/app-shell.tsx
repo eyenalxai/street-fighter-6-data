@@ -18,11 +18,13 @@ const AppShell = ({ children }: AppShellProps) => {
   const { pathname } = useLocation()
   const activeSection = pathname.startsWith("/roster")
     ? "roster"
-    : pathname.startsWith("/matchups")
-      ? "matchups"
-      : pathname.startsWith("/comparisons")
-        ? "comparisons"
-        : null
+    : pathname.startsWith("/characters")
+      ? "characters"
+      : pathname.startsWith("/matchups")
+        ? "matchups"
+        : pathname.startsWith("/changes")
+          ? "changes"
+          : null
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-[1600px] flex-col">
@@ -51,6 +53,15 @@ const AppShell = ({ children }: AppShellProps) => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
+                active={activeSection === "characters"}
+                aria-current={activeSection === "characters" ? "page" : undefined}
+                render={<Link to="/characters" />}
+              >
+                Characters
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
                 active={activeSection === "matchups"}
                 aria-current={activeSection === "matchups" ? "page" : undefined}
                 render={<Link to="/matchups" />}
@@ -60,11 +71,11 @@ const AppShell = ({ children }: AppShellProps) => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
-                active={activeSection === "comparisons"}
-                aria-current={activeSection === "comparisons" ? "page" : undefined}
-                render={<Link to="/comparisons/trends" />}
+                active={activeSection === "changes"}
+                aria-current={activeSection === "changes" ? "page" : undefined}
+                render={<Link to="/changes" />}
               >
-                Comparisons
+                Changes
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
@@ -74,8 +85,8 @@ const AppShell = ({ children }: AppShellProps) => {
         {children}
       </main>
       <footer className="border-t border-border px-4 py-4 text-xs text-muted-foreground md:px-6">
-        Source: Capcom Buckler ranked battle-diagram snapshots. Average win rates are unweighted
-        means across available reported opponents; missing cells remain unavailable.
+        Source: Capcom Buckler ranked battle-diagram and usage-rate snapshots. Usage is a percentage
+        share; popularity-weighted results estimate environment relevance, not match volume.
       </footer>
     </div>
   )

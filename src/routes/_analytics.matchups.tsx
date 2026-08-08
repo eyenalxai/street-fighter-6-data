@@ -5,7 +5,7 @@ import { SectionLayout } from "@/components/sf6/section-layout"
 const MatchupsSection = () => (
   <SectionLayout
     title="Matchups"
-    description="Inspect reported win rates between characters and compare counterpick candidates."
+    description="Inspect complete matchup profiles or plan counterpicks against selected opponents."
     tabs={[
       { to: "/matchups", label: "Head to head" },
       { to: "/matchups/counterpicks", label: "Counterpick planner" },

@@ -45,6 +45,7 @@ const NonEmptyUniqueCharacterIdsSchema = UniqueCharacterIdsSchema.pipe(
   CharacterIdSchema.array().min(1),
 )
 const ControlTypeSchema = z.enum(["C", "M"])
+const PlayerControlSchema = z.enum(["combined", "classic", "modern"])
 const ControlMatchupSchema = z.enum([
   "combined",
   "classic-classic",
@@ -69,6 +70,7 @@ type Character = z.infer<typeof CharacterSchema>
 type CharacterId = z.infer<typeof CharacterIdSchema>
 type ControlMatchup = z.infer<typeof ControlMatchupSchema>
 type ControlType = z.infer<typeof ControlTypeSchema>
+type PlayerControl = z.infer<typeof PlayerControlSchema>
 type ReportingPeriod = z.infer<typeof ReportingPeriodSchema>
 
 const CHARACTERS = CharacterSchema.array().parse([
@@ -131,13 +133,18 @@ const CONTROL_MATCHUPS = ControlMatchupOptionSchema.array().parse([
     opponent: "M",
   },
 ])
+const PLAYER_CONTROLS = [
+  { id: "combined", label: "All control styles" },
+  { id: "classic", label: "Classic players" },
+  { id: "modern", label: "Modern players" },
+] as const satisfies readonly { id: PlayerControl; label: string }[]
 
 const CHARACTER_MAP = Object.fromEntries(CHARACTERS.map((character) => [character.id, character]))
 
 const getCharacter = (characterId: string): Character | undefined => CHARACTER_MAP[characterId]
 const getCharacterName = (characterId: string): string =>
   getCharacter(characterId)?.name ?? characterId
-const formatReportingPeriod = (period: ReportingPeriod): string => {
+const formatReportingPeriod = (period: string): string => {
   const year = period.slice(0, 4)
   const month = Number(period.slice(4, 6))
   const monthName = new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" }).format(
@@ -156,6 +163,8 @@ export {
   ControlMatchupSchema,
   CONTROL_MATCHUPS,
   ControlTypeSchema,
+  PlayerControlSchema,
+  PLAYER_CONTROLS,
   formatReportingPeriod,
   getCharacter,
   getCharacterName,
@@ -165,5 +174,6 @@ export {
   type CharacterId,
   type ControlMatchup,
   type ControlType,
+  type PlayerControl,
   type ReportingPeriod,
 }

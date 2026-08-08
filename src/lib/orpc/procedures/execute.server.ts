@@ -4,7 +4,7 @@ import {
   SnapshotNotFoundError,
   SnapshotReadError,
   SnapshotValidationError,
-} from "@/lib/sf6/snapshots.server"
+} from "@/lib/sf6/snapshots/store.server"
 
 const withSnapshotErrors = async <T>(operation: () => Promise<T>): Promise<T> => {
   try {
@@ -19,7 +19,7 @@ const withSnapshotErrors = async <T>(operation: () => Promise<T>): Promise<T> =>
     if (error instanceof SnapshotReadError || error instanceof SnapshotValidationError) {
       console.error(error)
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Ranked analytics data is temporarily unavailable",
+        message: "Analytics data is temporarily unavailable",
       })
     }
     console.error(error)

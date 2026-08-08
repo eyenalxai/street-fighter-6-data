@@ -1,4 +1,4 @@
-import type { ControlMatchup, ReportingPeriod } from "./model"
+import type { ControlMatchup, PlayerControl, ReportingPeriod } from "./model"
 import type { RankId } from "./ranks"
 
 import { isMasterSubdivisionRank } from "./ranks"
@@ -9,6 +9,14 @@ const getPeriodsForRank = (
   subdivisionPeriods: readonly ReportingPeriod[],
 ): readonly ReportingPeriod[] =>
   isMasterSubdivisionRank(rank) ? subdivisionPeriods : regularPeriods
+
+const getRankComparisonPeriods = (
+  regularPeriods: readonly ReportingPeriod[],
+  subdivisionPeriods: readonly ReportingPeriod[],
+): readonly ReportingPeriod[] => {
+  const subdivisionSet = new Set(subdivisionPeriods)
+  return regularPeriods.filter((period) => subdivisionSet.has(period))
+}
 
 const periodIndex = (period: ReportingPeriod): number => {
   const year = Number(period.slice(0, 4))
@@ -44,7 +52,17 @@ const resolveNearestPeriod = (
 const getEffectiveControls = (rank: RankId, requested: ControlMatchup): ControlMatchup =>
   isMasterSubdivisionRank(rank) ? "combined" : requested
 
+const getEffectivePlayerControl = (rank: RankId, requested: PlayerControl): PlayerControl =>
+  isMasterSubdivisionRank(rank) ? "combined" : requested
+
 const getControlComparisonRank = (rank: RankId): RankId =>
   isMasterSubdivisionRank(rank) ? "all-master" : rank
 
-export { getControlComparisonRank, getEffectiveControls, getPeriodsForRank, resolveNearestPeriod }
+export {
+  getControlComparisonRank,
+  getEffectiveControls,
+  getEffectivePlayerControl,
+  getPeriodsForRank,
+  getRankComparisonPeriods,
+  resolveNearestPeriod,
+}

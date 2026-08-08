@@ -3,20 +3,25 @@ import * as z from "zod"
 import {
   CharacterIdSchema,
   ControlMatchupSchema,
+  PlayerControlSchema,
   ReportingPeriodSchema,
   UniqueCharacterIdsSchema,
 } from "./model"
-import { ControlComparisonRankIdSchema, RankIdSchema } from "./ranks"
+import { RankIdSchema } from "./ranks"
 
 const RosterSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
   rank: RankIdSchema.default("all-master"),
-  controls: ControlMatchupSchema.default("combined"),
+  playerControl: PlayerControlSchema.default("combined"),
+  mode: z.enum(["snapshot", "controls", "landscape"]).default("snapshot"),
 })
 
-const ControlComparisonSearchSchema = z.object({
+const CharacterExplorerSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
-  rank: ControlComparisonRankIdSchema.default("all-master"),
+  rank: RankIdSchema.default("all-master"),
+  playerControl: PlayerControlSchema.default("combined"),
+  characters: UniqueCharacterIdsSchema.min(1).max(5).default(["ryu"]),
+  mode: z.enum(["time", "ranks", "controls"]).default("time"),
 })
 
 const MatchupSearchSchema = z.object({
@@ -24,7 +29,7 @@ const MatchupSearchSchema = z.object({
   rank: RankIdSchema.default("all-master"),
   character: CharacterIdSchema.default("ryu"),
   opponent: CharacterIdSchema.default("ken"),
-  opponentListControls: ControlMatchupSchema.default("combined"),
+  controls: ControlMatchupSchema.default("combined"),
 })
 
 const CounterpickSearchSchema = z.object({
@@ -32,48 +37,32 @@ const CounterpickSearchSchema = z.object({
   rank: RankIdSchema.default("all-master"),
   controls: ControlMatchupSchema.default("combined"),
   opponents: UniqueCharacterIdsSchema.default([]),
+  order: z.enum(["weighted", "average", "floor"]).default("weighted"),
 })
 
-const TrendSearchSchema = z.object({
-  rank: RankIdSchema.default("all-master"),
-  controls: ControlMatchupSchema.default("combined"),
-  characters: CharacterIdSchema.array().default([]),
-})
-
-const RankComparisonSearchSchema = z.object({
-  period: ReportingPeriodSchema.optional(),
-  controls: ControlMatchupSchema.default("combined"),
-  character: CharacterIdSchema.default("ryu"),
-})
-
-const PeriodComparisonSearchSchema = z.object({
+const ChangeSearchSchema = z.object({
   fromPeriod: ReportingPeriodSchema.optional(),
   toPeriod: ReportingPeriodSchema.optional(),
   rank: RankIdSchema.default("all-master"),
-  controls: ControlMatchupSchema.default("combined"),
+  playerControl: PlayerControlSchema.default("combined"),
+  focusCharacters: UniqueCharacterIdsSchema.min(1).max(5).default(["ryu"]),
 })
 
 type RosterSearch = z.infer<typeof RosterSearchSchema>
-type ControlComparisonSearch = z.infer<typeof ControlComparisonSearchSchema>
+type CharacterExplorerSearch = z.infer<typeof CharacterExplorerSearchSchema>
 type MatchupSearch = z.infer<typeof MatchupSearchSchema>
 type CounterpickSearch = z.infer<typeof CounterpickSearchSchema>
-type TrendSearch = z.infer<typeof TrendSearchSchema>
-type RankComparisonSearch = z.infer<typeof RankComparisonSearchSchema>
-type PeriodComparisonSearch = z.infer<typeof PeriodComparisonSearchSchema>
+type ChangeSearch = z.infer<typeof ChangeSearchSchema>
 
 export {
-  ControlComparisonSearchSchema,
+  CharacterExplorerSearchSchema,
+  ChangeSearchSchema,
   CounterpickSearchSchema,
   MatchupSearchSchema,
-  PeriodComparisonSearchSchema,
-  RankComparisonSearchSchema,
   RosterSearchSchema,
-  TrendSearchSchema,
-  type ControlComparisonSearch,
+  type CharacterExplorerSearch,
+  type ChangeSearch,
   type CounterpickSearch,
   type MatchupSearch,
-  type PeriodComparisonSearch,
-  type RankComparisonSearch,
   type RosterSearch,
-  type TrendSearch,
 }

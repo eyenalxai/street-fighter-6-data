@@ -1,22 +1,48 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router"
+import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
-import { SectionLayout } from "@/components/sf6/section-layout"
+import { RosterOverviewView } from "@/components/sf6/views/roster-overview-view"
+import {
+  metaQueryOptions,
+  resolvePeriod,
+  rosterOverviewQueryOptions,
+} from "@/lib/sf6/query-options"
+import {
+  getEffectivePlayerControl,
+  getPeriodsForRank,
+  getRankComparisonPeriods,
+} from "@/lib/sf6/rank-selection"
+import { RosterSearchSchema } from "@/lib/sf6/search"
 
-const RosterSection = () => (
-  <SectionLayout
-    title="Roster"
-    description="Compare characters by average win rate and player control style."
-    tabs={[
-      { to: "/roster", label: "Leaderboard" },
-      { to: "/roster/controls", label: "Control styles" },
-    ]}
-  >
-    <Outlet />
-  </SectionLayout>
-)
+const RosterPage = () => {
+  const { meta } = useLoaderData({ from: "/_analytics" })
+  const { period } = useLoaderData({ from: "/_analytics/roster" })
+  const search = useSearch({ from: "/_analytics/roster" })
+  return <RosterOverviewView period={period} search={search} meta={meta} />
+}
 
 const Route = createFileRoute("/_analytics/roster")({
-  component: RosterSection,
+  validateSearch: RosterSearchSchema,
+  loaderDeps: ({ search }) => {
+    return { search }
+  },
+  loader: async ({ context: { queryClient }, deps }) => {
+    const meta = await queryClient.ensureQueryData(metaQueryOptions())
+    const periods =
+      deps.search.mode === "landscape"
+        ? getRankComparisonPeriods(meta.periods, meta.subdivisionPeriods)
+        : getPeriodsForRank(deps.search.rank, meta.periods, meta.subdivisionPeriods)
+    const period = resolvePeriod(deps.search.period, periods)
+    void queryClient.prefetchQuery(
+      rosterOverviewQueryOptions({
+        period,
+        rank: deps.search.rank,
+        playerControl: getEffectivePlayerControl(deps.search.rank, deps.search.playerControl),
+        mode: deps.search.mode,
+      }),
+    )
+    return { period }
+  },
+  component: RosterPage,
 })
 
 export { Route }

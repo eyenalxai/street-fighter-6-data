@@ -1,33 +1,23 @@
-import { Link, useNavigate } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 
-import type { CharacterId, ReportingPeriod } from "@/lib/sf6/model"
+import type { CharacterId, ControlMatchup, ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
 import type { RankId } from "@/lib/sf6/ranks"
 import type { CounterpickSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
 import { AnalysisToolbar } from "@/components/sf6/analysis-toolbar"
-import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
-import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
+import { CounterpickResults } from "@/components/sf6/counterpicks/results"
 import { CharacterMultiField } from "@/components/sf6/filters/character-multi-field"
 import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
-import { ResultsStatus } from "@/components/sf6/results-status"
-import { WinRate } from "@/components/sf6/win-rate"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Field, FieldLabel } from "@/components/ui/field"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
-import { toMatchupSearch } from "@/lib/sf6/navigation"
-import { counterpicksQueryOptions } from "@/lib/sf6/query-options"
+import { counterpickPlannerQueryOptions } from "@/lib/sf6/query-options"
 import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
@@ -36,147 +26,15 @@ type CounterpickPlannerViewProps = {
   search: CounterpickSearch
   meta: MetaData
 }
-
-const CounterpickEmptyPanel = ({ title, description }: { title: string; description: string }) => (
-  <AnalyticsPanel title={title} description={description}>
-    <Empty className="min-h-48">
-      <EmptyHeader>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  </AnalyticsPanel>
-)
-
-const CounterpickEmptyState = () => (
-  <>
-    <ResultsStatus message="No opponents selected." />
-    <CounterpickEmptyPanel
-      title="Select opponents"
-      description="Choose one or more opponents to calculate counterpick candidates."
-    />
-  </>
-)
-
-const CounterpickDataResults = ({ period, search, meta }: CounterpickPlannerViewProps) => {
-  const input = {
-    period,
-    rank: search.rank,
-    controls: getEffectiveControls(search.rank, search.controls),
-    opponents: search.opponents,
-  }
-  const { data, displayedInput, isUpdating } = useAnalyticsQuery(
-    counterpicksQueryOptions(input),
-    input,
-  )
-  if (data === undefined) {
-    return <ResultsPending />
-  }
-  const opponent = displayedInput.opponents[0] ?? "ryu"
-  if (data.rows.length === 0) {
-    return (
-      <ResultsContent isUpdating={isUpdating}>
-        <ResultsStatus message="No fully covered counterpick candidates." />
-        <CounterpickEmptyPanel
-          title="No fully covered candidates"
-          description={`${data.excludedCandidateCount} candidate${data.excludedCandidateCount === 1 ? "" : "s"} lacked at least one reported matchup against the selected opponents.`}
-        />
-      </ResultsContent>
-    )
-  }
-
-  return (
-    <ResultsContent isUpdating={isUpdating}>
-      <AnalyticsPanel
-        title="Best candidates against selected opponents"
-        description={`${data.rows.length} fully covered candidates · ${data.excludedCandidateCount} excluded for incomplete data · average win rate against ${data.opponents.length} selected opponents · highest average first`}
-        contentClassName="p-0"
-      >
-        <div className="overflow-x-auto">
-          <Table className="min-w-max">
-            <TableHeader>
-              <TableRow>
-                <TableHead scope="col">Candidate</TableHead>
-                <TableHead scope="col" className="text-right">
-                  Average vs selected opponents
-                </TableHead>
-                <TableHead scope="col" className="text-right">
-                  Lowest vs selected opponents
-                </TableHead>
-                <TableHead scope="col" className="text-right">
-                  Opponents at or above 50%
-                </TableHead>
-                {data.opponents.map((opponentId) => (
-                  <TableHead key={opponentId} scope="col" className="text-right">
-                    {meta.characters.find((character) => character.id === opponentId)?.name ??
-                      opponentId}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.rows.map((row) => (
-                <TableRow key={row.characterId}>
-                  <TableCell>
-                    <Link
-                      to="/matchups"
-                      search={toMatchupSearch({
-                        period: displayedInput.period,
-                        rank: displayedInput.rank,
-                        character: row.characterId,
-                        opponent,
-                        controls: displayedInput.controls,
-                      })}
-                      className="inline-flex items-center gap-2 font-medium hover:underline"
-                    >
-                      <CharacterBadge characterId={row.characterId} size="small" />
-                      <CharacterName characterId={row.characterId} />
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <WinRate value={row.averageWinRate} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <WinRate value={row.worstWinRate} />
-                  </TableCell>
-                  <TableCell className="text-right font-mono">
-                    {row.atOrAbove50Count} / {data.opponents.length}
-                  </TableCell>
-                  {data.opponents.map((opponentId) => (
-                    <TableCell key={opponentId} className="text-right">
-                      <WinRate
-                        value={
-                          row.matchups.find((matchup) => matchup.opponentId === opponentId)
-                            ?.winRate ?? null
-                        }
-                      />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </AnalyticsPanel>
-    </ResultsContent>
-  )
-}
-
-const CounterpickResults = (props: CounterpickPlannerViewProps) =>
-  props.search.opponents.length === 0 ? (
-    <CounterpickEmptyState />
-  ) : (
-    <CounterpickDataResults {...props} />
-  )
-
 const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerViewProps) => {
   const navigate = useNavigate({ from: "/matchups/counterpicks" })
   const change = (
     changes: Partial<{
       period: ReportingPeriod
       rank: RankId
-      controls: CounterpickSearch["controls"]
+      controls: ControlMatchup
       opponents: CharacterId[]
+      order: CounterpickSearch["order"]
     }>,
   ) => {
     void navigate({
@@ -186,10 +44,19 @@ const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerView
       replace: true,
     })
   }
+  const controls = getEffectiveControls(search.rank, search.controls)
+  const input = {
+    period,
+    rank: search.rank,
+    controls,
+    opponents: search.opponents,
+    order: search.order,
+  }
+  const { data, isUpdating } = useAnalyticsQuery(counterpickPlannerQueryOptions(input), input)
   const toolbar = (
     <AnalysisToolbar
       title="Counterpick planner"
-      description="Which characters have the best average win rate against the opponents you select?"
+      description="Rank complete counterpick candidates by theoretical or popularity-weighted strength."
     >
       <ReportingPeriodField
         value={period}
@@ -206,36 +73,69 @@ const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerView
         }}
       />
       <ControlMatchupField
-        value={getEffectiveControls(search.rank, search.controls)}
+        value={controls}
         controls={meta.controls}
         disabled={isMasterSubdivisionRank(search.rank)}
         onChange={(value) => {
           change({ controls: value })
         }}
       />
+      <Field>
+        <FieldLabel>Order candidates by</FieldLabel>
+        <ToggleGroup
+          value={[search.order]}
+          onValueChange={(value) => {
+            const next = value[0]
+            if (next === "weighted" || next === "average" || next === "floor") {
+              change({ order: next })
+            }
+          }}
+          variant="outline"
+          size="sm"
+          spacing={0}
+          aria-label="Order counterpick candidates"
+        >
+          <ToggleGroupItem value="weighted">Weighted</ToggleGroupItem>
+          <ToggleGroupItem value="average">Average</ToggleGroupItem>
+          <ToggleGroupItem value="floor">Floor</ToggleGroupItem>
+        </ToggleGroup>
+      </Field>
       <CharacterMultiField
         label="Opponents"
         value={search.opponents}
         characters={meta.characters}
-        className="sm:col-span-2"
+        className="sm:col-span-2 xl:col-span-2"
         onChange={(value) => {
           change({ opponents: value })
         }}
         onClear={() => {
           change({ opponents: [] })
         }}
-        placeholder="Search opponents"
-        description="Candidates are ranked only when every selected matchup is reported."
+        description="Candidates must have a numeric result against every selected opponent."
       />
     </AnalysisToolbar>
   )
-
   return (
     <AnalysisPage
       toolbar={toolbar}
-      resetKey={`${period}|${search.rank}|${search.controls}|${search.opponents.join(",")}`}
+      resetKey={`${period}|${search.rank}|${search.controls}|${search.order}|${search.opponents.join(",")}`}
     >
-      <CounterpickResults period={period} search={search} meta={meta} />
+      {search.opponents.length === 0 ? (
+        <Empty className="min-h-48 border border-dashed">
+          <EmptyHeader>
+            <EmptyTitle>Select opponents</EmptyTitle>
+            <EmptyDescription>
+              Choose one or more opponents to calculate counterpick candidates.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : data === undefined ? (
+        <ResultsPending />
+      ) : (
+        <ResultsContent isUpdating={isUpdating}>
+          <CounterpickResults data={data} meta={meta} />
+        </ResultsContent>
+      )}
     </AnalysisPage>
   )
 }

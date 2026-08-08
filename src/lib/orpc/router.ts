@@ -1,21 +1,17 @@
-import { controlComparisonProcedure } from "./procedures/control-comparison"
-import { counterpicksProcedure } from "./procedures/counterpicks"
-import { leaderboardProcedure } from "./procedures/leaderboard"
-import { matchupsProcedure } from "./procedures/matchups"
+import { changeExplorerProcedure } from "./procedures/change-explorer"
+import { characterExplorerProcedure } from "./procedures/character-explorer"
+import { counterpickPlannerProcedure } from "./procedures/counterpick-planner"
+import { matchupExplorerProcedure } from "./procedures/matchup-explorer"
 import { metaProcedure } from "./procedures/meta"
-import { periodComparisonProcedure } from "./procedures/period-comparison"
-import { rankProgressionProcedure } from "./procedures/rank-progression"
-import { trendsProcedure } from "./procedures/trends"
+import { rosterOverviewProcedure } from "./procedures/roster-overview"
 
 const router = {
   meta: metaProcedure,
-  leaderboard: leaderboardProcedure,
-  trends: trendsProcedure,
-  rankProgression: rankProgressionProcedure,
-  controlComparison: controlComparisonProcedure,
-  matchups: matchupsProcedure,
-  counterpicks: counterpicksProcedure,
-  periodComparison: periodComparisonProcedure,
+  rosterOverview: rosterOverviewProcedure,
+  characterExplorer: characterExplorerProcedure,
+  matchupExplorer: matchupExplorerProcedure,
+  counterpickPlanner: counterpickPlannerProcedure,
+  changeExplorer: changeExplorerProcedure,
 }
 
 export { router }

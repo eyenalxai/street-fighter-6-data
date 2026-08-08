@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { ChartContainer } from "@/components/ui/chart"
+import { ChartContainer } from "@/components/ui/chart-container"
 import { cn } from "@/lib/utils"
 
 const ANALYTICS_CHART_MARGIN = { top: 8, right: 16, left: -12, bottom: 24 }

@@ -1,25 +1,37 @@
 import * as z from "zod"
 
-import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
-import { RankIdSchema } from "@/lib/sf6/ranks"
+import { CharacterIdSchema } from "@/lib/sf6/model"
 
-const AnalyticsInputSchema = z.object({
-  period: ReportingPeriodSchema,
-  rank: RankIdSchema,
-  controls: ControlMatchupSchema,
-})
-const CharacterMetricSchema = z.object({
+const CharacterMetricRowSchema = z.object({
   characterId: CharacterIdSchema,
-  winRate: z.number().min(0).max(100),
+  performance: z.number().min(0).max(100).nullable(),
+  weightedPerformance: z.number().min(0).max(100).nullable(),
+  usage: z.number().min(0).max(100).nullable(),
+  performanceDelta: z.number().min(-100).max(100).nullable(),
+  weightedPerformanceDelta: z.number().min(-100).max(100).nullable(),
+  usageDelta: z.number().min(-100).max(100).nullable(),
+  debut: z.boolean(),
+  floor: z.number().min(0).max(100).nullable(),
+  favorableCount: z.number().int().nonnegative(),
+  availableCount: z.number().int().nonnegative(),
+  possibleCount: z.number().int().nonnegative(),
+  coverage: z.number().min(0).max(1).nullable(),
+  weightCoverage: z.number().min(0).max(1).nullable(),
+  topThreeLift: z.number().min(-100).max(100).nullable(),
 })
-const MatchupRowSchema = z.object({
-  opponentId: CharacterIdSchema,
-  winRate: z.number().min(0).max(100),
-})
-const ControlMatchupResultSchema = z.object({
-  controlMatchup: ControlMatchupSchema.exclude(["combined"]),
-  label: z.string(),
-  winRate: z.number().min(0).max(100).nullable(),
+const ControlComparisonResultSchema = z.object({
+  characterId: CharacterIdSchema,
+  classic: z.number().min(0).max(100).nullable(),
+  modern: z.number().min(0).max(100).nullable(),
+  performanceDelta: z.number().min(-100).max(100).nullable(),
+  weightedClassic: z.number().min(0).max(100).nullable(),
+  weightedModern: z.number().min(0).max(100).nullable(),
+  weightedPerformanceDelta: z.number().min(-100).max(100).nullable(),
+  classicWeightCoverage: z.number().min(0).max(1).nullable(),
+  modernWeightCoverage: z.number().min(0).max(1).nullable(),
+  classicUsage: z.number().min(0).max(100).nullable(),
+  modernUsage: z.number().min(0).max(100).nullable(),
+  usageDelta: z.number().min(-100).max(100).nullable(),
 })
 
-export { AnalyticsInputSchema, CharacterMetricSchema, ControlMatchupResultSchema, MatchupRowSchema }
+export { CharacterMetricRowSchema, ControlComparisonResultSchema }

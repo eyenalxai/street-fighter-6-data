@@ -25,9 +25,19 @@ type CompactUsageCharacter =
   | [characterId: string, playRate: number, previousRate: number, count: number]
 
 type ProcessedUsageRank = {
-  ot: number
+  ot: 0 | 1 | 2
   lr: number
   c: CompactUsageCharacter[]
+}
+
+const normalizeOperationType = (operationType: number | undefined): 0 | 1 | 2 => {
+  if (operationType === undefined || operationType === 0) {
+    return 0
+  }
+  if (operationType === 1 || operationType === 2) {
+    return operationType
+  }
+  throw new Error(`Unsupported usage operation type: ${operationType}`)
 }
 
 const compactCharacter = (character: RawUsageCharacter): CompactUsageCharacter => {
@@ -46,7 +56,7 @@ export function normalizeUsageRate(raw: unknown): ProcessedUsageRank[] {
   const snapshot = raw as RawUsageSnapshot
   return snapshot.usagerateData.flatMap((operation) =>
     operation.val.map((rank) => ({
-      ot: operation.operation_type ?? 0,
+      ot: normalizeOperationType(operation.operation_type),
       lr: rank.league_rank,
       c: rank.val.map(compactCharacter),
     })),

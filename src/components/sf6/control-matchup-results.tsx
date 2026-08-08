@@ -1,7 +1,7 @@
 import type { ControlMatchup } from "@/lib/sf6/model"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
-import { WinRate } from "@/components/sf6/win-rate"
+import { MetricValue } from "@/components/sf6/metric-value"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import {
   Table,
@@ -47,7 +47,7 @@ const ControlMatchupResults = ({ rows }: { rows: readonly ControlMatchupRow[] })
             <TableRow key={control.controlMatchup}>
               <TableCell>{control.label}</TableCell>
               <TableCell className="text-right">
-                <WinRate value={control.winRate} />
+                <MetricValue value={control.winRate} kind="winRate" />
               </TableCell>
             </TableRow>
           ))}

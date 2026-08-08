@@ -55,8 +55,10 @@ const buildSnapshotPeriodAvailability = (
     throw new Error("No reporting period is available in every processed snapshot family")
   }
 
-  const regularPeriods = catalog.dia.filter((period) => period <= latestCompletePeriod)
-  const subdivisionPeriods = intersectPeriods(catalog.dia, catalog.dia_master).filter(
+  const regularPeriods = intersectPeriods(catalog.dia, catalog.usagerate).filter(
+    (period) => period <= latestCompletePeriod,
+  )
+  const subdivisionPeriods = intersectPeriods(catalog.dia_master, catalog.usagerate_master).filter(
     (period) => period <= latestCompletePeriod,
   )
 
