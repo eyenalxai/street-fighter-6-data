@@ -35,7 +35,7 @@ const MatchupRankResults = ({ data }: { data: RankData }) => (
   <AnalyticsPanel
     title="Matchup across ranks"
     description="Combined controls keep standard ranks comparable with Master subdivisions."
-    contentClassName="p-0"
+    contentInset="none"
   >
     <SortableDataTable
       data={data.rankProgression}

@@ -59,19 +59,20 @@ const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) =
       <AnalyticsPanel
         title="Win rate spread across ranks"
         description="Each point shows the highest character average win rate minus the lowest at that rank."
+        contentInset="none"
       >
         <MetricTrendChart
           data={chartData}
           series={[WIN_RATE_SPREAD_SERIES]}
-          xAxisLabel={AXIS_LABELS.rank}
+          xAxisName={AXIS_LABELS.rank}
           valueFormat="percentagePoints"
-          valueLabel="Win rate spread (percentage points)"
+          yAxisName="Win rate spread (percentage points)"
         />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Rank landscape"
         description="Win rate spread and top-five usage share for the selected reporting period."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <SortableDataTable
           data={data.rankLandscape}
@@ -83,7 +84,7 @@ const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) =
       <AnalyticsPanel
         title="Character consistency across ranks"
         description="Lower win rate ranges show characters with a steadier average win rate across ranks."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <RankConsistencyTable data={data.characterConsistency} meta={meta} />
       </AnalyticsPanel>

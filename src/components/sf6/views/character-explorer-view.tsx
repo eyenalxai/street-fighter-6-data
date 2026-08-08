@@ -60,7 +60,7 @@ const CharacterQueryView = ({ input }: { input: CharacterInput }) => {
         <ControlComparisonResults
           data={data}
           chartTitle="Control win rate difference"
-          chartDescription="Positive values show a higher average win rate with Modern player controls."
+          chartDescription="Right shows higher usage with Modern controls. Up shows a higher average win rate with Modern controls. Both axes use percentage-point differences."
           tableTitle="Control-style results"
           unsupportedDescription={MASTER_SUBDIVISION_CONTROL_COMPARISON_UNSUPPORTED}
         />

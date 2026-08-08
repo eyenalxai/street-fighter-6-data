@@ -16,7 +16,7 @@ type AnalyticsPanelProps = {
   action?: ReactNode
   children: ReactNode
   className?: string
-  contentClassName?: string
+  contentInset?: "default" | "none"
   size?: "default" | "sm"
 }
 
@@ -26,7 +26,7 @@ const AnalyticsPanel = ({
   action,
   children,
   className,
-  contentClassName,
+  contentInset = "default",
   size = "sm",
 }: AnalyticsPanelProps) => (
   <Card className={className} size={size}>
@@ -35,7 +35,7 @@ const AnalyticsPanel = ({
       {description === undefined ? null : <CardDescription>{description}</CardDescription>}
       {action === undefined ? null : <CardAction>{action}</CardAction>}
     </CardHeader>
-    <CardContent className={cn(contentClassName)}>{children}</CardContent>
+    <CardContent className={cn(contentInset === "none" && "px-0")}>{children}</CardContent>
   </Card>
 )
 

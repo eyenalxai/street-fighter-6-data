@@ -69,13 +69,14 @@ const SnapshotResults = ({
       <AnalyticsPanel
         title="Average win rate and usage share"
         description="Right shows a higher average win rate. Up shows a higher usage share. Dashed lines mark 50% average win rate and equal usage share."
+        contentInset="none"
       >
         <AverageWinRatePopularityChart data={pointData} usageReference={usageReference} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Character snapshot"
         description="The weighted average win rate uses opponent usage share when both the matchup and opponent usage share are available."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <SnapshotTable rows={data.rows} period={period} rank={rank} />
       </AnalyticsPanel>

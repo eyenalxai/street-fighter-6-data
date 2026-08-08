@@ -26,13 +26,14 @@ const ChangeTrendResults = ({ data }: { data: TrendsData }) => {
       <AnalyticsPanel
         title="Focused average win rate trend"
         description={formatPeriodRange(data.fromPeriod, data.toPeriod)}
+        contentInset="none"
       >
         <MetricTrendChart
           data={averageWinRateData}
           series={series}
-          xAxisLabel={AXIS_LABELS.reportingPeriod}
+          xAxisName={AXIS_LABELS.reportingPeriod}
           valueFormat="percent"
-          valueLabel={AXIS_LABELS.averageWinRate}
+          yAxisName={AXIS_LABELS.averageWinRate}
           referenceValue={50}
           referenceLabel="50%"
           xTickFormatter={formatCompactReportingPeriodTick}
@@ -41,13 +42,14 @@ const ChangeTrendResults = ({ data }: { data: TrendsData }) => {
       <AnalyticsPanel
         title="Focused usage share trend"
         description={formatPeriodRange(data.fromPeriod, data.toPeriod)}
+        contentInset="none"
       >
         <MetricTrendChart
           data={usageData}
           series={series}
-          xAxisLabel={AXIS_LABELS.reportingPeriod}
+          xAxisName={AXIS_LABELS.reportingPeriod}
           valueFormat="percent"
-          valueLabel={AXIS_LABELS.usageShare}
+          yAxisName={AXIS_LABELS.usageShare}
           xTickFormatter={formatCompactReportingPeriodTick}
         />
       </AnalyticsPanel>

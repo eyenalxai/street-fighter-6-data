@@ -1,17 +1,10 @@
 import { useMemo } from "react"
-import { CartesianGrid, ReferenceLine, ScatterChart, XAxis, YAxis } from "recharts"
+import { ReferenceLine } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart-container"
 import type { CharacterId } from "@/lib/sf6/model"
 
-import {
-  AnalyticsChart,
-  ANALYTICS_AXIS_TICK,
-  ANALYTICS_SCATTER_CHART_MARGIN,
-  ANALYTICS_Y_AXIS_WIDTH,
-  analyticsXAxisLabel,
-  analyticsYAxisLabel,
-} from "@/components/sf6/charts/analytics-chart"
+import { AnalyticsScatterChart } from "@/components/sf6/charts/analytics-scatter-chart"
 import { CharacterScatter } from "@/components/sf6/charts/character-scatter"
 import {
   ChartTooltip,
@@ -19,7 +12,6 @@ import {
   formatChartTooltipLabel,
 } from "@/components/ui/chart-tooltip"
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
-import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type MatchupProfilePoint = {
   characterId: CharacterId
@@ -40,39 +32,24 @@ const MatchupProfileChart = ({ data }: { data: readonly MatchupProfilePoint[] })
   )
 
   return (
-    <AnalyticsChart config={MATCHUP_PROFILE_CONFIG} size="default">
-      <ScatterChart accessibilityLayer margin={ANALYTICS_SCATTER_CHART_MARGIN}>
-        <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-        <XAxis
-          type="number"
-          dataKey="usage"
-          domain={xDomain}
-          name="Opponent usage"
-          tick={ANALYTICS_AXIS_TICK}
-          tickFormatter={CHART_TICK_FORMATTERS.percent}
-          tickMargin={8}
-          label={analyticsXAxisLabel("Opponent usage share")}
-        />
-        <YAxis
-          type="number"
-          dataKey="winRate"
-          domain={yDomain}
-          name="Win rate"
-          width={ANALYTICS_Y_AXIS_WIDTH}
-          tick={ANALYTICS_AXIS_TICK}
-          tickFormatter={CHART_TICK_FORMATTERS.percent}
-          tickMargin={4}
-          label={analyticsYAxisLabel("Selected character win rate")}
-        />
-        <ReferenceLine y={50} stroke="var(--muted-foreground)" strokeDasharray="2 2" />
-        <ChartTooltip
-          content={
-            <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
-          }
-        />
-        <CharacterScatter name="Matchups" data={data} />
-      </ScatterChart>
-    </AnalyticsChart>
+    <AnalyticsScatterChart
+      config={MATCHUP_PROFILE_CONFIG}
+      valueFormat="percent"
+      xDataKey="usage"
+      xDomain={xDomain}
+      xName="Opponent usage"
+      yDataKey="winRate"
+      yDomain={yDomain}
+      yName="Matchup win rate"
+    >
+      <ReferenceLine y={50} stroke="var(--muted-foreground)" strokeDasharray="2 2" />
+      <ChartTooltip
+        content={
+          <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
+        }
+      />
+      <CharacterScatter name="Matchups" data={data} />
+    </AnalyticsScatterChart>
   )
 }
 

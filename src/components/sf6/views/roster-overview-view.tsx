@@ -126,7 +126,7 @@ const RosterResults = ({
     <ControlComparisonResults
       data={data}
       chartTitle="Modern minus Classic"
-      chartDescription="Positive values show a higher average win rate with Modern player controls."
+      chartDescription="Right shows higher usage with Modern controls. Up shows a higher average win rate with Modern controls. Both axes use percentage-point differences."
       tableTitle="Control-style results"
       tableDescription="Average win rate combines both opponent control styles. Usage share is each character's share in that control population."
       unsupportedDescription={MASTER_SUBDIVISION_CONTROL_COMPARISON_UNSUPPORTED}

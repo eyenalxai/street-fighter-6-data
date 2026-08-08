@@ -10,14 +10,15 @@ import type { MetricTrendPoint, MetricTrendSeries } from "@/lib/sf6/charts/serie
 import {
   AnalyticsChart,
   ANALYTICS_ANGLED_X_AXIS_HEIGHT,
+  ANALYTICS_AXIS_PROPS,
   ANALYTICS_AXIS_TICK,
+  ANALYTICS_CHART_MARGIN,
   ANALYTICS_LINE_CHART_LEGEND_PROPS,
-  ANALYTICS_LINE_CHART_MARGIN,
   ANALYTICS_X_AXIS_MIN_TICK_GAP,
+  ANALYTICS_X_AXIS_TICK_MARGIN,
   ANALYTICS_X_AXIS_TICK,
-  ANALYTICS_Y_AXIS_WIDTH,
-  analyticsAngledXAxisLabel,
-  analyticsYAxisLabel,
+  ANALYTICS_Y_AXIS_TICK_MARGIN,
+  ANALYTICS_Y_AXIS_TICK_WIDTH,
 } from "@/components/sf6/charts/analytics-chart"
 import { ChartLegendContent } from "@/components/ui/chart-legend"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart-tooltip"
@@ -28,9 +29,9 @@ import { getChartSeriesColor } from "@/lib/sf6/charts/palette"
 const MetricTrendChart = ({
   data,
   series,
-  xAxisLabel,
+  xAxisName,
   valueFormat,
-  valueLabel,
+  yAxisName,
   referenceValue,
   referenceLabel,
   emptyLabel,
@@ -39,9 +40,9 @@ const MetricTrendChart = ({
 }: {
   data: readonly MetricTrendPoint[]
   series: readonly MetricTrendSeries[]
-  xAxisLabel: string
+  xAxisName: string
   valueFormat: ChartValueFormat
-  valueLabel: string
+  yAxisName: string
   referenceValue?: number
   referenceLabel?: string
   emptyLabel?: ReactNode
@@ -77,27 +78,29 @@ const MetricTrendChart = ({
   }
   return (
     <AnalyticsChart config={config} size={size}>
-      <LineChart accessibilityLayer data={data} margin={ANALYTICS_LINE_CHART_MARGIN}>
+      <LineChart accessibilityLayer data={data} margin={ANALYTICS_CHART_MARGIN}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
         <XAxis
+          {...ANALYTICS_AXIS_PROPS}
           dataKey="label"
+          name={xAxisName}
           tick={ANALYTICS_X_AXIS_TICK}
           angle={-40}
           textAnchor="end"
           height={ANALYTICS_ANGLED_X_AXIS_HEIGHT}
           interval="preserveStartEnd"
           minTickGap={ANALYTICS_X_AXIS_MIN_TICK_GAP}
-          tickMargin={8}
+          tickMargin={ANALYTICS_X_AXIS_TICK_MARGIN}
           tickFormatter={xTickFormatter}
-          label={analyticsAngledXAxisLabel(xAxisLabel)}
         />
         <YAxis
+          {...ANALYTICS_AXIS_PROPS}
           domain={yDomain}
-          width={ANALYTICS_Y_AXIS_WIDTH}
+          name={yAxisName}
+          width={ANALYTICS_Y_AXIS_TICK_WIDTH}
           tick={ANALYTICS_AXIS_TICK}
           tickFormatter={tickFormatter}
-          tickMargin={4}
-          label={analyticsYAxisLabel(valueLabel)}
+          tickMargin={ANALYTICS_Y_AXIS_TICK_MARGIN}
         />
         {referenceValue === undefined ? null : (
           <ReferenceLine
@@ -110,7 +113,7 @@ const MetricTrendChart = ({
         <ChartTooltip content={<ChartTooltipContent valueFormat={valueFormat} />} />
         <Legend
           {...ANALYTICS_LINE_CHART_LEGEND_PROPS}
-          content={<ChartLegendContent verticalAlign="top" />}
+          content={<ChartLegendContent verticalAlign="top" className="gap-x-2 gap-y-1 pb-1" />}
         />
         {series.map((item) => (
           <Line

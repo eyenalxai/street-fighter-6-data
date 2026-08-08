@@ -50,19 +50,15 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
       />
       <AnalyticsPanel
         title="Average win rate and usage share changes"
-        description="Right shows a positive usage share change. Up shows a positive average win rate change. Reference lines mark zero change."
+        description="Right shows increased usage share. Up shows increased average win rate. Both axes use percentage points; reference lines mark zero."
+        contentInset="none"
       >
-        <CharacterDeltaChart
-          data={scatterData}
-          xAxisLabel="Usage change (percentage points)"
-          yAxisLabel="Win rate change (percentage points)"
-          scatterName="Character changes"
-        />
+        <CharacterDeltaChart data={scatterData} scatterName="Character changes" />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Character changes"
         description={`${formatPeriodArrow(data.fromPeriod, data.toPeriod)} · ${formatLaterMinusEarlier()}`}
-        contentClassName="p-0"
+        contentInset="none"
       >
         <div className="overflow-x-auto">
           <ChangeCharacterTable rows={data.rows} />

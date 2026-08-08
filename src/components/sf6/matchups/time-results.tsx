@@ -36,7 +36,7 @@ const MatchupTimeResults = ({ data }: { data: TimeData }) => (
   <AnalyticsPanel
     title="Matchup over time"
     description="Each row uses the selected control matchup. Unavailable results stay blank."
-    contentClassName="p-0"
+    contentInset="none"
   >
     <SortableDataTable
       data={data.timeProgression}

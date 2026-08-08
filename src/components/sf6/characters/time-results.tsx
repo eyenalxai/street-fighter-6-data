@@ -129,6 +129,7 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
         <AnalyticsPanel
           title="Average win rate over time"
           description="Switch between the unweighted average and a usage-share-weighted estimate. Missing characters stay blank."
+          contentInset="none"
           action={
             <ToggleGroup
               value={[averageWinRateMetric]}
@@ -159,9 +160,9 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
                     : `${item.label} average`,
               }
             })}
-            xAxisLabel={AXIS_LABELS.reportingPeriod}
+            xAxisName={AXIS_LABELS.reportingPeriod}
             valueFormat="percent"
-            valueLabel={
+            yAxisName={
               averageWinRateMetric === "weighted"
                 ? "Usage-weighted average win rate"
                 : AXIS_LABELS.averageWinRate
@@ -174,13 +175,14 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
         <AnalyticsPanel
           title="Usage share over time"
           description="Character usage share in the selected rank and player-control population."
+          contentInset="none"
         >
           <MetricTrendChart
             data={usageData}
             series={series}
-            xAxisLabel={AXIS_LABELS.reportingPeriod}
+            xAxisName={AXIS_LABELS.reportingPeriod}
             valueFormat="percent"
-            valueLabel={AXIS_LABELS.usageShare}
+            yAxisName={AXIS_LABELS.usageShare}
             xTickFormatter={formatCompactReportingPeriodTick}
           />
         </AnalyticsPanel>
@@ -188,7 +190,7 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
       <AnalyticsPanel
         title="Character stability"
         description="Range and standard deviation show change across the reporting period series."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <SortableDataTable
           data={data.series}

@@ -86,21 +86,22 @@ const MatchupProfileResults = ({
       />
       <AnalyticsPanel
         title="Opponent usage share and matchup result"
-        description="The chart shows which matchup results matter more in the current usage share environment."
+        description="Right shows a more common opponent. Up shows a stronger result for the selected character."
+        contentInset="none"
       >
         <MatchupProfileChart data={profileChartData} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Full matchup profile"
         description="Unavailable and mirror matchups stay visible. This separates missing data from a poor result."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <MatchupProfileTable rows={data.profile} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Similar matchup profiles"
         description="Correlation compares shared numeric opponents. The table needs at least five shared opponents."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <SimilarProfilesTable rows={data.similarProfiles} />
       </AnalyticsPanel>

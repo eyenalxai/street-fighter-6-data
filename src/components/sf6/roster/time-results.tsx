@@ -22,20 +22,21 @@ const RosterTimeResults = ({ data }: { data: TimeData }) => {
       <AnalyticsPanel
         title="Win rate spread over time"
         description="Highest character average win rate minus lowest character average win rate for each reporting period."
+        contentInset="none"
       >
         <MetricTrendChart
           data={chartData}
           series={[WIN_RATE_SPREAD_SERIES]}
-          xAxisLabel={AXIS_LABELS.reportingPeriod}
+          xAxisName={AXIS_LABELS.reportingPeriod}
           valueFormat="percentagePoints"
-          valueLabel="Win rate spread (percentage points)"
+          yAxisName="Win rate spread (percentage points)"
           xTickFormatter={formatCompactReportingPeriodTick}
         />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Character consistency over time"
         description="Lower win rate range and standard deviation show a steadier average win rate across reporting periods."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <TimeConsistencyTable data={data.characterConsistency} />
       </AnalyticsPanel>

@@ -108,7 +108,7 @@ const ChangeMatchupResults = ({ data }: { data: MatchupsData }) => {
           <ToggleGroupItem value="flips">Favored-side flips</ToggleGroupItem>
         </ToggleGroup>
       }
-      contentClassName="p-0"
+      contentInset="none"
     >
       <SortableDataTable
         data={filteredRows}

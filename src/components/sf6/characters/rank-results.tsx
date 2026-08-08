@@ -93,13 +93,14 @@ const CharacterRankResults = ({ data }: { data: RankData }) => {
         <AnalyticsPanel
           title="Average win rate across ranks"
           description="Combined-control average win rate from Rookie through the available Master subdivisions."
+          contentInset="none"
         >
           <MetricTrendChart
             data={averageWinRateData}
             series={chartSeries}
-            xAxisLabel={AXIS_LABELS.rank}
+            xAxisName={AXIS_LABELS.rank}
             valueFormat="percent"
-            valueLabel={AXIS_LABELS.averageWinRate}
+            yAxisName={AXIS_LABELS.averageWinRate}
             referenceValue={50}
             referenceLabel="50%"
           />
@@ -107,20 +108,21 @@ const CharacterRankResults = ({ data }: { data: RankData }) => {
         <AnalyticsPanel
           title="Usage share across ranks"
           description="Combined-control usage share for the same character and rank sequence."
+          contentInset="none"
         >
           <MetricTrendChart
             data={usageData}
             series={chartSeries}
-            xAxisLabel={AXIS_LABELS.rank}
+            xAxisName={AXIS_LABELS.rank}
             valueFormat="percent"
-            valueLabel={AXIS_LABELS.usageShare}
+            yAxisName={AXIS_LABELS.usageShare}
           />
         </AnalyticsPanel>
       </div>
       <AnalyticsPanel
         title="Rank progression summary"
         description="Each range is the maximum minus the minimum across the displayed ranks."
-        contentClassName="p-0"
+        contentInset="none"
       >
         <SortableDataTable
           data={data.series}

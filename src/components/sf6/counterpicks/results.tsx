@@ -140,7 +140,7 @@ const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta
     <AnalyticsPanel
       title="Counterpick candidates"
       description={formatCounterpickCoverage(data.selectedUsageShare, data.weightCoverage)}
-      contentClassName="p-0"
+      contentInset="none"
     >
       <SortableDataTable
         key={data.opponents.join(",")}

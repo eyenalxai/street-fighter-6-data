@@ -1,17 +1,10 @@
 import { useMemo } from "react"
-import { CartesianGrid, ReferenceLine, ScatterChart, XAxis, YAxis, ZAxis } from "recharts"
+import { ReferenceLine, ZAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart-container"
 import type { CharacterId } from "@/lib/sf6/model"
 
-import {
-  AnalyticsChart,
-  ANALYTICS_AXIS_TICK,
-  ANALYTICS_SCATTER_CHART_MARGIN,
-  ANALYTICS_Y_AXIS_WIDTH,
-  analyticsXAxisLabel,
-  analyticsYAxisLabel,
-} from "@/components/sf6/charts/analytics-chart"
+import { AnalyticsScatterChart } from "@/components/sf6/charts/analytics-scatter-chart"
 import { CharacterScatter } from "@/components/sf6/charts/character-scatter"
 import {
   ChartTooltip,
@@ -19,7 +12,6 @@ import {
   formatChartTooltipLabel,
 } from "@/components/ui/chart-tooltip"
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
-import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type AverageWinRatePopularityPoint = {
   characterId: CharacterId
@@ -54,47 +46,28 @@ const AverageWinRatePopularityChart = ({
   )
 
   return (
-    <AnalyticsChart config={PERFORMANCE_POPULARITY_CONFIG} size="default">
-      <ScatterChart accessibilityLayer margin={ANALYTICS_SCATTER_CHART_MARGIN}>
-        <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-        <XAxis
-          type="number"
-          dataKey="averageWinRate"
-          domain={xDomain}
-          tick={ANALYTICS_AXIS_TICK}
-          tickFormatter={CHART_TICK_FORMATTERS.percent}
-          tickMargin={8}
-          name="Average win rate"
-          label={analyticsXAxisLabel("Average win rate")}
-        />
-        <YAxis
-          type="number"
-          dataKey="usage"
-          domain={yDomain}
-          width={ANALYTICS_Y_AXIS_WIDTH}
-          tick={ANALYTICS_AXIS_TICK}
-          tickFormatter={CHART_TICK_FORMATTERS.percent}
-          tickMargin={4}
-          name="Usage share"
-          label={analyticsYAxisLabel("Usage share")}
-        />
-        <ZAxis type="number" dataKey="usage" range={[48, 160]} />
-        <ReferenceLine x={50} stroke="var(--muted-foreground)" strokeDasharray="2 2" />
-        {usageReference === null ? null : (
-          <ReferenceLine
-            y={usageReference}
-            stroke="var(--muted-foreground)"
-            strokeDasharray="2 2"
-          />
-        )}
-        <ChartTooltip
-          content={
-            <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
-          }
-        />
-        <CharacterScatter name="Characters" data={data} />
-      </ScatterChart>
-    </AnalyticsChart>
+    <AnalyticsScatterChart
+      config={PERFORMANCE_POPULARITY_CONFIG}
+      valueFormat="percent"
+      xDataKey="averageWinRate"
+      xDomain={xDomain}
+      xName="Average win rate"
+      yDataKey="usage"
+      yDomain={yDomain}
+      yName="Usage share"
+    >
+      <ZAxis type="number" dataKey="usage" range={[48, 160]} />
+      <ReferenceLine x={50} stroke="var(--muted-foreground)" strokeDasharray="2 2" />
+      {usageReference === null ? null : (
+        <ReferenceLine y={usageReference} stroke="var(--muted-foreground)" strokeDasharray="2 2" />
+      )}
+      <ChartTooltip
+        content={
+          <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
+        }
+      />
+      <CharacterScatter name="Characters" data={data} />
+    </AnalyticsScatterChart>
   )
 }
 

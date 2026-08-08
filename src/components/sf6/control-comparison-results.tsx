@@ -135,15 +135,10 @@ const ControlComparisonResults = ({
   )
   return (
     <div className="flex flex-col gap-4">
-      <AnalyticsPanel title={chartTitle} description={chartDescription}>
-        <CharacterDeltaChart
-          data={chartRows}
-          xAxisLabel="Modern minus Classic usage"
-          yAxisLabel="Modern minus Classic win rate"
-          scatterName="Control differences"
-        />
+      <AnalyticsPanel title={chartTitle} description={chartDescription} contentInset="none">
+        <CharacterDeltaChart data={chartRows} scatterName="Control differences" />
       </AnalyticsPanel>
-      <AnalyticsPanel title={tableTitle} description={tableDescription} contentClassName="p-0">
+      <AnalyticsPanel title={tableTitle} description={tableDescription} contentInset="none">
         <SortableDataTable
           data={data.rows}
           columns={controlColumns}
