@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 
 import { Link, useLocation } from "@tanstack/react-router"
-import { Swords } from "lucide-react"
 
 import {
   NavigationMenu,
@@ -28,20 +27,9 @@ const AppShell = ({ children }: AppShellProps) => {
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-[1600px] flex-col">
-      <header className="flex flex-wrap items-center gap-4 border-b border-border px-4 py-4 md:px-6">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center bg-primary text-primary-foreground">
-            <Swords aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-base font-semibold leading-tight tracking-tight">SF6 Ranked Lab</h1>
-            <p className="truncate text-xs text-muted-foreground">
-              Ranked matchup analytics from Buckler reporting periods
-            </p>
-          </div>
-        </div>
-        <NavigationMenu aria-label="Primary navigation" className="ml-auto max-w-full">
-          <NavigationMenuList className="flex-wrap justify-end">
+      <header className="border-b border-border px-4 py-4 md:px-6">
+        <NavigationMenu aria-label="Primary navigation" className="max-w-full">
+          <NavigationMenuList className="flex-wrap justify-start">
             <NavigationMenuItem>
               <NavigationMenuLink
                 active={activeSection === "roster"}

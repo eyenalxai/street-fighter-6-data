@@ -3,8 +3,7 @@ import type { ChangeExplorerData } from "@/lib/sf6/query-options"
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { ChangeCharacterTable } from "@/components/sf6/changes/character-table"
 import { ChangeDeltaChart } from "@/components/sf6/charts/change-delta-chart"
-import { MetricSummary } from "@/components/sf6/metric-summary"
-import { MetricValue } from "@/components/sf6/metric-value"
+import { MetricComparison } from "@/components/sf6/metric-comparison"
 import { formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
 import { formatLaterMinusEarlier, formatPeriodArrow, METRIC_LABELS } from "@/lib/sf6/presentation"
 
@@ -26,46 +25,30 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
   )
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <MetricSummary
-          title={`Start · ${formatReportingPeriod(data.fromPeriod)}`}
-          items={[
-            {
-              label: METRIC_LABELS.winRateSpread,
-              value: (
-                <MetricValue value={data.before.averageWinRateSpread} format="percentagePoints" />
-              ),
-            },
-            {
-              label: METRIC_LABELS.topFiveUsage,
-              value: <MetricValue value={data.before.topFiveShare} format="percent" />,
-            },
-            {
-              label: METRIC_LABELS.matchupImbalance,
-              value: <MetricValue value={data.before.matchupImbalance} format="percentagePoints" />,
-            },
-          ]}
-        />
-        <MetricSummary
-          title={`End · ${formatReportingPeriod(data.toPeriod)}`}
-          items={[
-            {
-              label: "Win rate spread",
-              value: (
-                <MetricValue value={data.after.averageWinRateSpread} format="percentagePoints" />
-              ),
-            },
-            {
-              label: METRIC_LABELS.topFiveUsage,
-              value: <MetricValue value={data.after.topFiveShare} format="percent" />,
-            },
-            {
-              label: METRIC_LABELS.matchupImbalance,
-              value: <MetricValue value={data.after.matchupImbalance} format="percentagePoints" />,
-            },
-          ]}
-        />
-      </div>
+      <MetricComparison
+        fromLabel={`Start · ${formatReportingPeriod(data.fromPeriod)}`}
+        toLabel={`End · ${formatReportingPeriod(data.toPeriod)}`}
+        rows={[
+          {
+            label: METRIC_LABELS.winRateSpread,
+            format: "percentagePoints",
+            before: data.before.averageWinRateSpread,
+            after: data.after.averageWinRateSpread,
+          },
+          {
+            label: METRIC_LABELS.topFiveUsage,
+            format: "percent",
+            before: data.before.topFiveShare,
+            after: data.after.topFiveShare,
+          },
+          {
+            label: METRIC_LABELS.matchupImbalance,
+            format: "percentagePoints",
+            before: data.before.matchupImbalance,
+            after: data.after.matchupImbalance,
+          },
+        ]}
+      />
       <AnalyticsPanel
         title="Average win rate and usage share changes"
         description="Right shows a positive usage share change. Up shows a positive average win rate change. Reference lines mark zero change."
