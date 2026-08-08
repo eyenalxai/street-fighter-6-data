@@ -13,6 +13,9 @@ type AppShellProps = {
   children: ReactNode
 }
 
+const navLinkClassName =
+  "h-9 rounded-none border-b-2 border-transparent px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground focus:bg-transparent data-active:border-foreground data-active:bg-transparent data-active:font-semibold data-active:text-foreground data-active:hover:bg-transparent data-active:focus:bg-transparent"
+
 const AppShell = ({ children }: AppShellProps) => {
   const { pathname } = useLocation()
   const activeSection = pathname.startsWith("/roster")
@@ -27,13 +30,14 @@ const AppShell = ({ children }: AppShellProps) => {
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-[1600px] flex-col">
-      <header className="border-b border-border px-4 py-4 md:px-6">
+      <header className="border-b border-border px-4 pt-4 md:px-6">
         <NavigationMenu aria-label="Primary navigation" className="max-w-full">
-          <NavigationMenuList className="flex-wrap justify-start">
+          <NavigationMenuList className="-mb-px flex-wrap justify-start gap-1">
             <NavigationMenuItem>
               <NavigationMenuLink
                 active={activeSection === "roster"}
                 aria-current={activeSection === "roster" ? "page" : undefined}
+                className={navLinkClassName}
                 render={<Link to="/roster" />}
               >
                 Roster
@@ -43,6 +47,7 @@ const AppShell = ({ children }: AppShellProps) => {
               <NavigationMenuLink
                 active={activeSection === "characters"}
                 aria-current={activeSection === "characters" ? "page" : undefined}
+                className={navLinkClassName}
                 render={<Link to="/characters" />}
               >
                 Characters
@@ -52,6 +57,7 @@ const AppShell = ({ children }: AppShellProps) => {
               <NavigationMenuLink
                 active={activeSection === "matchups"}
                 aria-current={activeSection === "matchups" ? "page" : undefined}
+                className={navLinkClassName}
                 render={<Link to="/matchups" />}
               >
                 Matchups
@@ -61,6 +67,7 @@ const AppShell = ({ children }: AppShellProps) => {
               <NavigationMenuLink
                 active={activeSection === "changes"}
                 aria-current={activeSection === "changes" ? "page" : undefined}
+                className={navLinkClassName}
                 render={<Link to="/changes" />}
               >
                 Changes
