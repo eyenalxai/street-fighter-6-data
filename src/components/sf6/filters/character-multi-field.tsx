@@ -15,6 +15,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxValue,
+  useComboboxAnchor,
 } from "@/components/ui/combobox"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { CharacterIdSchema, getCharacterName } from "@/lib/sf6/model"
@@ -40,6 +41,7 @@ const CharacterMultiField = ({
   placeholder?: string
 }) => {
   const id = useId()
+  const anchor = useComboboxAnchor()
   const sortedCharacters = sortCharactersByName(characters)
 
   return (
@@ -55,7 +57,7 @@ const CharacterMultiField = ({
           }}
           itemToStringLabel={(characterId) => getCharacterName(characterId)}
         >
-          <ComboboxChips className="min-w-0 flex-1">
+          <ComboboxChips ref={anchor} className="min-w-0 flex-1">
             <ComboboxValue>
               {value.map((characterId) => (
                 <ComboboxChip key={characterId}>{getCharacterName(characterId)}</ComboboxChip>
@@ -63,7 +65,7 @@ const CharacterMultiField = ({
             </ComboboxValue>
             <ComboboxChipsInput id={id} placeholder={placeholder} />
           </ComboboxChips>
-          <ComboboxContent>
+          <ComboboxContent anchor={anchor}>
             <ComboboxEmpty>No matching characters.</ComboboxEmpty>
             <ComboboxList>
               {(characterId) => {
