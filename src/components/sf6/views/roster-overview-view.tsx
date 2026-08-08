@@ -125,7 +125,6 @@ const RosterResults = ({
   ) : input.view === "controls" && data.view === "controls" ? (
     <ControlComparisonResults
       data={data}
-      meta={meta}
       chartTitle="Modern minus Classic"
       chartDescription="Positive values show a higher average win rate with Modern player controls."
       tableTitle="Control-style results"

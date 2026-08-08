@@ -1,11 +1,12 @@
 import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
-import type { CharacterExplorerData, MetaData } from "@/lib/sf6/query-options"
+import type { CharacterExplorerData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import { buildCharacterTrendSeries } from "@/lib/sf6/charts/series"
 import { AXIS_LABELS, getRankLabel } from "@/lib/sf6/presentation"
 import {
   compareCharacterIds,
@@ -16,13 +17,6 @@ import {
 
 type RankData = Extract<CharacterExplorerData, { view: "ranks" }>
 type RankRow = RankData["series"][number]
-const COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-]
 
 const CHARACTER_RANK_INITIAL_SORTING = [{ id: "character", desc: false }]
 
@@ -81,7 +75,7 @@ const characterRankColumns: SortableColumnDef<RankRow>[] = [
   },
 ]
 
-const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) => {
+const CharacterRankResults = ({ data }: { data: RankData }) => {
   const points = data.series[0]?.points ?? []
   const averageWinRateData = points.map((point, index) => {
     const row: { label: string; [key: string]: number | string | null } = { label: point.label }
@@ -97,15 +91,7 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
     }
     return row
   })
-  const chartSeries = data.series.map((item, index) => {
-    return {
-      key: item.characterId,
-      label:
-        meta.characters.find((character) => character.id === item.characterId)?.name ??
-        item.characterId,
-      color: COLORS[index % COLORS.length] ?? "var(--chart-1)",
-    }
-  })
+  const chartSeries = buildCharacterTrendSeries(data.series)
   return (
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">

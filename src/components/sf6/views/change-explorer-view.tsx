@@ -38,7 +38,7 @@ type ChangeExplorerViewProps = {
   meta: MetaData
 }
 
-const ChangeQueryView = ({ input, meta }: { input: ChangeInput; meta: MetaData }) => {
+const ChangeQueryView = ({ input }: { input: ChangeInput }) => {
   const { data, isUpdating } = useAnalyticsQuery(changeExplorerQueryOptions(input), input)
   return data === undefined ? (
     <ResultsPending />
@@ -47,7 +47,7 @@ const ChangeQueryView = ({ input, meta }: { input: ChangeInput; meta: MetaData }
       {data.view === "overview" ? (
         <ChangeOverviewResults data={data} />
       ) : data.view === "trends" ? (
-        <ChangeTrendResults data={data} meta={meta} />
+        <ChangeTrendResults data={data} />
       ) : (
         <ChangeMatchupResults data={data} />
       )}
@@ -138,7 +138,7 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
           description="Select one or more characters to compare across the reporting period range."
         />
       ) : (
-        <ChangeQueryView input={input} meta={meta} />
+        <ChangeQueryView input={input} />
       )}
     </AnalysisPage>
   )

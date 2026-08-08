@@ -43,7 +43,7 @@ type CharacterExplorerViewProps = {
   meta: MetaData
 }
 
-const CharacterQueryView = ({ input, meta }: { input: CharacterInput; meta: MetaData }) => {
+const CharacterQueryView = ({ input }: { input: CharacterInput }) => {
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
     characterExplorerQueryOptions(input),
     input,
@@ -53,13 +53,12 @@ const CharacterQueryView = ({ input, meta }: { input: CharacterInput; meta: Meta
   ) : (
     <ResultsContent isUpdating={isUpdating}>
       {displayedInput.view === "time" && data.view === "time" ? (
-        <CharacterTimeResults data={data} meta={meta} />
+        <CharacterTimeResults data={data} />
       ) : displayedInput.view === "ranks" && data.view === "ranks" ? (
-        <CharacterRankResults data={data} meta={meta} />
+        <CharacterRankResults data={data} />
       ) : displayedInput.view === "controls" && data.view === "controls" ? (
         <ControlComparisonResults
           data={data}
-          meta={meta}
           chartTitle="Control win rate difference"
           chartDescription="Positive values show a higher average win rate with Modern player controls."
           tableTitle="Control-style results"
@@ -151,7 +150,7 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
   return (
     <AnalysisPage toolbar={toolbar} resetKey={getActiveInputKey(input)}>
       {hasSelectedCharacters(search.characters) ? (
-        <CharacterQueryView input={input} meta={meta} />
+        <CharacterQueryView input={input} />
       ) : (
         <AnalysisSelectionEmpty
           title="Select characters"

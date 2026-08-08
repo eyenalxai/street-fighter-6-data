@@ -1,5 +1,5 @@
 import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
-import type { CharacterExplorerData, MetaData, RosterOverviewData } from "@/lib/sf6/query-options"
+import type { CharacterExplorerData, RosterOverviewData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
@@ -7,6 +7,7 @@ import { ControlDeltaChart } from "@/components/sf6/charts/control-delta-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { getCharacterName } from "@/lib/sf6/model"
 import { compareCharacterIds, compareNumbers, createTableSortFn } from "@/lib/sf6/table-sorting"
 
 type ControlData =
@@ -97,7 +98,6 @@ const controlColumns: SortableColumnDef<ControlRow>[] = [
 
 type ControlComparisonResultsProps = {
   data: ControlData
-  meta: MetaData
   chartTitle: string
   chartDescription: string
   tableTitle: string
@@ -107,7 +107,6 @@ type ControlComparisonResultsProps = {
 
 const ControlComparisonResults = ({
   data,
-  meta,
   chartTitle,
   chartDescription,
   tableTitle,
@@ -127,9 +126,7 @@ const ControlComparisonResults = ({
       ? []
       : [
           {
-            name:
-              meta.characters.find((character) => character.id === row.characterId)?.short ??
-              row.characterId,
+            name: getCharacterName(row.characterId),
             averageWinRateDelta: row.averageWinRateDelta,
             usageDelta: row.usageDelta,
           },

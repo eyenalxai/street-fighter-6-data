@@ -7,7 +7,7 @@ import { AverageWinRatePopularityChart } from "@/components/sf6/charts/average-w
 import { MetricSummary } from "@/components/sf6/metric-summary"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SnapshotTable } from "@/components/sf6/roster/snapshot-table"
-import { formatReportingPeriod } from "@/lib/sf6/model"
+import { formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
 import { METRIC_LABELS } from "@/lib/sf6/presentation"
 import { getRank } from "@/lib/sf6/ranks"
 
@@ -28,21 +28,20 @@ const SnapshotResults = ({
 }) => {
   const availableUsage = data.rows.filter((row) => row.usage !== null)
   const usageReference = availableUsage.length === 0 ? null : 100 / availableUsage.length
-  const pointData = data.rows.flatMap((row) => {
-    const character = meta.characters.find((item) => item.id === row.characterId)
-    return row.averageWinRate === null || row.usage === null
+  const pointData = data.rows.flatMap((row) =>
+    row.averageWinRate === null || row.usage === null
       ? []
       : [
           {
             characterId: row.characterId,
-            name: character?.name ?? row.characterId,
+            name: getCharacterName(row.characterId),
             averageWinRate: row.averageWinRate,
             usage: row.usage,
             weightedAverageWinRate: row.weightedAverageWinRate,
             floor: row.floor,
           },
-        ]
-  })
+        ],
+  )
   const rankLabel = getRank(rank)?.label ?? rank
   const controlLabel = meta.playerControls.find((control) => control.id === playerControl)?.label
   return (
