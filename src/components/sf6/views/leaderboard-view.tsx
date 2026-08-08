@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
 
 import type { LeagueId, ReportingPeriod } from "@/lib/sf6/model"
@@ -12,7 +11,7 @@ import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
-import { ResultsStatus } from "@/components/sf6/results-status"
+import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { WinRate } from "@/components/sf6/win-rate"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -23,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { toMatchupSearch } from "@/lib/sf6/navigation"
 import { leaderboardQueryOptions } from "@/lib/sf6/query-options"
@@ -34,23 +34,29 @@ type LeaderboardViewProps = {
 }
 
 const LeaderboardResults = ({ period, search, meta }: LeaderboardViewProps) => {
-  const { data } = useSuspenseQuery(
-    leaderboardQueryOptions({
-      period,
-      league: search.league,
-      controls: search.controls,
-    }),
+  const input = {
+    period,
+    league: search.league,
+    controls: search.controls,
+  }
+  const { data, displayedInput, isUpdating } = useAnalyticsQuery(
+    leaderboardQueryOptions(input),
+    input,
   )
-  const leagueLabel = meta.leagues.find((league) => league.id === search.league)?.label ?? "Rank"
+  if (data === undefined) {
+    return <ResultsPending />
+  }
+  const leagueLabel =
+    meta.leagues.find((league) => league.id === displayedInput.league)?.label ?? "Rank"
   const controlLabel =
-    meta.controls.find((control) => control.id === search.controls)?.label ?? search.controls
+    meta.controls.find((control) => control.id === displayedInput.controls)?.label ??
+    displayedInput.controls
 
   return (
-    <>
-      <ResultsStatus />
+    <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Average win rate vs available opponents"
-        description={`Highest average win rate first · ${leagueLabel} · ${controlLabel} · ${formatReportingPeriod(period)}`}
+        description={`Highest average win rate first · ${leagueLabel} · ${controlLabel} · ${formatReportingPeriod(displayedInput.period)}`}
         action={<Badge variant="outline">{data.rows.length} characters</Badge>}
         contentClassName="p-0"
       >
@@ -75,11 +81,11 @@ const LeaderboardResults = ({ period, search, meta }: LeaderboardViewProps) => {
                     <Link
                       to="/matchups"
                       search={toMatchupSearch({
-                        period,
-                        league: search.league,
+                        period: displayedInput.period,
+                        league: displayedInput.league,
                         character: row.characterId,
                         opponent,
-                        controls: search.controls,
+                        controls: displayedInput.controls,
                       })}
                       className="inline-flex items-center gap-2 font-medium hover:underline"
                     >
@@ -96,7 +102,7 @@ const LeaderboardResults = ({ period, search, meta }: LeaderboardViewProps) => {
           </TableBody>
         </Table>
       </AnalyticsPanel>
-    </>
+    </ResultsContent>
   )
 }
 
@@ -147,11 +153,7 @@ const LeaderboardView = ({ period, search, meta }: LeaderboardViewProps) => {
   )
 
   return (
-    <AnalysisPage
-      toolbar={toolbar}
-      resetKey={`${period}|${search.league}|${search.controls}`}
-      skeleton="table"
-    >
+    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.league}|${search.controls}`}>
       <LeaderboardResults period={period} search={search} meta={meta} />
     </AnalysisPage>
   )

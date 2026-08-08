@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo } from "react"
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
@@ -20,9 +19,12 @@ import {
 import { CharacterMultiField } from "@/components/sf6/filters/character-multi-field"
 import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
+import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { ResultsStatus } from "@/components/sf6/results-status"
 import { formatWr } from "@/components/sf6/win-rate"
 import { ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { trendsQueryOptions } from "@/lib/sf6/query-options"
 
@@ -41,45 +43,51 @@ type TrendComparisonViewProps = {
 }
 
 const TrendResults = ({ search, meta }: TrendComparisonViewProps) => {
-  const { data } = useSuspenseQuery(
-    trendsQueryOptions({
-      league: search.league,
-      controls: search.controls,
-      characters: search.characters,
-    }),
-  )
+  const input = {
+    league: search.league,
+    controls: search.controls,
+    characters: search.characters,
+  }
+  const { data, displayedInput, isUpdating } = useAnalyticsQuery(trendsQueryOptions(input), input)
+  const series = data?.series
   const chartConfig = useMemo(
     () =>
       Object.fromEntries(
-        data.series.map((series, index) => [
-          series.characterId,
+        (series ?? []).map((characterSeries, index) => [
+          characterSeries.characterId,
           {
-            label: meta.characters.find((character) => character.id === series.characterId)?.name,
+            label: meta.characters.find((character) => character.id === characterSeries.characterId)
+              ?.name,
             color: SERIES_COLORS[index % SERIES_COLORS.length],
           },
         ]),
       ) satisfies ChartConfig,
-    [data.series, meta.characters],
+    [series, meta.characters],
   )
   const chartData = useMemo(() => {
-    const points = data.series[0]?.points ?? []
+    const points = series?.[0]?.points ?? []
     return points.map((point, index) => {
       const row: Record<string, number | string | null> = {
         period: formatReportingPeriod(point.period),
       }
-      for (const series of data.series) {
-        row[series.characterId] = series.points[index]?.winRate ?? null
+      for (const characterSeries of series ?? []) {
+        row[characterSeries.characterId] = characterSeries.points[index]?.winRate ?? null
       }
       return row
     })
-  }, [data.series])
-  const leagueLabel = meta.leagues.find((league) => league.id === search.league)?.label ?? "Rank"
+  }, [series])
+  if (data === undefined) {
+    return <ResultsPending />
+  }
+  const currentSeries = data.series
+  const leagueLabel =
+    meta.leagues.find((league) => league.id === displayedInput.league)?.label ?? "Rank"
   const controlLabel =
-    meta.controls.find((control) => control.id === search.controls)?.label ?? search.controls
+    meta.controls.find((control) => control.id === displayedInput.controls)?.label ??
+    displayedInput.controls
 
   return (
-    <>
-      <ResultsStatus />
+    <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Average win rate by reporting period"
         description={`${leagueLabel} · ${controlLabel} · each point is the average win rate against available opponents; gaps mean no reported value`}
@@ -112,17 +120,18 @@ const TrendResults = ({ search, meta }: TrendComparisonViewProps) => {
               }
             />
             <Legend content={<ChartLegendContent />} />
-            {data.series.map((series, index) => (
+            {currentSeries.map((characterSeries, index) => (
               <Line
-                key={series.characterId}
+                key={characterSeries.characterId}
                 type="monotone"
-                dataKey={series.characterId}
-                stroke={`var(--color-${series.characterId})`}
+                dataKey={characterSeries.characterId}
+                stroke={`var(--color-${characterSeries.characterId})`}
                 strokeWidth={2}
                 dot={false}
                 activeDot={ACTIVE_DOT}
                 name={
-                  meta.characters.find((character) => character.id === series.characterId)?.name
+                  meta.characters.find((character) => character.id === characterSeries.characterId)
+                    ?.name
                 }
                 strokeOpacity={index < SERIES_COLORS.length ? 1 : 0.8}
               />
@@ -130,9 +139,24 @@ const TrendResults = ({ search, meta }: TrendComparisonViewProps) => {
           </LineChart>
         </AnalyticsChart>
       </AnalyticsPanel>
-    </>
+    </ResultsContent>
   )
 }
+
+const TrendEmptyState = () => (
+  <>
+    <ResultsStatus message="No trend characters selected." />
+    <Empty className="min-h-[360px] border border-dashed">
+      <EmptyHeader>
+        <EmptyTitle>Select characters to compare</EmptyTitle>
+        <EmptyDescription>
+          Choose one or more characters in the Characters field to see their average win rates by
+          reporting period.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  </>
+)
 
 const TrendComparisonView = ({ search, meta }: TrendComparisonViewProps) => {
   const navigate = useNavigate({ from: "/comparisons/trends" })
@@ -175,9 +199,10 @@ const TrendComparisonView = ({ search, meta }: TrendComparisonViewProps) => {
         characters={meta.characters}
         className="sm:col-span-2"
         onChange={(value) => {
-          if (value.length > 0) {
-            change({ characters: value })
-          }
+          change({ characters: value })
+        }}
+        onClear={() => {
+          change({ characters: [] })
         }}
         description="Select the characters whose average win rates you want to compare."
       />
@@ -188,9 +213,12 @@ const TrendComparisonView = ({ search, meta }: TrendComparisonViewProps) => {
     <AnalysisPage
       toolbar={toolbar}
       resetKey={`${search.league}|${search.controls}|${search.characters.join(",")}`}
-      skeleton="chart"
     >
-      <TrendResults search={search} meta={meta} />
+      {search.characters.length === 0 ? (
+        <TrendEmptyState />
+      ) : (
+        <TrendResults search={search} meta={meta} />
+      )}
     </AnalysisPage>
   )
 }

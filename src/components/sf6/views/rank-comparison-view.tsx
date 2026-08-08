@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
@@ -19,7 +18,7 @@ import {
 import { CharacterField } from "@/components/sf6/filters/character-field"
 import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
-import { ResultsStatus } from "@/components/sf6/results-status"
+import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { DeltaValue, formatWr, WinRate } from "@/components/sf6/win-rate"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import {
@@ -30,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { toRankSearch } from "@/lib/sf6/navigation"
 import { rankProgressionQueryOptions } from "@/lib/sf6/query-options"
 
@@ -47,26 +47,32 @@ type RankComparisonViewProps = {
 }
 
 const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps) => {
-  const { data } = useSuspenseQuery(
-    rankProgressionQueryOptions({
-      period,
-      controls: search.controls,
-      character: search.character,
-    }),
+  const input = {
+    period,
+    controls: search.controls,
+    character: search.character,
+  }
+  const { data, displayedInput, isUpdating } = useAnalyticsQuery(
+    rankProgressionQueryOptions(input),
+    input,
   )
+  if (data === undefined) {
+    return <ResultsPending />
+  }
   const rookie = data.points.find((point) => point.leagueId === "1")?.winRate ?? null
   const master = data.points.find((point) => point.leagueId === "8")?.winRate ?? null
   const selectedRange =
-    data.heatmap.find((row) => row.characterId === search.character)?.range ?? null
-  const characterName = meta.characters.find((character) => character.id === search.character)?.name
+    data.heatmap.find((row) => row.characterId === displayedInput.character)?.range ?? null
+  const characterName = meta.characters.find(
+    (character) => character.id === displayedInput.character,
+  )?.name
 
   return (
-    <>
-      <ResultsStatus />
+    <ResultsContent isUpdating={isUpdating}>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]">
         <AnalyticsPanel
           title="Average win rate by rank"
-          description={`${characterName ?? search.character} · each point is the average win rate against available opponents; unavailable ranks remain gaps`}
+          description={`${characterName ?? displayedInput.character} · each point is the average win rate against available opponents; unavailable ranks remain gaps`}
         >
           <AnalyticsChart config={chartConfig}>
             <AreaChart accessibilityLayer data={data.points} margin={ANALYTICS_CHART_MARGIN}>
@@ -153,8 +159,8 @@ const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps
                   <Link
                     to="/comparisons/ranks"
                     search={toRankSearch({
-                      period,
-                      controls: search.controls,
+                      period: displayedInput.period,
+                      controls: displayedInput.controls,
                       character: row.characterId,
                     })}
                     className="inline-flex items-center gap-2 font-medium hover:underline"
@@ -176,7 +182,7 @@ const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps
           </TableBody>
         </Table>
       </AnalyticsPanel>
-    </>
+    </ResultsContent>
   )
 }
 
@@ -227,11 +233,7 @@ const RankComparisonView = ({ period, search, meta }: RankComparisonViewProps) =
   )
 
   return (
-    <AnalysisPage
-      toolbar={toolbar}
-      resetKey={`${period}|${search.controls}|${search.character}`}
-      skeleton="chart"
-    >
+    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.controls}|${search.character}`}>
       <RankComparisonResults period={period} search={search} meta={meta} />
     </AnalysisPage>
   )

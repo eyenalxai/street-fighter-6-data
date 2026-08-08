@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
 
 import type { CharacterId, LeagueId, ReportingPeriod } from "@/lib/sf6/model"
@@ -13,6 +12,7 @@ import { CharacterMultiField } from "@/components/sf6/filters/character-multi-fi
 import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
+import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { ResultsStatus } from "@/components/sf6/results-status"
 import { WinRate } from "@/components/sf6/win-rate"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { toMatchupSearch } from "@/lib/sf6/navigation"
 import { counterpicksQueryOptions } from "@/lib/sf6/query-options"
 
@@ -53,19 +54,23 @@ const CounterpickEmptyState = () => (
 )
 
 const CounterpickDataResults = ({ period, search, meta }: CounterpickPlannerViewProps) => {
-  const { data } = useSuspenseQuery(
-    counterpicksQueryOptions({
-      period,
-      league: search.league,
-      controls: search.controls,
-      opponents: search.opponents,
-    }),
+  const input = {
+    period,
+    league: search.league,
+    controls: search.controls,
+    opponents: search.opponents,
+  }
+  const { data, displayedInput, isUpdating } = useAnalyticsQuery(
+    counterpicksQueryOptions(input),
+    input,
   )
-  const opponent = search.opponents[0] ?? "ryu"
+  if (data === undefined) {
+    return <ResultsPending />
+  }
+  const opponent = displayedInput.opponents[0] ?? "ryu"
 
   return (
-    <>
-      <ResultsStatus />
+    <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Best candidates against selected opponents"
         description={`${data.rows.length} candidates · average win rate against ${data.opponents.length} selected opponents · highest average first`}
@@ -100,11 +105,11 @@ const CounterpickDataResults = ({ period, search, meta }: CounterpickPlannerView
                     <Link
                       to="/matchups"
                       search={toMatchupSearch({
-                        period,
-                        league: search.league,
+                        period: displayedInput.period,
+                        league: displayedInput.league,
                         character: row.characterId,
                         opponent,
-                        controls: search.controls,
+                        controls: displayedInput.controls,
                       })}
                       className="inline-flex items-center gap-2 font-medium hover:underline"
                     >
@@ -137,7 +142,7 @@ const CounterpickDataResults = ({ period, search, meta }: CounterpickPlannerView
           </Table>
         </div>
       </AnalyticsPanel>
-    </>
+    </ResultsContent>
   )
 }
 
@@ -212,7 +217,6 @@ const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerView
     <AnalysisPage
       toolbar={toolbar}
       resetKey={`${period}|${search.league}|${search.controls}|${search.opponents.join(",")}`}
-      skeleton="table"
     >
       <CounterpickResults period={period} search={search} meta={meta} />
     </AnalysisPage>

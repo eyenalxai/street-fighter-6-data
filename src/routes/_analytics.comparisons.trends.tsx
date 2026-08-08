@@ -17,13 +17,15 @@ const Route = createFileRoute("/_analytics/comparisons/trends")({
   },
   loader: async ({ context: { queryClient }, deps }) => {
     await queryClient.ensureQueryData(metaQueryOptions())
-    void queryClient.prefetchQuery(
-      trendsQueryOptions({
-        league: deps.search.league,
-        controls: deps.search.controls,
-        characters: deps.search.characters,
-      }),
-    )
+    if (deps.search.characters.length > 0) {
+      void queryClient.prefetchQuery(
+        trendsQueryOptions({
+          league: deps.search.league,
+          controls: deps.search.controls,
+          characters: deps.search.characters,
+        }),
+      )
+    }
   },
   component: TrendsPage,
 })

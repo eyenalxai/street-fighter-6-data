@@ -36,7 +36,7 @@ const CounterpickSearchSchema = z.object({
 const TrendSearchSchema = z.object({
   league: LeagueIdSchema.default("8"),
   controls: ControlMatchupSchema.default("combined"),
-  characters: CharacterIdSchema.array().min(1).default(["ryu"]),
+  characters: CharacterIdSchema.array().default([]),
 })
 
 const RankComparisonSearchSchema = z.object({

@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
@@ -18,7 +17,7 @@ import {
 import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
-import { ResultsStatus } from "@/components/sf6/results-status"
+import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { DeltaValue, formatPercentagePoints, WinRate } from "@/components/sf6/win-rate"
 import { Badge } from "@/components/ui/badge"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -31,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { periodComparisonQueryOptions } from "@/lib/sf6/query-options"
 
@@ -58,14 +58,19 @@ const PeriodComparisonData = ({
   search,
   meta,
 }: PeriodComparisonViewProps) => {
-  const { data } = useSuspenseQuery(
-    periodComparisonQueryOptions({
-      fromPeriod,
-      toPeriod,
-      league: search.league,
-      controls: search.controls,
-    }),
+  const input = {
+    fromPeriod,
+    toPeriod,
+    league: search.league,
+    controls: search.controls,
+  }
+  const { data, displayedInput, isUpdating } = useAnalyticsQuery(
+    periodComparisonQueryOptions(input),
+    input,
   )
+  if (data === undefined) {
+    return <ResultsPending />
+  }
   const rows = data.rows.map((row) => {
     return {
       ...row,
@@ -82,16 +87,17 @@ const PeriodComparisonData = ({
   )[0]
   const improved = changedRows.filter((row) => (row.delta ?? 0) > 0).length
   const declined = changedRows.filter((row) => (row.delta ?? 0) < 0).length
-  const leagueLabel = meta.leagues.find((league) => league.id === search.league)?.label ?? "Rank"
+  const leagueLabel =
+    meta.leagues.find((league) => league.id === displayedInput.league)?.label ?? "Rank"
   const controlLabel =
-    meta.controls.find((control) => control.id === search.controls)?.label ?? search.controls
+    meta.controls.find((control) => control.id === displayedInput.controls)?.label ??
+    displayedInput.controls
 
   return (
-    <>
-      <ResultsStatus />
+    <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Average win-rate change between periods"
-        description={`${formatReportingPeriod(fromPeriod)} → ${formatReportingPeriod(toPeriod)} · ${leagueLabel} · ${controlLabel}`}
+        description={`${formatReportingPeriod(displayedInput.fromPeriod)} → ${formatReportingPeriod(displayedInput.toPeriod)} · ${leagueLabel} · ${controlLabel}`}
         action={
           <div className="flex flex-wrap justify-end gap-1">
             <Badge variant="outline">{improved} improved</Badge>
@@ -136,10 +142,10 @@ const PeriodComparisonData = ({
             <TableRow>
               <TableHead scope="col">Character</TableHead>
               <TableHead scope="col" className="text-right">
-                {formatReportingPeriod(fromPeriod)}
+                {formatReportingPeriod(displayedInput.fromPeriod)}
               </TableHead>
               <TableHead scope="col" className="text-right">
-                {formatReportingPeriod(toPeriod)}
+                {formatReportingPeriod(displayedInput.toPeriod)}
               </TableHead>
               <TableHead scope="col" className="text-right">
                 Change (pp)
@@ -167,7 +173,7 @@ const PeriodComparisonData = ({
           </TableBody>
         </Table>
       </AnalyticsPanel>
-    </>
+    </ResultsContent>
   )
 }
 
@@ -259,7 +265,6 @@ const PeriodComparisonView = ({
     <AnalysisPage
       toolbar={toolbar}
       resetKey={`${fromPeriod}|${toPeriod}|${search.league}|${search.controls}`}
-      skeleton="chart"
     >
       <PeriodComparisonResults
         fromPeriod={fromPeriod}

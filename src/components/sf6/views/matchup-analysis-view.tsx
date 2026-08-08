@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { ArrowLeftRight } from "lucide-react"
 
@@ -15,7 +14,7 @@ import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-fi
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
 import { OpponentMatchupTable } from "@/components/sf6/opponent-matchup-table"
-import { ResultsStatus } from "@/components/sf6/results-status"
+import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { WinRate } from "@/components/sf6/win-rate"
 import { Button } from "@/components/ui/button"
 import { FieldGroup } from "@/components/ui/field"
@@ -27,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { getCharacterName, formatReportingPeriod } from "@/lib/sf6/model"
 import { matchupsQueryOptions } from "@/lib/sf6/query-options"
 
@@ -37,17 +37,19 @@ type MatchupAnalysisViewProps = {
 }
 
 const MatchupAnalysisResults = ({ period, search, meta }: MatchupAnalysisViewProps) => {
-  const { data } = useSuspenseQuery(
-    matchupsQueryOptions({
-      period,
-      league: search.league,
-      character: search.character,
-      opponent: search.opponent,
-      opponentListControls: search.opponentListControls,
-    }),
-  )
-  const characterName = getCharacterName(search.character)
-  const opponentName = getCharacterName(search.opponent)
+  const input = {
+    period,
+    league: search.league,
+    character: search.character,
+    opponent: search.opponent,
+    opponentListControls: search.opponentListControls,
+  }
+  const { data, displayedInput, isUpdating } = useAnalyticsQuery(matchupsQueryOptions(input), input)
+  if (data === undefined) {
+    return <ResultsPending />
+  }
+  const characterName = getCharacterName(displayedInput.character)
+  const opponentName = getCharacterName(displayedInput.opponent)
   const statusLabel =
     data.headToHead.status === "mirror"
       ? "Mirror matchup"
@@ -55,19 +57,18 @@ const MatchupAnalysisResults = ({ period, search, meta }: MatchupAnalysisViewPro
         ? "No reported win rate"
         : "Combined win rate"
   const controlLabel =
-    meta.controls.find((control) => control.id === search.opponentListControls)?.label ??
-    search.opponentListControls
+    meta.controls.find((control) => control.id === displayedInput.opponentListControls)?.label ??
+    displayedInput.opponentListControls
 
   return (
-    <>
-      <ResultsStatus />
+    <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Head to head"
-        description={`${characterName} vs ${opponentName} · ${statusLabel} · ${formatReportingPeriod(period)}`}
+        description={`${characterName} vs ${opponentName} · ${statusLabel} · ${formatReportingPeriod(displayedInput.period)}`}
       >
         <div className="grid items-center gap-5 sm:grid-cols-[1fr_auto_1fr]">
           <div className="flex items-center gap-3">
-            <CharacterBadge characterId={search.character} />
+            <CharacterBadge characterId={displayedInput.character} />
             <div>
               <p className="font-medium">{characterName}</p>
               <p className="text-xs text-muted-foreground">Selected character</p>
@@ -82,7 +83,7 @@ const MatchupAnalysisResults = ({ period, search, meta }: MatchupAnalysisViewPro
               <p className="font-medium">{opponentName}</p>
               <p className="text-xs text-muted-foreground">Opponent</p>
             </div>
-            <CharacterBadge characterId={search.opponent} />
+            <CharacterBadge characterId={displayedInput.opponent} />
           </div>
         </div>
       </AnalyticsPanel>
@@ -125,7 +126,7 @@ const MatchupAnalysisResults = ({ period, search, meta }: MatchupAnalysisViewPro
           rows={data.worst}
         />
       </div>
-    </>
+    </ResultsContent>
   )
 }
 
@@ -240,7 +241,6 @@ const MatchupAnalysisView = ({ period, search, meta }: MatchupAnalysisViewProps)
         />
       }
       resetKey={`${period}|${search.league}|${search.character}|${search.opponent}|${search.opponentListControls}`}
-      skeleton="matchup"
     >
       <MatchupAnalysisResults period={period} search={search} meta={meta} />
     </AnalysisPage>

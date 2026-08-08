@@ -1,5 +1,5 @@
 import { StandardRPCJsonSerializer } from "@orpc/client/standard"
-import { defaultShouldDehydrateQuery, QueryClient } from "@tanstack/react-query"
+import { defaultShouldDehydrateQuery, keepPreviousData, QueryClient } from "@tanstack/react-query"
 
 type SerializedData = {
   json: unknown
@@ -30,6 +30,7 @@ const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
+        placeholderData: keepPreviousData,
         staleTime: 60_000,
         queryKeyHashFn: (queryKey) => {
           const [json, meta] = serializer.serialize(queryKey)

@@ -24,7 +24,7 @@ const AnalyticsChart = ({
   <ChartContainer
     config={config}
     initialDimension={initialDimension}
-    className={cn("min-h-[280px] w-full", className)}
+    className={cn("min-h-70 min-w-0 w-full", className)}
   >
     {children}
   </ChartContainer>
