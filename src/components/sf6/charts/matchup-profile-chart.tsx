@@ -1,7 +1,8 @@
 import { useMemo } from "react"
-import { CartesianGrid, ReferenceLine, Scatter, ScatterChart, XAxis, YAxis } from "recharts"
+import { CartesianGrid, ReferenceLine, ScatterChart, XAxis, YAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart-container"
+import type { CharacterId } from "@/lib/sf6/model"
 
 import {
   AnalyticsChart,
@@ -11,6 +12,7 @@ import {
   analyticsXAxisLabel,
   analyticsYAxisLabel,
 } from "@/components/sf6/charts/analytics-chart"
+import { CharacterScatter } from "@/components/sf6/charts/character-scatter"
 import {
   ChartTooltip,
   ChartTooltipContent,
@@ -20,13 +22,14 @@ import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-do
 import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type MatchupProfilePoint = {
+  characterId: CharacterId
   name: string
   usage: number
   winRate: number
 }
 const MATCHUP_PROFILE_CONFIG = {
   usage: { label: "Opponent usage" },
-  winRate: { label: "Matchup win rate", color: "var(--chart-1)" },
+  winRate: { label: "Matchup win rate" },
 } satisfies ChartConfig
 
 const MatchupProfileChart = ({ data }: { data: readonly MatchupProfilePoint[] }) => {
@@ -67,7 +70,7 @@ const MatchupProfileChart = ({ data }: { data: readonly MatchupProfilePoint[] })
             <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
           }
         />
-        <Scatter name="Matchups" data={data} fill="var(--color-winRate)" />
+        <CharacterScatter name="Matchups" data={data} />
       </ScatterChart>
     </AnalyticsChart>
   )

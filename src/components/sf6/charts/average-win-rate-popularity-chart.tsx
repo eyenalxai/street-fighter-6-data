@@ -1,7 +1,8 @@
 import { useMemo } from "react"
-import { CartesianGrid, ReferenceLine, Scatter, ScatterChart, XAxis, YAxis, ZAxis } from "recharts"
+import { CartesianGrid, ReferenceLine, ScatterChart, XAxis, YAxis, ZAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart-container"
+import type { CharacterId } from "@/lib/sf6/model"
 
 import {
   AnalyticsChart,
@@ -11,6 +12,7 @@ import {
   analyticsXAxisLabel,
   analyticsYAxisLabel,
 } from "@/components/sf6/charts/analytics-chart"
+import { CharacterScatter } from "@/components/sf6/charts/character-scatter"
 import {
   ChartTooltip,
   ChartTooltipContent,
@@ -20,7 +22,7 @@ import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-do
 import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
 type AverageWinRatePopularityPoint = {
-  characterId: string
+  characterId: CharacterId
   name: string
   averageWinRate: number
   usage: number
@@ -28,7 +30,7 @@ type AverageWinRatePopularityPoint = {
   floor: number | null
 }
 const PERFORMANCE_POPULARITY_CONFIG = {
-  averageWinRate: { label: "Average win rate", color: "var(--chart-1)" },
+  averageWinRate: { label: "Average win rate" },
   usage: { label: "Usage share" },
 } satisfies ChartConfig
 
@@ -90,7 +92,7 @@ const AverageWinRatePopularityChart = ({
             <ChartTooltipContent labelFormatter={formatChartTooltipLabel} valueFormat="percent" />
           }
         />
-        <Scatter name="Characters" data={data} fill="var(--color-averageWinRate)" />
+        <CharacterScatter name="Characters" data={data} />
       </ScatterChart>
     </AnalyticsChart>
   )

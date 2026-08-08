@@ -5,6 +5,7 @@ import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, XAxis, YAxis } f
 
 import type { ChartConfig } from "@/components/ui/chart-container"
 import type { ChartValueFormat } from "@/lib/sf6/charts/format"
+import type { MetricTrendPoint, MetricTrendSeries } from "@/lib/sf6/charts/series"
 
 import {
   AnalyticsChart,
@@ -22,16 +23,7 @@ import { ChartLegendContent } from "@/components/ui/chart-legend"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart-tooltip"
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
 import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
-
-type MetricTrendSeries = {
-  key: string
-  label: string
-  color: string
-}
-type MetricTrendPoint = {
-  label: string
-  [key: string]: number | string | null
-}
+import { getChartSeriesColor } from "@/lib/sf6/charts/palette"
 
 const MetricTrendChart = ({
   data,
@@ -59,7 +51,10 @@ const MetricTrendChart = ({
   const config = useMemo(
     () =>
       Object.fromEntries(
-        series.map((item) => [item.key, { label: item.label, color: item.color }]),
+        series.map((item, index) => [
+          item.key,
+          { label: item.label, color: item.color ?? getChartSeriesColor(index) },
+        ]),
       ) satisfies ChartConfig,
     [series],
   )
@@ -134,4 +129,4 @@ const MetricTrendChart = ({
   )
 }
 
-export { MetricTrendChart, type MetricTrendPoint, type MetricTrendSeries }
+export { MetricTrendChart }

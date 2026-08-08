@@ -29,6 +29,7 @@ const MatchupProfileResults = ({
       ? []
       : [
           {
+            characterId: row.opponentId,
             name: getCharacterName(row.opponentId),
             usage: row.opponentUsage,
             winRate: row.winRate,

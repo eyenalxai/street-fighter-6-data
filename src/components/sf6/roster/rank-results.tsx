@@ -6,6 +6,7 @@ import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { RankConsistencyTable } from "@/components/sf6/roster/consistency-tables"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import { WIN_RATE_SPREAD_SERIES } from "@/lib/sf6/charts/series"
 import { AXIS_LABELS, METRIC_LABELS } from "@/lib/sf6/presentation"
 import { compareNumbers, compareRankIds, createTableSortFn } from "@/lib/sf6/table-sorting"
 
@@ -61,7 +62,7 @@ const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) =
       >
         <MetricTrendChart
           data={chartData}
-          series={[{ key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" }]}
+          series={[WIN_RATE_SPREAD_SERIES]}
           xAxisLabel={AXIS_LABELS.rank}
           valueFormat="percentagePoints"
           valueLabel="Win rate spread (percentage points)"

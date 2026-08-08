@@ -2,7 +2,7 @@ import type { ChangeExplorerData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { ChangeCharacterTable } from "@/components/sf6/changes/character-table"
-import { ChangeDeltaChart } from "@/components/sf6/charts/change-delta-chart"
+import { CharacterDeltaChart } from "@/components/sf6/charts/character-delta-chart"
 import { MetricComparison } from "@/components/sf6/metric-comparison"
 import { formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
 import { formatLaterMinusEarlier, formatPeriodArrow, METRIC_LABELS } from "@/lib/sf6/presentation"
@@ -15,11 +15,10 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
       ? []
       : [
           {
+            characterId: row.characterId,
             name: getCharacterName(row.characterId),
             usageDelta: row.usageDelta,
             averageWinRateDelta: row.averageWinRateDelta,
-            weightedAverageWinRateDelta: row.weightedAverageWinRateDelta,
-            debut: row.debut,
           },
         ],
   )
@@ -53,7 +52,12 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
         title="Average win rate and usage share changes"
         description="Right shows a positive usage share change. Up shows a positive average win rate change. Reference lines mark zero change."
       >
-        <ChangeDeltaChart data={scatterData} />
+        <CharacterDeltaChart
+          data={scatterData}
+          xAxisLabel="Usage change (percentage points)"
+          yAxisLabel="Win rate change (percentage points)"
+          scatterName="Character changes"
+        />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Character changes"

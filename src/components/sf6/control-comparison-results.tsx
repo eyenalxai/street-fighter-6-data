@@ -3,7 +3,7 @@ import type { CharacterExplorerData, RosterOverviewData } from "@/lib/sf6/query-
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
-import { ControlDeltaChart } from "@/components/sf6/charts/control-delta-chart"
+import { CharacterDeltaChart } from "@/components/sf6/charts/character-delta-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -126,6 +126,7 @@ const ControlComparisonResults = ({
       ? []
       : [
           {
+            characterId: row.characterId,
             name: getCharacterName(row.characterId),
             averageWinRateDelta: row.averageWinRateDelta,
             usageDelta: row.usageDelta,
@@ -135,7 +136,12 @@ const ControlComparisonResults = ({
   return (
     <div className="flex flex-col gap-4">
       <AnalyticsPanel title={chartTitle} description={chartDescription}>
-        <ControlDeltaChart data={chartRows} />
+        <CharacterDeltaChart
+          data={chartRows}
+          xAxisLabel="Modern minus Classic usage"
+          yAxisLabel="Modern minus Classic win rate"
+          scatterName="Control differences"
+        />
       </AnalyticsPanel>
       <AnalyticsPanel title={tableTitle} description={tableDescription} contentClassName="p-0">
         <SortableDataTable

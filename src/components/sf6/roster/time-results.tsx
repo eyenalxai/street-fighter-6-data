@@ -4,8 +4,9 @@ import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { TimeConsistencyTable } from "@/components/sf6/roster/consistency-tables"
 import { formatCompactReportingPeriodTick } from "@/lib/sf6/charts/format"
+import { WIN_RATE_SPREAD_SERIES } from "@/lib/sf6/charts/series"
 import { formatReportingPeriod } from "@/lib/sf6/model"
-import { AXIS_LABELS, METRIC_LABELS } from "@/lib/sf6/presentation"
+import { AXIS_LABELS } from "@/lib/sf6/presentation"
 
 type TimeData = Extract<RosterOverviewData, { view: "time" }>
 
@@ -24,7 +25,7 @@ const RosterTimeResults = ({ data }: { data: TimeData }) => {
       >
         <MetricTrendChart
           data={chartData}
-          series={[{ key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" }]}
+          series={[WIN_RATE_SPREAD_SERIES]}
           xAxisLabel={AXIS_LABELS.reportingPeriod}
           valueFormat="percentagePoints"
           valueLabel="Win rate spread (percentage points)"

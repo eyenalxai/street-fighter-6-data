@@ -1,7 +1,8 @@
 import { useMemo } from "react"
-import { CartesianGrid, ReferenceLine, Scatter, ScatterChart, XAxis, YAxis } from "recharts"
+import { CartesianGrid, ReferenceLine, ScatterChart, XAxis, YAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart-container"
+import type { CharacterId } from "@/lib/sf6/model"
 
 import {
   AnalyticsChart,
@@ -11,6 +12,7 @@ import {
   analyticsXAxisLabel,
   analyticsYAxisLabel,
 } from "@/components/sf6/charts/analytics-chart"
+import { CharacterScatter } from "@/components/sf6/charts/character-scatter"
 import {
   ChartTooltip,
   ChartTooltipContent,
@@ -19,17 +21,31 @@ import {
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
 import { CHART_TICK_FORMATTERS } from "@/lib/sf6/charts/format"
 
-type ControlDeltaPoint = {
+type CharacterDeltaPoint = {
+  characterId: CharacterId
   name: string
-  averageWinRateDelta: number
   usageDelta: number
+  averageWinRateDelta: number
 }
-const CONTROL_DELTA_CONFIG = {
-  usageDelta: { label: "Usage difference" },
-  averageWinRateDelta: { label: "Win rate change", color: "var(--chart-1)" },
+
+type CharacterDeltaChartProps = {
+  data: readonly CharacterDeltaPoint[]
+  xAxisLabel: string
+  yAxisLabel: string
+  scatterName: string
+}
+
+const CHARACTER_DELTA_CONFIG = {
+  usageDelta: { label: "Usage change" },
+  averageWinRateDelta: { label: "Win rate change" },
 } satisfies ChartConfig
 
-const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => {
+const CharacterDeltaChart = ({
+  data,
+  xAxisLabel,
+  yAxisLabel,
+  scatterName,
+}: CharacterDeltaChartProps) => {
   const xDomain = useMemo(
     () => computeAxisDomain(collectRecordValues(data, ["usageDelta"]), { anchors: [0] }),
     [data],
@@ -40,7 +56,7 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
   )
 
   return (
-    <AnalyticsChart config={CONTROL_DELTA_CONFIG} size="default">
+    <AnalyticsChart config={CHARACTER_DELTA_CONFIG} size="default">
       <ScatterChart accessibilityLayer margin={ANALYTICS_SCATTER_CHART_MARGIN}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis
@@ -50,7 +66,7 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
           tick={ANALYTICS_AXIS_TICK}
           tickFormatter={CHART_TICK_FORMATTERS.percentagePoints}
           tickMargin={8}
-          label={analyticsXAxisLabel("Modern minus Classic usage")}
+          label={analyticsXAxisLabel(xAxisLabel)}
         />
         <YAxis
           type="number"
@@ -60,7 +76,7 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
           tick={ANALYTICS_AXIS_TICK}
           tickFormatter={CHART_TICK_FORMATTERS.percentagePoints}
           tickMargin={4}
-          label={analyticsYAxisLabel("Modern minus Classic win rate")}
+          label={analyticsYAxisLabel(yAxisLabel)}
         />
         <ReferenceLine x={0} stroke="var(--muted-foreground)" />
         <ReferenceLine y={0} stroke="var(--muted-foreground)" />
@@ -72,10 +88,10 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
             />
           }
         />
-        <Scatter name="Control differences" data={data} fill="var(--color-averageWinRateDelta)" />
+        <CharacterScatter name={scatterName} data={data} />
       </ScatterChart>
     </AnalyticsChart>
   )
 }
 
-export { ControlDeltaChart, type ControlDeltaPoint }
+export { CharacterDeltaChart }

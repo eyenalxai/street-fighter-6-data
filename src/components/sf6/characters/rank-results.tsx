@@ -6,7 +6,7 @@ import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
-import { buildCharacterTrendSeries } from "@/lib/sf6/charts/series"
+import { buildCharacterMetricTrendData, buildCharacterTrendSeries } from "@/lib/sf6/charts/series"
 import { AXIS_LABELS, getRankLabel } from "@/lib/sf6/presentation"
 import {
   compareCharacterIds,
@@ -76,21 +76,16 @@ const characterRankColumns: SortableColumnDef<RankRow>[] = [
 ]
 
 const CharacterRankResults = ({ data }: { data: RankData }) => {
-  const points = data.series[0]?.points ?? []
-  const averageWinRateData = points.map((point, index) => {
-    const row: { label: string; [key: string]: number | string | null } = { label: point.label }
-    for (const series of data.series) {
-      row[series.characterId] = series.points[index]?.averageWinRate ?? null
-    }
-    return row
-  })
-  const usageData = points.map((point, index) => {
-    const row: { label: string; [key: string]: number | string | null } = { label: point.label }
-    for (const series of data.series) {
-      row[series.characterId] = series.points[index]?.usage ?? null
-    }
-    return row
-  })
+  const averageWinRateData = buildCharacterMetricTrendData(
+    data.series,
+    (point) => point.label,
+    (point) => point?.averageWinRate ?? null,
+  )
+  const usageData = buildCharacterMetricTrendData(
+    data.series,
+    (point) => point.label,
+    (point) => point?.usage ?? null,
+  )
   const chartSeries = buildCharacterTrendSeries(data.series)
   return (
     <div className="flex flex-col gap-4">
