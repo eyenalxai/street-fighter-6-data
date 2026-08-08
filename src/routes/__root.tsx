@@ -9,7 +9,7 @@ import { Providers } from "@/components/providers"
 import appCss from "@/styles.css?url"
 
 const RootDocument = ({ children }: Readonly<{ children: ReactNode }>) => (
-  <html lang="en">
+  <html lang="en" suppressHydrationWarning>
     <head>
       <HeadContent />
     </head>
