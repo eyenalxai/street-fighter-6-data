@@ -1,6 +1,7 @@
 import { defineConfig } from "oxfmt"
 
 export default defineConfig({
+  ignorePatterns: ["data/processed/**", "data/raw/**"],
   sortImports: {
     groups: [
       "type-import",
