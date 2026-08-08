@@ -2,7 +2,7 @@ FROM oven/bun:canary-alpine AS build
 WORKDIR /app
 COPY package.json bun.lock bunfig.toml ./
 RUN bun install --frozen-lockfile
-COPY tsconfig.json vite.config.ts components.json oxfmt.config.ts oxlint.config.ts ./
+COPY tsconfig.json vite.config.ts components.json oxfmt.config.ts oxlint.config.ts .gitignore ./
 COPY public ./public
 COPY src ./src
 RUN bun run routes:generate && bun run build
