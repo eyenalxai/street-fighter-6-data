@@ -125,7 +125,7 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
   const series = buildCharacterTrendSeries(data.series)
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Average win rate over time"
           description="Switch between the unweighted average and a usage-share-weighted estimate. Missing characters stay blank."
@@ -161,6 +161,7 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
             }
             referenceValue={50}
             referenceLabel="50%"
+            size="fill"
             xTickFormatter={formatCompactReportingPeriodTick}
           />
         </AnalyticsPanel>
@@ -175,6 +176,7 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
             xAxisName={AXIS_LABELS.reportingPeriod}
             valueFormat="percent"
             yAxisName={AXIS_LABELS.usageShare}
+            size="fill"
             xTickFormatter={formatCompactReportingPeriodTick}
           />
         </AnalyticsPanel>

@@ -34,6 +34,7 @@ const DEFAULT_CHART_DIMENSION = { width: 640, height: 300 }
 const CHART_SIZE_CLASSES = {
   compact: "h-64 sm:h-72",
   default: "h-72 sm:h-80",
+  fill: "min-h-64 flex-1 h-full sm:min-h-72",
 } as const
 
 type AnalyticsChartProps = {
