@@ -27,12 +27,10 @@ const AXIS_LABELS = {
   averageWinRate: "Average win rate",
   usageShare: "Usage share",
   winRateSpread: "Win rate spread",
-  effectiveRosterSize: "Effective roster size",
 } as const
 
 const METRIC_LABELS = {
   winRateSpread: "Win rate spread",
-  effectiveRosterSize: "Effective roster size",
   topFiveUsage: "Top-five usage",
   matchupImbalance: "Matchup imbalance",
   usageWeightCoverage: "Usage weight coverage",

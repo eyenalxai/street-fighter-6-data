@@ -53,7 +53,6 @@ const ChangeRowSchema = CharacterMetricRowSchema.extend({
 })
 const SummarySchema = z.object({
   averageWinRateSpread: z.number().min(0).max(100).nullable(),
-  effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
   matchupImbalance: z.number().min(0).max(50).nullable(),
 })

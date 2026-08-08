@@ -37,10 +37,6 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
               ),
             },
             {
-              label: METRIC_LABELS.effectiveRosterSize,
-              value: <MetricValue value={data.before.effectiveRosterSize} format="number" />,
-            },
-            {
               label: METRIC_LABELS.topFiveUsage,
               value: <MetricValue value={data.before.topFiveShare} format="percent" />,
             },
@@ -58,10 +54,6 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
               value: (
                 <MetricValue value={data.after.averageWinRateSpread} format="percentagePoints" />
               ),
-            },
-            {
-              label: METRIC_LABELS.effectiveRosterSize,
-              value: <MetricValue value={data.after.effectiveRosterSize} format="number" />,
             },
             {
               label: METRIC_LABELS.topFiveUsage,

@@ -13,45 +13,22 @@ const RosterTimeResults = ({ data }: { data: TimeData }) => {
     return {
       label: formatReportingPeriod(point.period),
       spread: point.averageWinRateSpread,
-      diversity: point.effectiveRosterSize,
     }
   })
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <AnalyticsPanel
-          title="Win rate spread over time"
-          description="Highest character average win rate minus lowest character average win rate for each reporting period."
-        >
-          <MetricTrendChart
-            data={chartData}
-            series={[
-              { key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" },
-            ]}
-            xAxisLabel={AXIS_LABELS.reportingPeriod}
-            valueFormat="percentagePoints"
-            valueLabel="Win rate spread (percentage points)"
-          />
-        </AnalyticsPanel>
-        <AnalyticsPanel
-          title="Effective roster size over time"
-          description="Higher values show a more diverse usage share environment."
-        >
-          <MetricTrendChart
-            data={chartData}
-            series={[
-              {
-                key: "diversity",
-                label: METRIC_LABELS.effectiveRosterSize,
-                color: "var(--chart-2)",
-              },
-            ]}
-            xAxisLabel={AXIS_LABELS.reportingPeriod}
-            valueFormat="number"
-            valueLabel="Effective roster size (characters)"
-          />
-        </AnalyticsPanel>
-      </div>
+      <AnalyticsPanel
+        title="Win rate spread over time"
+        description="Highest character average win rate minus lowest character average win rate for each reporting period."
+      >
+        <MetricTrendChart
+          data={chartData}
+          series={[{ key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" }]}
+          xAxisLabel={AXIS_LABELS.reportingPeriod}
+          valueFormat="percentagePoints"
+          valueLabel="Win rate spread (percentage points)"
+        />
+      </AnalyticsPanel>
       <AnalyticsPanel
         title="Character consistency over time"
         description="Lower win rate range and standard deviation show a steadier average win rate across reporting periods."

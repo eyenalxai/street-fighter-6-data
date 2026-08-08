@@ -58,10 +58,6 @@ const SnapshotResults = ({
             ),
           },
           {
-            label: METRIC_LABELS.effectiveRosterSize,
-            value: <MetricValue value={data.summary.effectiveRosterSize} format="number" />,
-          },
-          {
             label: METRIC_LABELS.topFiveUsage,
             value: <MetricValue value={data.summary.topFiveShare} format="percent" />,
           },

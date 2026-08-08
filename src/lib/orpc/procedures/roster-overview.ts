@@ -47,7 +47,6 @@ const RosterOverviewInputSchema = z.discriminatedUnion("view", [
 ])
 const LandscapeSummarySchema = z.object({
   averageWinRateSpread: z.number().min(0).max(100).nullable(),
-  effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
   usageCoverage: z.number().min(0).max(1).nullable(),
 })
@@ -64,14 +63,12 @@ const ControlsOutputSchema = z.object({
 const TimePointSchema = z.object({
   period: ReportingPeriodSchema,
   averageWinRateSpread: z.number().min(0).max(100).nullable(),
-  effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
 })
 const RankPointSchema = z.object({
   rankId: RankIdSchema,
   label: z.string(),
   averageWinRateSpread: z.number().min(0).max(100).nullable(),
-  effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
 })
 const RanksOutputSchema = z.object({
@@ -145,7 +142,6 @@ const rosterOverviewProcedure = os
               averageWinRates.length === 0
                 ? null
                 : Math.max(...averageWinRates) - Math.min(...averageWinRates),
-            effectiveRosterSize: usageStats.effectiveRosterSize,
             topFiveShare: usageStats.topFiveShare,
             usageCoverage:
               weightCoverages.length === 0

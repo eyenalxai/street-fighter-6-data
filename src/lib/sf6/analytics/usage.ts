@@ -9,7 +9,6 @@ type UsagePoint = {
 }
 type UsageStats = {
   totalShare: number
-  effectiveRosterSize: number | null
   topFiveShare: number
   characterCount: number
 }
@@ -25,16 +24,8 @@ const getUsageRate = (block: UsageBlock, characterId: CharacterId): number | nul
 const getUsageStats = (block: UsageBlock): UsageStats => {
   const rows = block.rows.toSorted((left, right) => right.playRate - left.playRate)
   const totalShare = rows.reduce((sum, row) => sum + row.playRate, 0)
-  const probabilities = rows
-    .filter((row) => row.playRate > 0)
-    .map((row) => row.playRate / totalShare)
-  const entropy = probabilities.reduce(
-    (sum, probability) => sum - probability * Math.log(probability),
-    0,
-  )
   return {
     totalShare,
-    effectiveRosterSize: totalShare === 0 ? null : Math.exp(entropy),
     topFiveShare:
       totalShare === 0
         ? 0

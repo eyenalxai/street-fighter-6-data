@@ -13,7 +13,6 @@ import { getUsageRate, getUsageStats } from "./usage"
 
 type ChangeSummary = {
   averageWinRateSpread: number | null
-  effectiveRosterSize: number | null
   topFiveShare: number
   matchupImbalance: number | null
 }
@@ -84,7 +83,6 @@ const getChangeSummary = (entry: MetricEntry, playerControl: PlayerControl): Cha
       averageWinRates.length === 0
         ? null
         : Math.max(...averageWinRates) - Math.min(...averageWinRates),
-    effectiveRosterSize: usageStats.effectiveRosterSize,
     topFiveShare: usageStats.topFiveShare,
     matchupImbalance:
       matchupValues.length === 0

@@ -36,14 +36,12 @@ type CharacterMetricRow = {
 type LandscapePoint = {
   period: ReportingPeriod
   averageWinRateSpread: number | null
-  effectiveRosterSize: number | null
   topFiveShare: number
 }
 type RankLandscapePoint = {
   rankId: Rank["id"]
   label: string
   averageWinRateSpread: number | null
-  effectiveRosterSize: number | null
   topFiveShare: number
 }
 type RankMetricPoint = {
@@ -130,7 +128,6 @@ const getLandscapePoint = (entry: MetricEntry, playerControl: PlayerControl): La
       averageWinRates.length === 0
         ? null
         : Math.max(...averageWinRates) - Math.min(...averageWinRates),
-    effectiveRosterSize: usageStats.effectiveRosterSize,
     topFiveShare: usageStats.topFiveShare,
   }
 }
@@ -153,7 +150,6 @@ const getRankLandscapeSeries = (
       rankId: rank.id,
       label: rank.label,
       averageWinRateSpread: point.averageWinRateSpread,
-      effectiveRosterSize: point.effectiveRosterSize,
       topFiveShare: point.topFiveShare,
     }
   })

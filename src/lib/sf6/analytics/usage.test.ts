@@ -12,7 +12,7 @@ const block = (rows: UsageBlock["rows"]): UsageBlock => {
   }
 }
 
-test("usage stats normalize rounded shares and calculate diversity", () => {
+test("usage stats normalize rounded shares", () => {
   const stats = getUsageStats(
     block([
       { characterId: "ryu", playRate: 60, previousRate: 0, count: 1 },
@@ -21,7 +21,6 @@ test("usage stats normalize rounded shares and calculate diversity", () => {
     ]),
   )
   expect(stats.topFiveShare).toBe(100)
-  expect(stats.effectiveRosterSize).toBeCloseTo(2.45, 2)
 })
 
 test("usage deltas preserve absent characters as unavailable", () => {

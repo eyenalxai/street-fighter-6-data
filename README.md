@@ -47,7 +47,7 @@ newest advertised period.
 - **Roster** — average win rate/popularity snapshots, control-style differences, and environment landscape.
 - **Characters** — selected-character average win rate, popularity, rank progression, persistence, and stability.
 - **Matchups** — complete matchup profiles, control-pairing results, pair progression, profile similarity, and counterpick planning.
-- **Changes** — period-to-period average win rate, popularity, diversity, balance, matchup flips, and persistence.
+- **Changes** — period-to-period average win rate, popularity, balance, matchup flips, and persistence.
 
 Each section owns its URL search state. Compatible period, rank, character,
 opponent, control, and selected-opponent choices are carried between links
@@ -62,8 +62,7 @@ renormalize over the available weighted cells; they do not represent match
 volume. Weighted disadvantage contribution is a percentage-point contribution
 from each reported opponent's positive deficit, normalized over the reported
 opponent usage weight. Usage share is a character share of the selected
-population, while effective roster size is the exponential Shannon entropy of
-those shares. Snapshot and Over Time modes use the selected player-control
+population. Snapshot and Over Time modes use the selected player-control
 population; Landscape and Across Ranks use combined controls; control
 comparison modes compare both styles. Change Explorer's matchup results follow
 the selected player-control scope and display the individual control pairings.

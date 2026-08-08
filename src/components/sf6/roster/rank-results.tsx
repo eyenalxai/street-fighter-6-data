@@ -35,16 +35,6 @@ const rosterRankColumns: SortableColumnDef<RankRow>[] = [
     ),
   },
   {
-    id: "effectiveRosterSize",
-    accessorFn: (row) => row.effectiveRosterSize ?? undefined,
-    header: METRIC_LABELS.effectiveRosterSize,
-    sortFn: createTableSortFn(compareNumbers),
-    sortDescFirst: true,
-    sortUndefined: "last",
-    meta: { align: "right" },
-    cell: ({ row }) => <MetricValue value={row.original.effectiveRosterSize} format="number" />,
-  },
-  {
     id: "topFiveShare",
     accessorFn: (row) => row.topFiveShare ?? undefined,
     header: METRIC_LABELS.topFiveUsage,
@@ -61,45 +51,22 @@ const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) =
     return {
       label: point.label,
       spread: point.averageWinRateSpread,
-      diversity: point.effectiveRosterSize,
     }
   })
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <AnalyticsPanel
-          title="Win rate spread across ranks"
-          description="Each point shows the highest character average win rate minus the lowest at that rank."
-        >
-          <MetricTrendChart
-            data={chartData}
-            series={[
-              { key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" },
-            ]}
-            xAxisLabel={AXIS_LABELS.rank}
-            valueFormat="percentagePoints"
-            valueLabel="Win rate spread (percentage points)"
-          />
-        </AnalyticsPanel>
-        <AnalyticsPanel
-          title="Effective roster size across ranks"
-          description="Higher values show a more diverse usage share environment at that rank."
-        >
-          <MetricTrendChart
-            data={chartData}
-            series={[
-              {
-                key: "diversity",
-                label: METRIC_LABELS.effectiveRosterSize,
-                color: "var(--chart-2)",
-              },
-            ]}
-            xAxisLabel={AXIS_LABELS.rank}
-            valueFormat="number"
-            valueLabel="Effective roster size (characters)"
-          />
-        </AnalyticsPanel>
-      </div>
+      <AnalyticsPanel
+        title="Win rate spread across ranks"
+        description="Each point shows the highest character average win rate minus the lowest at that rank."
+      >
+        <MetricTrendChart
+          data={chartData}
+          series={[{ key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" }]}
+          xAxisLabel={AXIS_LABELS.rank}
+          valueFormat="percentagePoints"
+          valueLabel="Win rate spread (percentage points)"
+        />
+      </AnalyticsPanel>
       <AnalyticsPanel
         title="Rank landscape"
         description="Win rate spread and top-five usage share for the selected reporting period."
