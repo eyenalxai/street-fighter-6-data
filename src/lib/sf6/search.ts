@@ -30,7 +30,7 @@ const CounterpickSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
   league: LeagueIdSchema.default("8"),
   controls: ControlMatchupSchema.default("combined"),
-  opponents: CharacterIdSchema.array().default(["ryu", "ken"]),
+  opponents: CharacterIdSchema.array().default([]),
 })
 
 const TrendSearchSchema = z.object({
