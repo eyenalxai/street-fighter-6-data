@@ -2,18 +2,15 @@ import { os } from "@orpc/server"
 import * as z from "zod"
 
 import { getTrend } from "@/lib/sf6/analytics/aggregates"
-import {
-  CharacterIdSchema,
-  ControlMatchupSchema,
-  LeagueIdSchema,
-  ReportingPeriodSchema,
-} from "@/lib/sf6/model"
-import { getAvailablePeriods, getSnapshot } from "@/lib/sf6/snapshots.server"
+import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
+import { RankIdSchema } from "@/lib/sf6/ranks"
+import { getRankBlock, getRegularPeriods, getSubdivisionPeriods } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 
 const TrendsInputSchema = z.object({
-  league: LeagueIdSchema,
+  rank: RankIdSchema,
   controls: ControlMatchupSchema,
   characters: CharacterIdSchema.array().min(1),
 })
@@ -35,17 +32,22 @@ const trendsProcedure = os
   .output(TrendsOutputSchema)
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
-      const periods = await getAvailablePeriods()
+      const [regularPeriods, subdivisionPeriods] = await Promise.all([
+        getRegularPeriods(),
+        getSubdivisionPeriods(),
+      ])
+      const periods = getPeriodsForRank(input.rank, regularPeriods, subdivisionPeriods)
+      const controls = getEffectiveControls(input.rank, input.controls)
       const entries = await Promise.all(
         periods.map(async (period) => {
-          return { period, snapshot: await getSnapshot(period) }
+          return { period, block: await getRankBlock(period, input.rank, controls) }
         }),
       )
       return {
         series: input.characters.map((characterId) => {
           return {
             characterId,
-            points: getTrend(entries, input.league, characterId, input.controls),
+            points: getTrend(entries, characterId, controls),
           }
         }),
       }

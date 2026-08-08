@@ -2,6 +2,7 @@ import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-route
 
 import { TrendComparisonView } from "@/components/sf6/views/trend-comparison-view"
 import { metaQueryOptions, trendsQueryOptions } from "@/lib/sf6/query-options"
+import { getEffectiveControls } from "@/lib/sf6/rank-selection"
 import { TrendSearchSchema } from "@/lib/sf6/search"
 
 const TrendsPage = () => {
@@ -20,8 +21,8 @@ const Route = createFileRoute("/_analytics/comparisons/trends")({
     if (deps.search.characters.length > 0) {
       void queryClient.prefetchQuery(
         trendsQueryOptions({
-          league: deps.search.league,
-          controls: deps.search.controls,
+          rank: deps.search.rank,
+          controls: getEffectiveControls(deps.search.rank, deps.search.controls),
           characters: deps.search.characters,
         }),
       )

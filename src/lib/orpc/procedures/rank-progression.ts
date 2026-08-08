@@ -2,13 +2,9 @@ import { os } from "@orpc/server"
 import * as z from "zod"
 
 import { getRankHeatmap, getRankProgression } from "@/lib/sf6/analytics/aggregates"
-import {
-  CharacterIdSchema,
-  ControlMatchupSchema,
-  LeagueIdSchema,
-  ReportingPeriodSchema,
-} from "@/lib/sf6/model"
-import { getSnapshot } from "@/lib/sf6/snapshots.server"
+import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
+import { RankIdSchema, RANKS } from "@/lib/sf6/ranks"
+import { getRankBlock } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 
@@ -18,7 +14,7 @@ const RankProgressionInputSchema = z.object({
   character: CharacterIdSchema,
 })
 const RankPointSchema = z.object({
-  leagueId: LeagueIdSchema,
+  rankId: RankIdSchema,
   label: z.string(),
   winRate: z.number().min(0).max(100).nullable(),
 })
@@ -39,11 +35,18 @@ const rankProgressionProcedure = os
   .output(RankProgressionOutputSchema)
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
-      const snapshot = await getSnapshot(input.period)
+      const entries = await Promise.all(
+        RANKS.map(async (rank) => {
+          return {
+            rank,
+            block: await getRankBlock(input.period, rank.id, "combined"),
+          }
+        }),
+      )
       return {
         characterId: input.character,
-        points: getRankProgression(snapshot, input.character, input.controls),
-        heatmap: getRankHeatmap(snapshot, input.controls),
+        points: getRankProgression(entries, input.character, "combined"),
+        heatmap: getRankHeatmap(entries, "combined"),
       }
     }),
   )

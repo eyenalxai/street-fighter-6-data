@@ -1,15 +1,11 @@
 import * as z from "zod"
 
-import {
-  CharacterIdSchema,
-  ControlMatchupSchema,
-  LeagueIdSchema,
-  ReportingPeriodSchema,
-} from "@/lib/sf6/model"
+import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
+import { RankIdSchema } from "@/lib/sf6/ranks"
 
 const AnalyticsInputSchema = z.object({
   period: ReportingPeriodSchema,
-  league: LeagueIdSchema,
+  rank: RankIdSchema,
   controls: ControlMatchupSchema,
 })
 const CharacterMetricSchema = z.object({

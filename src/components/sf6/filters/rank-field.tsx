@@ -1,26 +1,41 @@
-import type { LeagueId } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
+import type { RankId } from "@/lib/sf6/ranks"
 
 import { SelectField } from "@/components/sf6/filters/select-field"
-import { LeagueIdSchema } from "@/lib/sf6/model"
+import { RankIdSchema } from "@/lib/sf6/ranks"
 
 const RankField = ({
   value,
-  leagues,
+  ranks,
   onChange,
 }: {
-  value: LeagueId
-  leagues: MetaData["leagues"]
-  onChange: (value: LeagueId) => void
+  value: RankId
+  ranks: MetaData["ranks"]
+  onChange: (value: RankId) => void
 }) => (
   <SelectField
     label="Rank"
     value={value}
-    options={leagues.map((league) => {
-      return { value: league.id, label: league.label }
-    })}
+    groups={[
+      {
+        label: "Ranks",
+        options: ranks
+          .filter((rank) => rank.id !== "all-master" && rank.group === "standard")
+          .map((rank) => {
+            return { value: rank.id, label: rank.label }
+          }),
+      },
+      {
+        label: "Master",
+        options: ranks
+          .filter((rank) => rank.group === "master")
+          .map((rank) => {
+            return { value: rank.id, label: rank.label }
+          }),
+      },
+    ]}
     onChange={(next) => {
-      onChange(LeagueIdSchema.parse(next))
+      onChange(RankIdSchema.parse(next))
     }}
   />
 )

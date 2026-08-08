@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router"
 
-import type { LeagueId, ReportingPeriod } from "@/lib/sf6/model"
+import type { ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
+import type { RankId } from "@/lib/sf6/ranks"
 import type { RosterSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
@@ -26,6 +27,8 @@ import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { toMatchupSearch } from "@/lib/sf6/navigation"
 import { leaderboardQueryOptions } from "@/lib/sf6/query-options"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
+import { getRank, isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 type LeaderboardViewProps = {
   period: ReportingPeriod
@@ -36,8 +39,8 @@ type LeaderboardViewProps = {
 const LeaderboardResults = ({ period, search, meta }: LeaderboardViewProps) => {
   const input = {
     period,
-    league: search.league,
-    controls: search.controls,
+    rank: search.rank,
+    controls: getEffectiveControls(search.rank, search.controls),
   }
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
     leaderboardQueryOptions(input),
@@ -46,8 +49,7 @@ const LeaderboardResults = ({ period, search, meta }: LeaderboardViewProps) => {
   if (data === undefined) {
     return <ResultsPending />
   }
-  const leagueLabel =
-    meta.leagues.find((league) => league.id === displayedInput.league)?.label ?? "Rank"
+  const rankLabel = getRank(displayedInput.rank)?.label ?? "Rank"
   const controlLabel =
     meta.controls.find((control) => control.id === displayedInput.controls)?.label ??
     displayedInput.controls
@@ -56,7 +58,7 @@ const LeaderboardResults = ({ period, search, meta }: LeaderboardViewProps) => {
     <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Average win rate vs available opponents"
-        description={`Highest average win rate first · ${leagueLabel} · ${controlLabel} · ${formatReportingPeriod(displayedInput.period)}`}
+        description={`Highest average win rate first · ${rankLabel} · ${controlLabel} · ${formatReportingPeriod(displayedInput.period)}`}
         action={<Badge variant="outline">{data.rows.length} characters</Badge>}
         contentClassName="p-0"
       >
@@ -82,7 +84,7 @@ const LeaderboardResults = ({ period, search, meta }: LeaderboardViewProps) => {
                       to="/matchups"
                       search={toMatchupSearch({
                         period: displayedInput.period,
-                        league: displayedInput.league,
+                        rank: displayedInput.rank,
                         character: row.characterId,
                         opponent,
                         controls: displayedInput.controls,
@@ -111,7 +113,7 @@ const LeaderboardView = ({ period, search, meta }: LeaderboardViewProps) => {
   const change = (
     changes: Partial<{
       period: ReportingPeriod
-      league: LeagueId
+      rank: RankId
       controls: RosterSearch["controls"]
     }>,
   ) => {
@@ -130,21 +132,22 @@ const LeaderboardView = ({ period, search, meta }: LeaderboardViewProps) => {
     >
       <ReportingPeriodField
         value={period}
-        periods={meta.periods}
+        periods={getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)}
         onChange={(value) => {
           change({ period: value })
         }}
       />
       <RankField
-        value={search.league}
-        leagues={meta.leagues}
+        value={search.rank}
+        ranks={meta.ranks}
         onChange={(value) => {
-          change({ league: value })
+          change({ rank: value })
         }}
       />
       <ControlMatchupField
-        value={search.controls}
+        value={getEffectiveControls(search.rank, search.controls)}
         controls={meta.controls}
+        disabled={isMasterSubdivisionRank(search.rank)}
         onChange={(value) => {
           change({ controls: value })
         }}
@@ -153,7 +156,7 @@ const LeaderboardView = ({ period, search, meta }: LeaderboardViewProps) => {
   )
 
   return (
-    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.league}|${search.controls}`}>
+    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.rank}|${search.controls}`}>
       <LeaderboardResults period={period} search={search} meta={meta} />
     </AnalysisPage>
   )

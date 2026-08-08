@@ -1,14 +1,16 @@
 import { useNavigate } from "@tanstack/react-router"
 import { ArrowLeftRight } from "lucide-react"
 
-import type { CharacterId, LeagueId, ReportingPeriod } from "@/lib/sf6/model"
+import type { CharacterId, ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
+import type { RankId } from "@/lib/sf6/ranks"
 import type { MatchupSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
 import { AnalysisToolbar } from "@/components/sf6/analysis-toolbar"
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge } from "@/components/sf6/character-badge"
+import { ControlMatchupResults } from "@/components/sf6/control-matchup-results"
 import { CharacterField } from "@/components/sf6/filters/character-field"
 import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
@@ -18,17 +20,11 @@ import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { WinRate } from "@/components/sf6/win-rate"
 import { Button } from "@/components/ui/button"
 import { FieldGroup } from "@/components/ui/field"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { getCharacterName, formatReportingPeriod } from "@/lib/sf6/model"
 import { matchupsQueryOptions } from "@/lib/sf6/query-options"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
+import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 type MatchupAnalysisViewProps = {
   period: ReportingPeriod
@@ -39,10 +35,10 @@ type MatchupAnalysisViewProps = {
 const MatchupAnalysisResults = ({ period, search, meta }: MatchupAnalysisViewProps) => {
   const input = {
     period,
-    league: search.league,
+    rank: search.rank,
     character: search.character,
     opponent: search.opponent,
-    opponentListControls: search.opponentListControls,
+    opponentListControls: getEffectiveControls(search.rank, search.opponentListControls),
   }
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(matchupsQueryOptions(input), input)
   if (data === undefined) {
@@ -88,31 +84,7 @@ const MatchupAnalysisResults = ({ period, search, meta }: MatchupAnalysisViewPro
         </div>
       </AnalyticsPanel>
 
-      <AnalyticsPanel
-        title="Reported win rate by control pairing"
-        description="Each row is the reported result for this exact player-control and opponent-control pairing. A dash means Buckler did not report that pairing."
-      >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead scope="col">Control pairing</TableHead>
-              <TableHead scope="col" className="text-right">
-                Win rate
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.controlMatchups.map((control) => (
-              <TableRow key={control.controlMatchup}>
-                <TableCell>{control.label}</TableCell>
-                <TableCell className="text-right">
-                  <WinRate value={control.winRate} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </AnalyticsPanel>
+      <ControlMatchupResults rows={data.controlMatchups} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <OpponentMatchupTable
@@ -134,10 +106,12 @@ const MatchupListContext = ({
   value,
   controls,
   onChange,
+  disabled,
 }: {
   value: MatchupSearch["opponentListControls"]
   controls: MetaData["controls"]
   onChange: (value: MatchupSearch["opponentListControls"]) => void
+  disabled?: boolean
 }) => (
   <section className="border border-border bg-background px-4 py-3">
     <div className="flex flex-col gap-1">
@@ -153,6 +127,7 @@ const MatchupListContext = ({
         value={value}
         controls={controls}
         onChange={onChange}
+        disabled={disabled}
       />
     </FieldGroup>
   </section>
@@ -163,7 +138,7 @@ const MatchupAnalysisView = ({ period, search, meta }: MatchupAnalysisViewProps)
   const change = (
     changes: Partial<{
       period: ReportingPeriod
-      league: LeagueId
+      rank: RankId
       character: CharacterId
       opponent: CharacterId
       opponentListControls: MatchupSearch["opponentListControls"]
@@ -193,16 +168,16 @@ const MatchupAnalysisView = ({ period, search, meta }: MatchupAnalysisViewProps)
     >
       <ReportingPeriodField
         value={period}
-        periods={meta.periods}
+        periods={getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)}
         onChange={(value) => {
           change({ period: value })
         }}
       />
       <RankField
-        value={search.league}
-        leagues={meta.leagues}
+        value={search.rank}
+        ranks={meta.ranks}
         onChange={(value) => {
-          change({ league: value })
+          change({ rank: value })
         }}
       />
       <CharacterField
@@ -233,14 +208,15 @@ const MatchupAnalysisView = ({ period, search, meta }: MatchupAnalysisViewProps)
       toolbar={toolbar}
       beforeResults={
         <MatchupListContext
-          value={search.opponentListControls}
+          value={getEffectiveControls(search.rank, search.opponentListControls)}
           controls={meta.controls}
+          disabled={isMasterSubdivisionRank(search.rank)}
           onChange={(value) => {
             change({ opponentListControls: value })
           }}
         />
       }
-      resetKey={`${period}|${search.league}|${search.character}|${search.opponent}|${search.opponentListControls}`}
+      resetKey={`${period}|${search.rank}|${search.character}|${search.opponent}|${search.opponentListControls}`}
     >
       <MatchupAnalysisResults period={period} search={search} meta={meta} />
     </AnalysisPage>

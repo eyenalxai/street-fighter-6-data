@@ -1,26 +1,22 @@
 import * as z from "zod"
 
-import {
-  CharacterIdSchema,
-  ControlMatchupSchema,
-  LeagueIdSchema,
-  ReportingPeriodSchema,
-} from "./model"
+import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "./model"
+import { ControlComparisonRankIdSchema, RankIdSchema } from "./ranks"
 
 const RosterSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
-  league: LeagueIdSchema.default("8"),
+  rank: RankIdSchema.default("all-master"),
   controls: ControlMatchupSchema.default("combined"),
 })
 
 const ControlComparisonSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
-  league: LeagueIdSchema.default("8"),
+  rank: ControlComparisonRankIdSchema.default("all-master"),
 })
 
 const MatchupSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
-  league: LeagueIdSchema.default("8"),
+  rank: RankIdSchema.default("all-master"),
   character: CharacterIdSchema.default("ryu"),
   opponent: CharacterIdSchema.default("ken"),
   opponentListControls: ControlMatchupSchema.default("combined"),
@@ -28,13 +24,13 @@ const MatchupSearchSchema = z.object({
 
 const CounterpickSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
-  league: LeagueIdSchema.default("8"),
+  rank: RankIdSchema.default("all-master"),
   controls: ControlMatchupSchema.default("combined"),
   opponents: CharacterIdSchema.array().default([]),
 })
 
 const TrendSearchSchema = z.object({
-  league: LeagueIdSchema.default("8"),
+  rank: RankIdSchema.default("all-master"),
   controls: ControlMatchupSchema.default("combined"),
   characters: CharacterIdSchema.array().default([]),
 })
@@ -48,7 +44,7 @@ const RankComparisonSearchSchema = z.object({
 const PeriodComparisonSearchSchema = z.object({
   fromPeriod: ReportingPeriodSchema.optional(),
   toPeriod: ReportingPeriodSchema.optional(),
-  league: LeagueIdSchema.default("8"),
+  rank: RankIdSchema.default("all-master"),
   controls: ControlMatchupSchema.default("combined"),
 })
 

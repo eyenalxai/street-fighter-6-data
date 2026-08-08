@@ -2,14 +2,16 @@ import { os } from "@orpc/server"
 import * as z from "zod"
 
 import { getControlComparison } from "@/lib/sf6/analytics/aggregates"
-import { CharacterIdSchema, LeagueIdSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
-import { getSnapshot } from "@/lib/sf6/snapshots.server"
+import { CharacterIdSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
+import { getControlComparisonRank } from "@/lib/sf6/rank-selection"
+import { RankIdSchema } from "@/lib/sf6/ranks"
+import { getRankControlBlocks } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 
 const ControlComparisonInputSchema = z.object({
   period: ReportingPeriodSchema,
-  league: LeagueIdSchema,
+  rank: RankIdSchema,
 })
 const ControlComparisonOutputSchema = z.object({
   rows: z
@@ -27,9 +29,13 @@ const controlComparisonProcedure = os
   .output(ControlComparisonOutputSchema)
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
-      const snapshot = await getSnapshot(input.period)
+      const rank = getControlComparisonRank(input.rank)
+      const controlBlocks = await getRankControlBlocks(input.period, rank)
+      if (controlBlocks === null) {
+        throw new Error("Control comparison data is unavailable for this rank")
+      }
       return {
-        rows: getControlComparison(snapshot, input.league),
+        rows: getControlComparison(controlBlocks),
       }
     }),
   )

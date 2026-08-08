@@ -6,6 +6,8 @@ import { orpc } from "@/lib/orpc/client"
 
 import type { ReportingPeriod } from "./model"
 
+import { resolveNearestPeriod } from "./rank-selection"
+
 type AppClient = RouterClient<typeof router>
 type MetaData = Awaited<ReturnType<AppClient["meta"]>>
 type LeaderboardInput = Parameters<AppClient["leaderboard"]>[0]
@@ -38,9 +40,7 @@ const periodComparisonQueryOptions = (input: PeriodComparisonInput) =>
 const resolvePeriod = (
   requested: ReportingPeriod | undefined,
   available: readonly ReportingPeriod[],
-  latest: ReportingPeriod,
-): ReportingPeriod =>
-  requested !== undefined && available.includes(requested) ? requested : latest
+): ReportingPeriod => resolveNearestPeriod(requested, available)
 
 export {
   controlComparisonQueryOptions,

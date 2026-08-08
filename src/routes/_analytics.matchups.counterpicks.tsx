@@ -2,6 +2,7 @@ import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-route
 
 import { CounterpickPlannerView } from "@/components/sf6/views/counterpick-planner-view"
 import { counterpicksQueryOptions, metaQueryOptions, resolvePeriod } from "@/lib/sf6/query-options"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { CounterpickSearchSchema } from "@/lib/sf6/search"
 
 const CounterpicksPage = () => {
@@ -18,13 +19,14 @@ const Route = createFileRoute("/_analytics/matchups/counterpicks")({
   },
   loader: async ({ context: { queryClient }, deps }) => {
     const meta = await queryClient.ensureQueryData(metaQueryOptions())
-    const period = resolvePeriod(deps.search.period, meta.periods, meta.latestPeriod)
+    const periods = getPeriodsForRank(deps.search.rank, meta.periods, meta.subdivisionPeriods)
+    const period = resolvePeriod(deps.search.period, periods)
     if (deps.search.opponents.length > 0) {
       void queryClient.prefetchQuery(
         counterpicksQueryOptions({
           period,
-          league: deps.search.league,
-          controls: deps.search.controls,
+          rank: deps.search.rank,
+          controls: getEffectiveControls(deps.search.rank, deps.search.controls),
           opponents: deps.search.opponents,
         }),
       )

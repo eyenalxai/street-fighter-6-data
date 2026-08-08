@@ -3,8 +3,9 @@ import { useMemo } from "react"
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart"
-import type { CharacterId, ControlMatchup, LeagueId } from "@/lib/sf6/model"
+import type { CharacterId, ControlMatchup } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
+import type { RankId } from "@/lib/sf6/ranks"
 import type { TrendSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
@@ -27,6 +28,8 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/u
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { trendsQueryOptions } from "@/lib/sf6/query-options"
+import { getEffectiveControls } from "@/lib/sf6/rank-selection"
+import { isMasterSubdivisionRank, getRank } from "@/lib/sf6/ranks"
 
 const SERIES_COLORS = [
   "var(--chart-1)",
@@ -44,8 +47,8 @@ type TrendComparisonViewProps = {
 
 const TrendResults = ({ search, meta }: TrendComparisonViewProps) => {
   const input = {
-    league: search.league,
-    controls: search.controls,
+    rank: search.rank,
+    controls: getEffectiveControls(search.rank, search.controls),
     characters: search.characters,
   }
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(trendsQueryOptions(input), input)
@@ -80,8 +83,7 @@ const TrendResults = ({ search, meta }: TrendComparisonViewProps) => {
     return <ResultsPending />
   }
   const currentSeries = data.series
-  const leagueLabel =
-    meta.leagues.find((league) => league.id === displayedInput.league)?.label ?? "Rank"
+  const rankLabel = getRank(displayedInput.rank)?.label ?? "Rank"
   const controlLabel =
     meta.controls.find((control) => control.id === displayedInput.controls)?.label ??
     displayedInput.controls
@@ -90,7 +92,7 @@ const TrendResults = ({ search, meta }: TrendComparisonViewProps) => {
     <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Average win rate by reporting period"
-        description={`${leagueLabel} · ${controlLabel} · each point is the average win rate against available opponents; gaps mean no reported value`}
+        description={`${rankLabel} · ${controlLabel} · each point is the average win rate against available opponents; gaps mean no reported value`}
       >
         <AnalyticsChart config={chartConfig} className="h-[380px]">
           <LineChart accessibilityLayer data={chartData} margin={ANALYTICS_CHART_MARGIN}>
@@ -162,7 +164,7 @@ const TrendComparisonView = ({ search, meta }: TrendComparisonViewProps) => {
   const navigate = useNavigate({ from: "/comparisons/trends" })
   const change = (
     changes: Partial<{
-      league: LeagueId
+      rank: RankId
       controls: ControlMatchup
       characters: CharacterId[]
     }>,
@@ -180,15 +182,16 @@ const TrendComparisonView = ({ search, meta }: TrendComparisonViewProps) => {
       description="How do selected characters' average win rates change across reporting periods?"
     >
       <RankField
-        value={search.league}
-        leagues={meta.leagues}
+        value={search.rank}
+        ranks={meta.ranks}
         onChange={(value) => {
-          change({ league: value })
+          change({ rank: value })
         }}
       />
       <ControlMatchupField
-        value={search.controls}
+        value={getEffectiveControls(search.rank, search.controls)}
         controls={meta.controls}
+        disabled={isMasterSubdivisionRank(search.rank)}
         onChange={(value) => {
           change({ controls: value })
         }}
@@ -212,7 +215,7 @@ const TrendComparisonView = ({ search, meta }: TrendComparisonViewProps) => {
   return (
     <AnalysisPage
       toolbar={toolbar}
-      resetKey={`${search.league}|${search.controls}|${search.characters.join(",")}`}
+      resetKey={`${search.rank}|${search.controls}|${search.characters.join(",")}`}
     >
       {search.characters.length === 0 ? (
         <TrendEmptyState />

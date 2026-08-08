@@ -10,12 +10,14 @@ const ControlMatchupField = ({
   controls,
   onChange,
   description,
+  disabled = false,
 }: {
   label?: string
   value: ControlMatchup
   controls: MetaData["controls"]
   onChange: (value: ControlMatchup) => void
   description?: string
+  disabled?: boolean
 }) => (
   <SelectField
     label={label}
@@ -26,7 +28,10 @@ const ControlMatchupField = ({
     onChange={(next) => {
       onChange(ControlMatchupSchema.parse(next))
     }}
-    description={description}
+    description={
+      disabled ? "Master subdivisions include all control styles together." : description
+    }
+    disabled={disabled}
   />
 )
 

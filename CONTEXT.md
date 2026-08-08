@@ -10,8 +10,9 @@ A calendar month of published stats, keyed as `YYYYMM`.
 The UI presents it as a month and year, such as `Jul 2026`.
 
 **Ranked snapshot**:
-One processed `dia` JSON file for one reporting period. The first release uses
-ranked leagues 1–8 only. In the UI, **Master** means ranked league 8.
+One processed matchup JSON file for one reporting period. Standard ranks run from
+Rookie through Diamond, and **All Master** is the complete reported Master
+population.
 
 **Average win rate**:
 The unweighted mean of the available reported matchup win rates for a character.
@@ -24,7 +25,16 @@ Classic opponent, or Modern player / Modern opponent. The application does not
 approximate unsupported combinations.
 
 **Rank**:
-One of Buckler's ranked leagues 1–8. In the UI, Master means league 8.
+A standard rank from Rookie through Diamond, All Master, or one Master
+subdivision: Master, High Master, Grand Master, or Ultimate Master.
+
+**All Master**:
+The reported result for the complete Master population. It is distinct from the
+four Master subdivisions.
+
+**Master subdivision**:
+One of Master, High Master, Grand Master, or Ultimate Master. Subdivision
+results combine all control styles.
 
 **Reported matchup win rate**:
 One reported player/opponent result for one ranked league and one control

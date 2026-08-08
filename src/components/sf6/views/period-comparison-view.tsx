@@ -2,8 +2,9 @@ import { useNavigate } from "@tanstack/react-router"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart"
-import type { ControlMatchup, LeagueId, ReportingPeriod } from "@/lib/sf6/model"
+import type { ControlMatchup, ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
+import type { RankId } from "@/lib/sf6/ranks"
 import type { PeriodComparisonSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
@@ -33,6 +34,8 @@ import {
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { periodComparisonQueryOptions } from "@/lib/sf6/query-options"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
+import { getRank, isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 const chartConfig = {
   positiveDelta: {
@@ -61,8 +64,8 @@ const PeriodComparisonData = ({
   const input = {
     fromPeriod,
     toPeriod,
-    league: search.league,
-    controls: search.controls,
+    rank: search.rank,
+    controls: getEffectiveControls(search.rank, search.controls),
   }
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
     periodComparisonQueryOptions(input),
@@ -87,8 +90,7 @@ const PeriodComparisonData = ({
   )[0]
   const improved = changedRows.filter((row) => (row.delta ?? 0) > 0).length
   const declined = changedRows.filter((row) => (row.delta ?? 0) < 0).length
-  const leagueLabel =
-    meta.leagues.find((league) => league.id === displayedInput.league)?.label ?? "Rank"
+  const rankLabel = getRank(displayedInput.rank)?.label ?? "Rank"
   const controlLabel =
     meta.controls.find((control) => control.id === displayedInput.controls)?.label ??
     displayedInput.controls
@@ -97,7 +99,7 @@ const PeriodComparisonData = ({
     <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Average win-rate change between periods"
-        description={`${formatReportingPeriod(displayedInput.fromPeriod)} → ${formatReportingPeriod(displayedInput.toPeriod)} · ${leagueLabel} · ${controlLabel}`}
+        description={`${formatReportingPeriod(displayedInput.fromPeriod)} → ${formatReportingPeriod(displayedInput.toPeriod)} · ${rankLabel} · ${controlLabel}`}
         action={
           <div className="flex flex-wrap justify-end gap-1">
             <Badge variant="outline">{improved} improved</Badge>
@@ -212,7 +214,7 @@ const PeriodComparisonView = ({
     changes: Partial<{
       fromPeriod: ReportingPeriod
       toPeriod: ReportingPeriod
-      league: LeagueId
+      rank: RankId
       controls: ControlMatchup
     }>,
   ) => {
@@ -231,7 +233,7 @@ const PeriodComparisonView = ({
       <ReportingPeriodField
         label="From period"
         value={fromPeriod}
-        periods={meta.periods}
+        periods={getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)}
         onChange={(value) => {
           change({ fromPeriod: value })
         }}
@@ -239,21 +241,22 @@ const PeriodComparisonView = ({
       <ReportingPeriodField
         label="To period"
         value={toPeriod}
-        periods={meta.periods}
+        periods={getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)}
         onChange={(value) => {
           change({ toPeriod: value })
         }}
       />
       <RankField
-        value={search.league}
-        leagues={meta.leagues}
+        value={search.rank}
+        ranks={meta.ranks}
         onChange={(value) => {
-          change({ league: value })
+          change({ rank: value })
         }}
       />
       <ControlMatchupField
-        value={search.controls}
+        value={getEffectiveControls(search.rank, search.controls)}
         controls={meta.controls}
+        disabled={isMasterSubdivisionRank(search.rank)}
         onChange={(value) => {
           change({ controls: value })
         }}
@@ -264,7 +267,7 @@ const PeriodComparisonView = ({
   return (
     <AnalysisPage
       toolbar={toolbar}
-      resetKey={`${fromPeriod}|${toPeriod}|${search.league}|${search.controls}`}
+      resetKey={`${fromPeriod}|${toPeriod}|${search.rank}|${search.controls}`}
     >
       <PeriodComparisonResults
         fromPeriod={fromPeriod}

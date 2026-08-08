@@ -2,6 +2,7 @@ import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-route
 
 import { MatchupAnalysisView } from "@/components/sf6/views/matchup-analysis-view"
 import { matchupsQueryOptions, metaQueryOptions, resolvePeriod } from "@/lib/sf6/query-options"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { MatchupSearchSchema } from "@/lib/sf6/search"
 
 const MatchupsPage = () => {
@@ -18,14 +19,18 @@ const Route = createFileRoute("/_analytics/matchups/")({
   },
   loader: async ({ context: { queryClient }, deps }) => {
     const meta = await queryClient.ensureQueryData(metaQueryOptions())
-    const period = resolvePeriod(deps.search.period, meta.periods, meta.latestPeriod)
+    const periods = getPeriodsForRank(deps.search.rank, meta.periods, meta.subdivisionPeriods)
+    const period = resolvePeriod(deps.search.period, periods)
     void queryClient.prefetchQuery(
       matchupsQueryOptions({
         period,
-        league: deps.search.league,
+        rank: deps.search.rank,
         character: deps.search.character,
         opponent: deps.search.opponent,
-        opponentListControls: deps.search.opponentListControls,
+        opponentListControls: getEffectiveControls(
+          deps.search.rank,
+          deps.search.opponentListControls,
+        ),
       }),
     )
     return { period }

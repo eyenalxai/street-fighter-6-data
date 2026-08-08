@@ -3,7 +3,8 @@ import * as z from "zod"
 
 import { getPeriodComparison } from "@/lib/sf6/analytics/aggregates"
 import { CharacterIdSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
-import { getSnapshot } from "@/lib/sf6/snapshots.server"
+import { getEffectiveControls } from "@/lib/sf6/rank-selection"
+import { getRankBlock } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 import { AnalyticsInputSchema } from "./shared"
@@ -30,18 +31,18 @@ const periodComparisonProcedure = os
   .output(PeriodComparisonOutputSchema)
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
+      const controls = getEffectiveControls(input.rank, input.controls)
       const [before, after] = await Promise.all([
-        getSnapshot(input.fromPeriod),
-        getSnapshot(input.toPeriod),
+        getRankBlock(input.fromPeriod, input.rank, controls),
+        getRankBlock(input.toPeriod, input.rank, controls),
       ])
       return {
         fromPeriod: input.fromPeriod,
         toPeriod: input.toPeriod,
         rows: getPeriodComparison(
-          { period: input.fromPeriod, snapshot: before },
-          { period: input.toPeriod, snapshot: after },
-          input.league,
-          input.controls,
+          { period: input.fromPeriod, block: before },
+          { period: input.toPeriod, block: after },
+          controls,
         ),
       }
     }),

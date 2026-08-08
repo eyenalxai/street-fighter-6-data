@@ -29,10 +29,11 @@ App URL: `http://localhost:3000`
 
 Run `bun run sync`, then `bun run normalize` when updating the source data.
 Downloaded files under `data/raw/**` are intentionally ignored. The normalized
-files under `data/processed/**` remain tracked historical data. The current
-application reads ranked `dia` snapshots for leagues 1–8; the retained
-`dia_master`, `usagerate`, and `usagerate_master` archives are preserved for
-provenance and are not part of the active UI.
+files under `data/processed/**` remain tracked historical data. The application
+reads ranked `dia` snapshots for Rookie through All Master and processed
+`dia_master` snapshots for Master, High Master, Grand Master, and Ultimate
+Master. Master subdivision results combine all control styles. The `usagerate`
+and `usagerate_master` archives remain outside the active matchup UI.
 
 ## Workbench sections
 

@@ -49,7 +49,7 @@ type RankComparisonViewProps = {
 const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps) => {
   const input = {
     period,
-    controls: search.controls,
+    controls: "combined" as const,
     character: search.character,
   }
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
@@ -59,8 +59,8 @@ const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps
   if (data === undefined) {
     return <ResultsPending />
   }
-  const rookie = data.points.find((point) => point.leagueId === "1")?.winRate ?? null
-  const master = data.points.find((point) => point.leagueId === "8")?.winRate ?? null
+  const rookie = data.points.find((point) => point.rankId === "rookie")?.winRate ?? null
+  const master = data.points.find((point) => point.rankId === "all-master")?.winRate ?? null
   const selectedRange =
     data.heatmap.find((row) => row.characterId === displayedInput.character)?.range ?? null
   const characterName = meta.characters.find(
@@ -143,7 +143,7 @@ const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps
             <TableRow>
               <TableHead scope="col">Character</TableHead>
               {data.heatmap[0]?.points.map((point) => (
-                <TableHead key={point.leagueId} scope="col" className="text-right">
+                <TableHead key={point.rankId} scope="col" className="text-right">
                   {point.label}
                 </TableHead>
               ))}
@@ -170,7 +170,7 @@ const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps
                   </Link>
                 </TableCell>
                 {row.points.map((point) => (
-                  <TableCell key={point.leagueId} className="text-right">
+                  <TableCell key={point.rankId} className="text-right">
                     <WinRate value={point.winRate} />
                   </TableCell>
                 ))}
@@ -209,14 +209,15 @@ const RankComparisonView = ({ period, search, meta }: RankComparisonViewProps) =
     >
       <ReportingPeriodField
         value={period}
-        periods={meta.periods}
+        periods={meta.subdivisionPeriods}
         onChange={(value) => {
           change({ period: value })
         }}
       />
       <ControlMatchupField
-        value={search.controls}
+        value="combined"
         controls={meta.controls}
+        disabled
         onChange={(value) => {
           change({ controls: value })
         }}
@@ -233,7 +234,7 @@ const RankComparisonView = ({ period, search, meta }: RankComparisonViewProps) =
   )
 
   return (
-    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.controls}|${search.character}`}>
+    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.character}`}>
       <RankComparisonResults period={period} search={search} meta={meta} />
     </AnalysisPage>
   )

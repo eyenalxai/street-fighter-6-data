@@ -1,11 +1,12 @@
-import type { CharacterId, ControlMatchup, LeagueId, ReportingPeriod } from "./model"
+import type { CharacterId, ControlMatchup, ReportingPeriod } from "./model"
+import type { RankId } from "./ranks"
 
 const carryPeriod = (period: ReportingPeriod) => {
   return { period }
 }
 
-const carryRank = (league: LeagueId) => {
-  return { league }
+const carryRank = (rank: RankId) => {
+  return { rank }
 }
 
 const carryControl = (controls: ControlMatchup) => {
@@ -14,20 +15,20 @@ const carryControl = (controls: ControlMatchup) => {
 
 const toMatchupSearch = ({
   period,
-  league,
+  rank,
   character,
   opponent,
   controls,
 }: {
   period: ReportingPeriod
-  league: LeagueId
+  rank: RankId
   character: CharacterId
   opponent: CharacterId
   controls: ControlMatchup
 }) => {
   return {
     ...carryPeriod(period),
-    ...carryRank(league),
+    ...carryRank(rank),
     character,
     opponent,
     opponentListControls: controls,
@@ -36,34 +37,34 @@ const toMatchupSearch = ({
 
 const toCounterpickSearch = ({
   period,
-  league,
+  rank,
   controls,
   opponents,
 }: {
   period: ReportingPeriod
-  league: LeagueId
+  rank: RankId
   controls: ControlMatchup
   opponents: readonly CharacterId[]
 }) => {
   return {
     ...carryPeriod(period),
-    ...carryRank(league),
+    ...carryRank(rank),
     ...carryControl(controls),
     opponents: [...opponents],
   }
 }
 
 const toTrendSearch = ({
-  league,
+  rank,
   controls,
   characters,
 }: {
-  league: LeagueId
+  rank: RankId
   controls: ControlMatchup
   characters: readonly CharacterId[]
 }) => {
   return {
-    ...carryRank(league),
+    ...carryRank(rank),
     ...carryControl(controls),
     characters: [...characters],
   }
@@ -87,16 +88,16 @@ const toRankSearch = ({
 
 const toPeriodSearch = ({
   period,
-  league,
+  rank,
   controls,
 }: {
   period: ReportingPeriod
-  league: LeagueId
+  rank: RankId
   controls: ControlMatchup
 }) => {
   return {
     toPeriod: period,
-    ...carryRank(league),
+    ...carryRank(rank),
     ...carryControl(controls),
   }
 }

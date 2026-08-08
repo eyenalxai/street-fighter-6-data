@@ -1,14 +1,21 @@
-import type { CharacterId, ControlMatchup, LeagueId, ReportingPeriod } from "@/lib/sf6/model"
-import type { ProcessedDiaSnapshot } from "@/lib/sf6/snapshot-schema"
+import type { CharacterId, ControlMatchup, ReportingPeriod } from "@/lib/sf6/model"
+import type { Rank } from "@/lib/sf6/ranks"
+import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 
-import { CHARACTERS, LEAGUES } from "@/lib/sf6/model"
+import { CHARACTERS } from "@/lib/sf6/model"
+
+import type { ControlMatchupBlocks } from "./matchups"
 
 import { getAvailableCharacterIds, getMatchupAverage } from "./matchups"
 import { mean, round } from "./math"
 
 type SnapshotEntry = {
   period: ReportingPeriod
-  snapshot: ProcessedDiaSnapshot
+  block: ProcessedDiaLeague
+}
+type RankEntry = {
+  rank: Rank
+  block: ProcessedDiaLeague
 }
 type TrendPoint = {
   period: ReportingPeriod
@@ -16,7 +23,7 @@ type TrendPoint = {
 }
 type RankPoint = {
   label: string
-  leagueId: LeagueId
+  rankId: Rank["id"]
   winRate: number | null
 }
 type RankHeatmapRow = {
@@ -37,13 +44,13 @@ type PeriodComparisonRow = {
   delta: number | null
 }
 
-const getAvailableAcrossLeagues = (
-  snapshot: ProcessedDiaSnapshot,
+const getAvailableAcrossBlocks = (
+  blocks: readonly ProcessedDiaLeague[],
   controlMatchup: ControlMatchup,
 ): CharacterId[] => {
   const available = new Set<string>()
-  for (const league of LEAGUES) {
-    for (const characterId of getAvailableCharacterIds(snapshot, league.id, controlMatchup)) {
+  for (const block of blocks) {
+    for (const characterId of getAvailableCharacterIds(block, controlMatchup)) {
       available.add(characterId)
     }
   }
@@ -54,39 +61,41 @@ const getAvailableAcrossLeagues = (
 
 const getTrend = (
   entries: readonly SnapshotEntry[],
-  league: LeagueId,
   characterId: CharacterId,
   controlMatchup: ControlMatchup,
 ): TrendPoint[] =>
   entries
     .toSorted((left, right) => left.period.localeCompare(right.period))
-    .map(({ period, snapshot }) => {
+    .map(({ period, block }) => {
       return {
         period,
-        winRate: getMatchupAverage(snapshot, league, controlMatchup, characterId)?.winRate ?? null,
+        winRate: getMatchupAverage(block, controlMatchup, characterId)?.winRate ?? null,
       }
     })
 
 const getRankProgression = (
-  snapshot: ProcessedDiaSnapshot,
+  entries: readonly RankEntry[],
   characterId: CharacterId,
   controlMatchup: ControlMatchup,
 ): RankPoint[] =>
-  LEAGUES.map((league) => {
+  entries.map(({ rank, block }) => {
     return {
-      label: league.label,
-      leagueId: league.id,
-      winRate: getMatchupAverage(snapshot, league.id, controlMatchup, characterId)?.winRate ?? null,
+      label: rank.label,
+      rankId: rank.id,
+      winRate: getMatchupAverage(block, controlMatchup, characterId)?.winRate ?? null,
     }
   })
 
 const getRankHeatmap = (
-  snapshot: ProcessedDiaSnapshot,
+  entries: readonly RankEntry[],
   controlMatchup: ControlMatchup,
 ): RankHeatmapRow[] =>
-  getAvailableAcrossLeagues(snapshot, controlMatchup)
+  getAvailableAcrossBlocks(
+    entries.map((entry) => entry.block),
+    controlMatchup,
+  )
     .map((characterId) => {
-      const points = getRankProgression(snapshot, characterId, controlMatchup)
+      const points = getRankProgression(entries, characterId, controlMatchup)
       const values = points
         .map((point) => point.winRate)
         .filter((value): value is number => value !== null)
@@ -101,33 +110,30 @@ const getRankHeatmap = (
     .toSorted((left, right) => (right.range ?? -1) - (left.range ?? -1))
 
 const getPlayerControlAverage = (
-  snapshot: ProcessedDiaSnapshot,
-  league: LeagueId,
+  controlBlocks: ControlMatchupBlocks,
   characterId: CharacterId,
   playerControl: "C" | "M",
 ): number | null => {
   // Average both opponent control styles while holding the player's style constant.
-  const matchupIds: ControlMatchup[] =
+  const matchupIds: Exclude<ControlMatchup, "combined">[] =
     playerControl === "C"
       ? ["classic-classic", "classic-modern"]
       : ["modern-classic", "modern-modern"]
   const values = matchupIds
     .map(
-      (controlMatchup) => getMatchupAverage(snapshot, league, controlMatchup, characterId)?.winRate,
+      (controlMatchup) =>
+        getMatchupAverage(controlBlocks[controlMatchup], controlMatchup, characterId)?.winRate,
     )
     .filter((value): value is number => value !== undefined && value !== null)
   const average = mean(values)
   return average === null ? null : round(average)
 }
 
-const getControlComparison = (
-  snapshot: ProcessedDiaSnapshot,
-  league: LeagueId,
-): ControlComparisonRow[] =>
-  getAvailableAcrossLeagues(snapshot, "combined")
+const getControlComparison = (controlBlocks: ControlMatchupBlocks): ControlComparisonRow[] =>
+  getAvailableAcrossBlocks(Object.values(controlBlocks), "combined")
     .map((characterId) => {
-      const classic = getPlayerControlAverage(snapshot, league, characterId, "C")
-      const modern = getPlayerControlAverage(snapshot, league, characterId, "M")
+      const classic = getPlayerControlAverage(controlBlocks, characterId, "C")
+      const modern = getPlayerControlAverage(controlBlocks, characterId, "M")
       return {
         characterId,
         classic,
@@ -140,20 +146,19 @@ const getControlComparison = (
 const getPeriodComparison = (
   before: SnapshotEntry,
   after: SnapshotEntry,
-  league: LeagueId,
   controlMatchup: ControlMatchup,
 ): PeriodComparisonRow[] => {
   const available = new Set([
-    ...getAvailableAcrossLeagues(before.snapshot, controlMatchup),
-    ...getAvailableAcrossLeagues(after.snapshot, controlMatchup),
+    ...getAvailableAcrossBlocks([before.block], controlMatchup),
+    ...getAvailableAcrossBlocks([after.block], controlMatchup),
   ])
 
   return CHARACTERS.filter((character) => available.has(character.id))
     .map(({ id: characterId }) => {
       const beforeValue =
-        getMatchupAverage(before.snapshot, league, controlMatchup, characterId)?.winRate ?? null
+        getMatchupAverage(before.block, controlMatchup, characterId)?.winRate ?? null
       const afterValue =
-        getMatchupAverage(after.snapshot, league, controlMatchup, characterId)?.winRate ?? null
+        getMatchupAverage(after.block, controlMatchup, characterId)?.winRate ?? null
       return {
         characterId,
         before: beforeValue,
@@ -172,6 +177,7 @@ export {
   getTrend,
   type ControlComparisonRow,
   type PeriodComparisonRow,
+  type RankEntry,
   type RankHeatmapRow,
   type RankPoint,
   type SnapshotEntry,

@@ -3,7 +3,8 @@ import * as z from "zod"
 
 import { getCounterpickCandidates } from "@/lib/sf6/analytics/matchups"
 import { CharacterIdSchema } from "@/lib/sf6/model"
-import { getSnapshot } from "@/lib/sf6/snapshots.server"
+import { getEffectiveControls } from "@/lib/sf6/rank-selection"
+import { getRankBlock } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 import { AnalyticsInputSchema } from "./shared"
@@ -34,10 +35,11 @@ const counterpicksProcedure = os
   .output(CounterpicksOutputSchema)
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
-      const snapshot = await getSnapshot(input.period)
+      const controls = getEffectiveControls(input.rank, input.controls)
+      const block = await getRankBlock(input.period, input.rank, controls)
       return {
         opponents: input.opponents,
-        rows: getCounterpickCandidates(snapshot, input.league, input.controls, input.opponents),
+        rows: getCounterpickCandidates(block, controls, input.opponents),
       }
     }),
   )

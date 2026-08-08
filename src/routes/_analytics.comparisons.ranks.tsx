@@ -22,11 +22,11 @@ const Route = createFileRoute("/_analytics/comparisons/ranks")({
   },
   loader: async ({ context: { queryClient }, deps }) => {
     const meta = await queryClient.ensureQueryData(metaQueryOptions())
-    const period = resolvePeriod(deps.search.period, meta.periods, meta.latestPeriod)
+    const period = resolvePeriod(deps.search.period, meta.subdivisionPeriods)
     void queryClient.prefetchQuery(
       rankProgressionQueryOptions({
         period,
-        controls: deps.search.controls,
+        controls: "combined",
         character: deps.search.character,
       }),
     )

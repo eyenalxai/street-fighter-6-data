@@ -6,20 +6,17 @@ import {
   getMatchupCell,
   getOpponentWinRates,
 } from "@/lib/sf6/analytics/matchups"
-import {
-  CharacterIdSchema,
-  ControlMatchupSchema,
-  LeagueIdSchema,
-  ReportingPeriodSchema,
-} from "@/lib/sf6/model"
-import { getSnapshot } from "@/lib/sf6/snapshots.server"
+import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
+import { getEffectiveControls } from "@/lib/sf6/rank-selection"
+import { RankIdSchema } from "@/lib/sf6/ranks"
+import { getRankBlock, getRankControlBlocks } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 import { ControlMatchupResultSchema, MatchupRowSchema } from "./shared"
 
 const MatchupsInputSchema = z.object({
   period: ReportingPeriodSchema,
-  league: LeagueIdSchema,
+  rank: RankIdSchema,
   character: CharacterIdSchema,
   opponent: CharacterIdSchema,
   opponentListControls: ControlMatchupSchema,
@@ -42,27 +39,17 @@ const matchupsProcedure = os
   .output(MatchupsOutputSchema)
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
-      const snapshot = await getSnapshot(input.period)
-      const opponentResults = getOpponentWinRates(
-        snapshot,
-        input.league,
-        input.opponentListControls,
-        input.character,
-      )
+      const controls = getEffectiveControls(input.rank, input.opponentListControls)
+      const combinedBlock = await getRankBlock(input.period, input.rank, "combined")
+      const opponentBlock =
+        controls === "combined"
+          ? combinedBlock
+          : await getRankBlock(input.period, input.rank, controls)
+      const controlBlocks = await getRankControlBlocks(input.period, input.rank)
+      const opponentResults = getOpponentWinRates(opponentBlock, controls, input.character)
       return {
-        headToHead: getMatchupCell(
-          snapshot,
-          input.league,
-          "combined",
-          input.character,
-          input.opponent,
-        ),
-        controlMatchups: getControlMatchupResults(
-          snapshot,
-          input.league,
-          input.character,
-          input.opponent,
-        ),
+        headToHead: getMatchupCell(combinedBlock, "combined", input.character, input.opponent),
+        controlMatchups: getControlMatchupResults(controlBlocks, input.character, input.opponent),
         best: opponentResults.slice(0, 6).map(({ opponentId, winRate }) => {
           return { opponentId, winRate }
         }),

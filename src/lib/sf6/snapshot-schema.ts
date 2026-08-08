@@ -1,9 +1,5 @@
 import * as z from "zod"
 
-import type { LeagueId } from "./model"
-
-import { LeagueIdSchema } from "./model"
-
 const ProcessedDiaPlayerSchema = z.union([
   z.string().min(1),
   z.tuple([z.string().min(1), z.enum(["C", "M"])]),
@@ -32,17 +28,34 @@ const ProcessedDiaLeagueSchema = z
       })
     }
   })
-const ProcessedDiaLeaguesSchema = z.record(z.string().regex(/^[1-8]$/u), ProcessedDiaLeagueSchema)
-const ProcessedDiaSnapshotSchema = z
+const ProcessedRankedLeaguesSchema = z.record(
+  z.string().regex(/^[1-8]$/u),
+  ProcessedDiaLeagueSchema,
+)
+const ProcessedRankedSnapshotSchema = z
   .object({
-    c: ProcessedDiaLeaguesSchema,
-    ci: ProcessedDiaLeaguesSchema,
+    c: ProcessedRankedLeaguesSchema,
+    ci: ProcessedRankedLeaguesSchema,
+  })
+  .strict()
+const ProcessedMasterSnapshotSchema = z
+  .object({
+    c: z
+      .object({
+        "36": ProcessedDiaLeagueSchema,
+        "39": ProcessedDiaLeagueSchema,
+        "40": ProcessedDiaLeagueSchema,
+        "41": ProcessedDiaLeagueSchema,
+        "42": ProcessedDiaLeagueSchema,
+      })
+      .strict(),
   })
   .strict()
 
 type ProcessedDiaPlayer = z.infer<typeof ProcessedDiaPlayerSchema>
 type ProcessedDiaLeague = z.infer<typeof ProcessedDiaLeagueSchema>
-type ProcessedDiaSnapshot = z.infer<typeof ProcessedDiaSnapshotSchema>
+type ProcessedRankedSnapshot = z.infer<typeof ProcessedRankedSnapshotSchema>
+type ProcessedMasterSnapshot = z.infer<typeof ProcessedMasterSnapshotSchema>
 
 const getPlayerCharacterId = (player: ProcessedDiaPlayer): string =>
   typeof player === "string" ? player : player[0]
@@ -50,21 +63,17 @@ const getPlayerCharacterId = (player: ProcessedDiaPlayer): string =>
 const getPlayerControl = (player: ProcessedDiaPlayer): "C" | "M" | null =>
   typeof player === "string" ? null : player[1]
 
-const getLeagueId = (leagueId: string): LeagueId | undefined => {
-  const parsed = LeagueIdSchema.safeParse(leagueId)
-  return parsed.success ? parsed.data : undefined
-}
-
 export {
-  getLeagueId,
   getPlayerCharacterId,
   getPlayerControl,
   ProcessedDiaLeagueSchema,
-  ProcessedDiaLeaguesSchema,
   ProcessedDiaMatrixSchema,
   ProcessedDiaPlayerSchema,
-  ProcessedDiaSnapshotSchema,
+  ProcessedMasterSnapshotSchema,
+  ProcessedRankedLeaguesSchema,
+  ProcessedRankedSnapshotSchema,
   type ProcessedDiaLeague,
   type ProcessedDiaPlayer,
-  type ProcessedDiaSnapshot,
+  type ProcessedMasterSnapshot,
+  type ProcessedRankedSnapshot,
 }

@@ -6,6 +6,7 @@ import {
   metaQueryOptions,
   resolvePeriod,
 } from "@/lib/sf6/query-options"
+import { getControlComparisonRank } from "@/lib/sf6/rank-selection"
 import { ControlComparisonSearchSchema } from "@/lib/sf6/search"
 
 const ControlComparisonPage = () => {
@@ -22,11 +23,11 @@ const Route = createFileRoute("/_analytics/roster/controls")({
   },
   loader: async ({ context: { queryClient }, deps }) => {
     const meta = await queryClient.ensureQueryData(metaQueryOptions())
-    const period = resolvePeriod(deps.search.period, meta.periods, meta.latestPeriod)
+    const period = resolvePeriod(deps.search.period, meta.periods)
     void queryClient.prefetchQuery(
       controlComparisonQueryOptions({
         period,
-        league: deps.search.league,
+        rank: getControlComparisonRank(deps.search.rank),
       }),
     )
     return { period }

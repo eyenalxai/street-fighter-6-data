@@ -2,6 +2,7 @@ import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-route
 
 import { LeaderboardView } from "@/components/sf6/views/leaderboard-view"
 import { leaderboardQueryOptions, metaQueryOptions, resolvePeriod } from "@/lib/sf6/query-options"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { RosterSearchSchema } from "@/lib/sf6/search"
 
 const RosterPage = () => {
@@ -18,12 +19,13 @@ const Route = createFileRoute("/_analytics/roster/")({
   },
   loader: async ({ context: { queryClient }, deps }) => {
     const meta = await queryClient.ensureQueryData(metaQueryOptions())
-    const period = resolvePeriod(deps.search.period, meta.periods, meta.latestPeriod)
+    const periods = getPeriodsForRank(deps.search.rank, meta.periods, meta.subdivisionPeriods)
+    const period = resolvePeriod(deps.search.period, periods)
     void queryClient.prefetchQuery(
       leaderboardQueryOptions({
         period,
-        league: deps.search.league,
-        controls: deps.search.controls,
+        rank: deps.search.rank,
+        controls: getEffectiveControls(deps.search.rank, deps.search.controls),
       }),
     )
     return { period }

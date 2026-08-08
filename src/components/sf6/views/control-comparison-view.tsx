@@ -2,8 +2,9 @@ import { useNavigate } from "@tanstack/react-router"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart"
-import type { LeagueId, ReportingPeriod } from "@/lib/sf6/model"
+import type { ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
+import type { ControlComparisonRankId } from "@/lib/sf6/ranks"
 import type { ControlComparisonSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
@@ -31,6 +32,8 @@ import {
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { controlComparisonQueryOptions } from "@/lib/sf6/query-options"
+import { getControlComparisonRank } from "@/lib/sf6/rank-selection"
+import { ControlComparisonRankIdSchema, STANDARD_RANKS, getRank } from "@/lib/sf6/ranks"
 
 const chartConfig = {
   positiveDelta: {
@@ -52,7 +55,7 @@ type ControlComparisonViewProps = {
 const ControlComparisonResults = ({ period, search, meta }: ControlComparisonViewProps) => {
   const input = {
     period,
-    league: search.league,
+    rank: ControlComparisonRankIdSchema.parse(getControlComparisonRank(search.rank)),
   }
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
     controlComparisonQueryOptions(input),
@@ -61,8 +64,7 @@ const ControlComparisonResults = ({ period, search, meta }: ControlComparisonVie
   if (data === undefined) {
     return <ResultsPending />
   }
-  const leagueLabel =
-    meta.leagues.find((league) => league.id === displayedInput.league)?.label ?? "Rank"
+  const rankLabel = getRank(displayedInput.rank)?.label ?? "Rank"
   const chartRows = data.rows.map((row) => {
     return {
       ...row,
@@ -78,7 +80,7 @@ const ControlComparisonResults = ({ period, search, meta }: ControlComparisonVie
     <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Modern vs Classic controls"
-        description={`Modern controls minus Classic controls · ${leagueLabel} · ${formatReportingPeriod(displayedInput.period)}`}
+        description={`Modern controls minus Classic controls · ${rankLabel} · ${formatReportingPeriod(displayedInput.period)}`}
       >
         <p className="mb-4 max-w-3xl text-xs text-muted-foreground">
           For each character, this compares its average win rate when the player uses Modern
@@ -164,7 +166,7 @@ const ControlComparisonResults = ({ period, search, meta }: ControlComparisonVie
 
 const ControlComparisonView = ({ period, search, meta }: ControlComparisonViewProps) => {
   const navigate = useNavigate({ from: "/roster/controls" })
-  const change = (changes: Partial<{ period: ReportingPeriod; league: LeagueId }>) => {
+  const change = (changes: Partial<{ period: ReportingPeriod; rank: ControlComparisonRankId }>) => {
     void navigate({
       search: (previous) => {
         return { ...previous, ...changes }
@@ -185,17 +187,17 @@ const ControlComparisonView = ({ period, search, meta }: ControlComparisonViewPr
         }}
       />
       <RankField
-        value={search.league}
-        leagues={meta.leagues}
+        value={getControlComparisonRank(search.rank)}
+        ranks={STANDARD_RANKS}
         onChange={(value) => {
-          change({ league: value })
+          change({ rank: ControlComparisonRankIdSchema.parse(value) })
         }}
       />
     </AnalysisToolbar>
   )
 
   return (
-    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.league}`}>
+    <AnalysisPage toolbar={toolbar} resetKey={`${period}|${search.rank}`}>
       <ControlComparisonResults period={period} search={search} meta={meta} />
     </AnalysisPage>
   )

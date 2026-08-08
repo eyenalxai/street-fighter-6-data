@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router"
 
-import type { CharacterId, LeagueId, ReportingPeriod } from "@/lib/sf6/model"
+import type { CharacterId, ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
+import type { RankId } from "@/lib/sf6/ranks"
 import type { CounterpickSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
@@ -27,6 +28,8 @@ import {
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { toMatchupSearch } from "@/lib/sf6/navigation"
 import { counterpicksQueryOptions } from "@/lib/sf6/query-options"
+import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
+import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 type CounterpickPlannerViewProps = {
   period: ReportingPeriod
@@ -56,8 +59,8 @@ const CounterpickEmptyState = () => (
 const CounterpickDataResults = ({ period, search, meta }: CounterpickPlannerViewProps) => {
   const input = {
     period,
-    league: search.league,
-    controls: search.controls,
+    rank: search.rank,
+    controls: getEffectiveControls(search.rank, search.controls),
     opponents: search.opponents,
   }
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
@@ -106,7 +109,7 @@ const CounterpickDataResults = ({ period, search, meta }: CounterpickPlannerView
                       to="/matchups"
                       search={toMatchupSearch({
                         period: displayedInput.period,
-                        league: displayedInput.league,
+                        rank: displayedInput.rank,
                         character: row.characterId,
                         opponent,
                         controls: displayedInput.controls,
@@ -158,7 +161,7 @@ const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerView
   const change = (
     changes: Partial<{
       period: ReportingPeriod
-      league: LeagueId
+      rank: RankId
       controls: CounterpickSearch["controls"]
       opponents: CharacterId[]
     }>,
@@ -177,21 +180,22 @@ const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerView
     >
       <ReportingPeriodField
         value={period}
-        periods={meta.periods}
+        periods={getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)}
         onChange={(value) => {
           change({ period: value })
         }}
       />
       <RankField
-        value={search.league}
-        leagues={meta.leagues}
+        value={search.rank}
+        ranks={meta.ranks}
         onChange={(value) => {
-          change({ league: value })
+          change({ rank: value })
         }}
       />
       <ControlMatchupField
-        value={search.controls}
+        value={getEffectiveControls(search.rank, search.controls)}
         controls={meta.controls}
+        disabled={isMasterSubdivisionRank(search.rank)}
         onChange={(value) => {
           change({ controls: value })
         }}
@@ -216,7 +220,7 @@ const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerView
   return (
     <AnalysisPage
       toolbar={toolbar}
-      resetKey={`${period}|${search.league}|${search.controls}|${search.opponents.join(",")}`}
+      resetKey={`${period}|${search.rank}|${search.controls}|${search.opponents.join(",")}`}
     >
       <CounterpickResults period={period} search={search} meta={meta} />
     </AnalysisPage>
