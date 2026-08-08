@@ -1,75 +1,96 @@
 # SF6 Ranked Data
 
-A compact, data-first TanStack Start workbench for ranked Street Fighter 6
-meta, usage, and matchup analysis. It serves committed Buckler snapshots through
-Zod-validated oRPC procedures and TanStack Query.
+SF6 Ranked Data is a web application for Street Fighter 6 ranked statistics.
+Use it to view character use rates, win rates, and matchups. The application
+uses monthly data.
 
-## Quick start
+## Data source
+
+The data comes from the official
+[Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/en/stats/dia)
+website from Capcom. Buckler publishes monthly combined statistics. This
+project does not collect individual match records. This project is not an
+official Capcom project.
+
+The project uses these four Buckler data sets:
+
+- `dia`: Matchup data for Rookie through All Master.
+- `dia_master`: Matchup data for the four Master rank groups.
+- `usagerate`: Character use data for Rookie through All Master.
+- `usagerate_master`: Character use data for the four Master rank groups.
+
+The reporting period has the `YYYYMM` format. For example, `202607` means July 2026.
+
+## Start the application
+
+Install [Bun](https://bun.sh/). Then, run these commands:
 
 ```bash
 bun install
 bun run dev
 ```
 
-App URL: `http://localhost:3000`
+Open `http://localhost:3000`.
 
-## Scripts
+To start a production build, run these commands:
 
-- `bun run dev` — start dev server
-- `bun run build` — build for production
-- `bun run start` — preview production build
-- `bun run sync` — download missing raw snapshots for all four Buckler data families and check for new periods
-- `bun run normalize` — deterministically regenerate every processed snapshot from local raw data
-- `bun run format` — format with oxfmt
-- `bun run lint` — lint with oxlint (type-aware, with fixes)
-- `bun run check` — format, lint (with fixes), and type-check
-- `bun test` — run focused regression tests
-- `bun run routes:generate` — regenerate the route tree
+```bash
+bun run build
+bun run start
+```
 
-## Data workflow
+## Get the data
 
-Run `bun run sync`, then `bun run normalize` when updating the source data.
-Both commands cover `dia`, `dia_master`, `usagerate`, and `usagerate_master`.
-Downloaded files under `data/raw/**` are intentionally ignored. The normalized
-files under `data/processed/**` remain tracked historical data.
+The repository contains the processed data in `data/processed/`. You can use
+this data after you clone the repository.
 
-The application reads ranked `dia` snapshots for Rookie through All Master and
-processed `dia_master` snapshots for Master, High Master, Grand Master, and
-Ultimate Master. `usagerate` and `usagerate_master` provide character usage
-shares for the same rank/control populations. Master subdivision usage and
-matchup results combine all control styles. All four processed families must
-contain a period before that period is advertised as the latest complete data.
-Older history remains available; the common-period watermark only caps the
-newest advertised period.
+To get the source data from Buckler, run:
 
-## Workbench sections
+```bash
+bun run sync
+```
 
-- **Roster** — average win rate/popularity snapshots, control-style differences, and environment landscape.
-- **Characters** — selected-character average win rate, popularity, rank progression, persistence, and stability.
-- **Matchups** — complete matchup profiles, control-pairing results, pair progression, profile similarity, and counterpick planning.
-- **Changes** — period-to-period average win rate, popularity, balance, matchup flips, and persistence.
+This command does these steps:
 
-Each section owns its URL search state. Compatible period, rank, character,
-opponent, control, and selected-opponent choices are carried between links
-without introducing a global filter bar. Controls remain rendered in a stable
-toolbar while result data is pending or unavailable.
+1. It makes a request to the Buckler JSON API for each reporting period.
+2. It downloads only files that are not in `data/raw/`.
+3. It waits between requests and retries temporary request errors.
+4. It stores the API responses in `data/raw/`.
 
-The UI calls the server through oRPC, so browsers receive only the compact
-result for the active view rather than the complete snapshot collection.
-“Average win rate” means an unweighted mean of reported win rates against
-available opponents. Popularity-weighted metrics use opponent usage share and
-renormalize over the available weighted cells; they do not represent match
-volume. Weighted disadvantage contribution is a percentage-point contribution
-from each reported opponent's positive deficit, normalized over the reported
-opponent usage weight. Usage share is a character share of the selected
-population. Snapshot and Over Time modes use the selected player-control
-population; Landscape and Across Ranks use combined controls; control
-comparison modes compare both styles. Change Explorer's matchup results follow
-the selected player-control scope and display the individual control pairings.
-Persistence charts show the full available history, with the selected
-comparison periods marked. The UI displays reporting periods as month and year
-labels such as `Jul 2026`; the canonical data key remains `YYYYMM`. Missing
-values remain `—` and are not converted into zeroes.
+The command checks standard-rank data from June 2023. It checks Master-group
+data from February 2025. It stops before the current reporting period. You do
+not need an API key.
 
-`src/components/ui/` is formatted by oxfmt but excluded from oxlint
-(shadcn-managed components).
+The `data/raw/` directory is not part of the Git repository. To convert the raw
+files to the smaller format that the application uses, run:
+
+```bash
+bun run normalize
+```
+
+Run `bun run sync` before `bun run normalize` when you want new data.
+
+## Get one file manually
+
+Buckler uses this API URL:
+
+```text
+https://www.streetfighter.com/6/buckler/api/en/stats/{data-set}/{YYYYMM}
+```
+
+Replace `{data-set}` with one of the four data set names in this document.
+Replace `{YYYYMM}` with the required reporting period.
+
+For example, use this command to get the standard-rank matchup data for July
+2026:
+
+```bash
+curl 'https://www.streetfighter.com/6/buckler/api/en/stats/dia/202607' \
+  -H 'Accept: application/json' \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
+  -H 'Referer: https://www.streetfighter.com/6/buckler/en/stats/dia/202607' \
+  --output 202607.json
+```
+
+Buckler can reject a request that does not have a browser user agent and a
+valid Buckler referrer. Buckler can also reject a period that is not available.
