@@ -49,6 +49,11 @@ opponent; Modern averages Modern player / Classic opponent and Modern player /
 Modern opponent. If either required pairing is unavailable, the average is
 unavailable.
 
+**Weighted disadvantage contribution**:
+The positive matchup deficit, `max(0, 50 - win rate)`, multiplied by the
+opponent's share of the usage weight among numeric reported matchup cells. It
+is measured in percentage points and does not represent match volume.
+
 **Counterpick candidate result**:
 A counterpick planner result evaluated against a unique selected opponent set.
 A candidate is ranked only when every selected opponent has a reported result.
@@ -63,6 +68,18 @@ ahead-of-watermark snapshots remain stored.
 **Period comparison**:
 The comparison view between two reporting periods. Its change is the later
 period's average win rate minus the earlier period's average win rate.
+
+**Analysis control scope**:
+Snapshot and Over Time views use the selected player-control population.
+Landscape and Across Ranks use combined controls so their rank and historical
+comparisons remain comparable. Control comparison views include both Classic
+and Modern populations. Change Explorer applies the selected player-control
+scope to its matchup summaries and reports individual control pairings.
+
+**Persistence history**:
+Change Explorer shows every available period for the selected rank and control
+scope. The selected comparison endpoints are marked within that history; later
+movement is visible only when later snapshots exist.
 
 **Snapshot storage**:
 Raw downloads remain in ignored `data/raw/**`. Deterministically normalized

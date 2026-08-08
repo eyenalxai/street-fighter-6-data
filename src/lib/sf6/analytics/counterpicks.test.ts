@@ -30,3 +30,23 @@ test("counterpick candidates require complete selected-opponent coverage", () =>
   expect(result.rows.map((row) => row.characterId)).toEqual(["ken"])
   expect(result.rows[0]?.weightedAverage).toBe(52)
 })
+
+test("counterpick coverage clamps floating-point summation noise", () => {
+  const result = getCounterpickCandidates(
+    block,
+    "combined",
+    ["ken", "chunli", "ryu"],
+    {
+      rank: "all-master",
+      playerControl: "combined",
+      rows: [
+        { characterId: "ryu", playRate: 0.3, previousRate: 0, count: 1 },
+        { characterId: "chunli", playRate: 0.2, previousRate: 0, count: 1 },
+        { characterId: "ken", playRate: 0.1, previousRate: 0, count: 1 },
+      ],
+    },
+    "weighted",
+  )
+  expect(result.weightCoverage).toBe(1)
+  expect(result.selectedUsageShare).toBe(100)
+})

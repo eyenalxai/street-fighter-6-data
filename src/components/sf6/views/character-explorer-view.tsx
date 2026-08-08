@@ -18,12 +18,9 @@ import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-
 import { ModeTabs } from "@/components/sf6/mode-tabs"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
+import { getCharacterModePlayerControl } from "@/lib/sf6/analysis-scope"
 import { characterExplorerQueryOptions } from "@/lib/sf6/query-options"
-import {
-  getEffectivePlayerControl,
-  getPeriodsForRank,
-  getRankComparisonPeriods,
-} from "@/lib/sf6/rank-selection"
+import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 type CharacterExplorerViewProps = {
@@ -53,10 +50,18 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
   const input = {
     period,
     rank: search.rank,
-    playerControl: getEffectivePlayerControl(search.rank, search.playerControl),
+    playerControl: getCharacterModePlayerControl(search.rank, search.mode, search.playerControl),
     characters: search.characters,
     mode: search.mode,
   }
+  const playerControlDisabled = search.mode !== "time" || isMasterSubdivisionRank(search.rank)
+  const playerControlDescription = isMasterSubdivisionRank(search.rank)
+    ? "Master subdivisions combine all control styles."
+    : search.mode === "ranks"
+      ? "Across-rank comparisons use combined controls for comparable rank coverage."
+      : search.mode === "controls"
+        ? "Control styles compare Classic and Modern populations."
+        : undefined
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
     characterExplorerQueryOptions(input),
     input,
@@ -87,7 +92,8 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
       <PlayerControlField
         value={input.playerControl}
         controls={meta.playerControls}
-        disabled={isMasterSubdivisionRank(search.rank)}
+        disabled={playerControlDisabled}
+        description={playerControlDescription}
         onChange={(value) => {
           change({ playerControl: value })
         }}

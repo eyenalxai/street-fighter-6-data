@@ -93,6 +93,32 @@ test("missing usage keeps weighted metrics unavailable without changing unweight
   expect(summary.weightCoverage).toBe(0)
 })
 
+test("performance coverage clamps floating-point summation noise", () => {
+  const summary = getPerformanceSummary(
+    {
+      p: ["ryu", "ken", "chunli", "guile"],
+      m: [
+        [null, 0.5, 0.5, 0.5],
+        [0.5, null, 0.5, 0.5],
+        [0.5, 0.5, null, 0.5],
+        [0.5, 0.5, 0.5, null],
+      ],
+    },
+    "combined",
+    "ryu",
+    {
+      rank: "all-master",
+      playerControl: "combined",
+      rows: [
+        { characterId: "guile", playRate: 0.3, previousRate: 0, count: 1 },
+        { characterId: "chunli", playRate: 0.2, previousRate: 0, count: 1 },
+        { characterId: "ken", playRate: 0.1, previousRate: 0, count: 1 },
+      ],
+    },
+  )
+  expect(summary.weightCoverage).toBe(1)
+})
+
 test("player-control performance averages both opponent-control pairings", () => {
   const classicUsage: UsageBlock = {
     ...usage,

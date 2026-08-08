@@ -9,7 +9,7 @@ import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { PerformancePopularityChart } from "@/components/sf6/charts/performance-popularity-chart"
 import { MetricSummary } from "@/components/sf6/metric-summary"
-import { DeltaMetric, MetricValue } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableTableHead } from "@/components/sf6/sortable-table-head"
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table"
 import { formatReportingPeriod } from "@/lib/sf6/model"
@@ -161,19 +161,19 @@ const SnapshotResults = ({
         items={[
           {
             label: "Performance spread",
-            value: <MetricValue value={data.summary.performanceSpread} kind="delta" />,
+            value: <MetricValue value={data.summary.performanceSpread} format="percentagePoints" />,
           },
           {
             label: "Effective roster size",
-            value: <MetricValue value={data.summary.effectiveRosterSize} kind="number" />,
+            value: <MetricValue value={data.summary.effectiveRosterSize} format="number" />,
           },
           {
             label: "Top-five usage",
-            value: <MetricValue value={data.summary.topFiveShare} kind="usage" />,
+            value: <MetricValue value={data.summary.topFiveShare} format="percent" />,
           },
           {
             label: "Usage weight coverage",
-            value: <MetricValue value={data.summary.usageCoverage} kind="coverage" />,
+            value: <MetricValue value={data.summary.usageCoverage} format="coverage" />,
           },
         ]}
       />
@@ -210,31 +210,36 @@ const SnapshotResults = ({
                   <CharacterMatchupLink period={period} rank={rank} characterId={row.characterId} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.performance} kind="winRate" />
+                  <MetricValue value={row.performance} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.weightedPerformance} kind="winRate" />
+                  <MetricValue value={row.weightedPerformance} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.weightCoverage} kind="coverage" />
+                  <MetricValue value={row.weightCoverage} format="coverage" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.usage} kind="usage" />
+                  <MetricValue value={row.usage} format="percent" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.performanceDelta} />
+                  <MetricValue
+                    value={row.performanceDelta}
+                    format="percentagePoints"
+                    tone="directional"
+                    signed
+                  />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.usageDelta} />
+                  <MetricValue value={row.usageDelta} format="percentagePoints" signed />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.floor} kind="winRate" />
+                  <MetricValue value={row.floor} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right font-mono">
                   {row.favorableCount} / {row.availableCount}
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.coverage} kind="coverage" />
+                  <MetricValue value={row.coverage} format="coverage" />
                 </TableCell>
               </TableRow>
             ))}

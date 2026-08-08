@@ -1,11 +1,12 @@
 import { os } from "@orpc/server"
 import * as z from "zod"
 
-import { getMatchupChanges } from "@/lib/sf6/analytics/changes"
-import { getChangeSummary, getRosterMetrics } from "@/lib/sf6/analytics/comparisons"
+import { getChangeSummary, getMatchupChangesForPlayerControl } from "@/lib/sf6/analytics/changes"
+import { getRosterMetrics } from "@/lib/sf6/analytics/comparisons"
 import { getMetricEntry, getPeriodEntries } from "@/lib/sf6/analytics/loaders.server"
 import {
   CharacterIdSchema,
+  ControlMatchupSchema,
   PlayerControlSchema,
   ReportingPeriodSchema,
   UniqueCharacterIdsSchema,
@@ -43,6 +44,7 @@ const ChangeExplorerOutputSchema = z.object({
   after: SummarySchema,
   matchupChanges: z
     .object({
+      controlMatchup: ControlMatchupSchema,
       characterId: CharacterIdSchema,
       opponentId: CharacterIdSchema,
       before: z.number().min(0).max(100),
@@ -93,19 +95,18 @@ const changeExplorerProcedure = os
           beforeUsage: before?.usage ?? null,
         }
       })
-      const focusPeriods = periods.filter((period) => period >= fromPeriod && period <= toPeriod)
-      const focusEntries = await getPeriodEntries(
-        focusPeriods.length === 0 ? periods : focusPeriods,
-        input.rank,
-        input.playerControl,
-      )
+      const focusEntries = await getPeriodEntries(periods, input.rank, input.playerControl)
       return {
         fromPeriod,
         toPeriod,
         rows,
         before: getChangeSummary(beforeEntry, input.playerControl),
         after: getChangeSummary(afterEntry, input.playerControl),
-        matchupChanges: getMatchupChanges(beforeEntry.block, afterEntry.block, "combined"),
+        matchupChanges: getMatchupChangesForPlayerControl(
+          beforeEntry,
+          afterEntry,
+          input.playerControl,
+        ),
         focusSeries: input.focusCharacters.map((characterId) => {
           return {
             characterId,

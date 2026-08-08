@@ -47,7 +47,7 @@ const ControlMatchupResults = ({ rows }: { rows: readonly ControlMatchupRow[] })
             <TableRow key={control.controlMatchup}>
               <TableCell>{control.label}</TableCell>
               <TableCell className="text-right">
-                <MetricValue value={control.winRate} kind="winRate" />
+                <MetricValue value={control.winRate} format="percent" tone="winRate" />
               </TableCell>
             </TableRow>
           ))}

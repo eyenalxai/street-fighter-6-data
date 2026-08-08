@@ -1,4 +1,4 @@
-import type { CharacterId, ControlMatchup, ControlType } from "@/lib/sf6/model"
+import type { CharacterId, ControlMatchup, ControlType, PlayerControl } from "@/lib/sf6/model"
 import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 
 import { CHARACTERS, CONTROL_MATCHUPS } from "@/lib/sf6/model"
@@ -23,6 +23,13 @@ const getControlPair = (controlMatchup: ControlMatchup) => {
   }
   return option
 }
+
+const getPlayerControlMatchups = (playerControl: PlayerControl): readonly ControlMatchup[] =>
+  playerControl === "combined"
+    ? ["combined"]
+    : playerControl === "classic"
+      ? ["classic-classic", "classic-modern"]
+      : ["modern-classic", "modern-modern"]
 
 const getPlayerIndex = (
   block: ProcessedDiaLeague,
@@ -122,6 +129,7 @@ export {
   getAvailableOpponentCharacterIds,
   getAvailablePlayerCharacterIds,
   getControlPair,
+  getPlayerControlMatchups,
   getMatchupCell,
   getNumericOpponentRows,
   type MatchupCell,

@@ -3,7 +3,7 @@ import type { MetaData, RosterOverviewData } from "@/lib/sf6/query-options"
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
-import { DeltaMetric, MetricValue } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import {
   Table,
   TableBody,
@@ -41,6 +41,9 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
           <MetricTrendChart
             data={timeData}
             series={[{ key: "spread", label: "Performance spread", color: "var(--chart-1)" }]}
+            xAxisLabel="Reporting period"
+            yDomain={[0, "auto"]}
+            tickFormatter={(value) => `${value.toFixed(0)} pp`}
             valueLabel="Performance spread (percentage points)"
             formatter={(value) => (value === null ? "—" : `${value.toFixed(1)} pp`)}
           />
@@ -52,6 +55,9 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
           <MetricTrendChart
             data={timeData}
             series={[{ key: "diversity", label: "Effective roster size", color: "var(--chart-2)" }]}
+            xAxisLabel="Reporting period"
+            yDomain={[0, "auto"]}
+            tickFormatter={(value) => value.toFixed(0)}
             valueLabel="Effective roster size (characters)"
             formatter={(value) => (value === null ? "—" : value.toFixed(1))}
           />
@@ -63,6 +69,9 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
           <MetricTrendChart
             data={rankData}
             series={[{ key: "spread", label: "Performance spread", color: "var(--chart-3)" }]}
+            xAxisLabel="Rank"
+            yDomain={[0, "auto"]}
+            tickFormatter={(value) => `${value.toFixed(0)} pp`}
             valueLabel="Performance spread (percentage points)"
             formatter={(value) => (value === null ? "—" : `${value.toFixed(1)} pp`)}
           />
@@ -74,6 +83,9 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
           <MetricTrendChart
             data={rankData}
             series={[{ key: "diversity", label: "Effective roster size", color: "var(--chart-4)" }]}
+            xAxisLabel="Rank"
+            yDomain={[0, "auto"]}
+            tickFormatter={(value) => value.toFixed(0)}
             valueLabel="Effective roster size (characters)"
             formatter={(value) => (value === null ? "—" : value.toFixed(1))}
           />
@@ -98,13 +110,13 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
               <TableRow key={point.rankId}>
                 <TableCell>{point.label}</TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={point.performanceSpread} kind="delta" />
+                  <MetricValue value={point.performanceSpread} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={point.effectiveRosterSize} kind="number" />
+                  <MetricValue value={point.effectiveRosterSize} format="number" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={point.topFiveShare} kind="usage" />
+                  <MetricValue value={point.topFiveShare} format="percent" />
                 </TableCell>
               </TableRow>
             ))}
@@ -140,16 +152,16 @@ const LandscapeResults = ({ data, meta }: { data: LandscapeData; meta: MetaData 
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.timeRange} />
+                  <MetricValue value={row.timeRange} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.timeStandardDeviation} />
+                  <MetricValue value={row.timeStandardDeviation} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.largestAdjacentChange} />
+                  <MetricValue value={row.largestAdjacentChange} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.rankRange} />
+                  <MetricValue value={row.rankRange} format="percentagePoints" />
                 </TableCell>
                 <TableCell>
                   {row.peakPeriod === null ? "—" : formatReportingPeriod(row.peakPeriod)}

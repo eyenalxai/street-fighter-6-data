@@ -5,8 +5,13 @@ import type { UsageBlock } from "@/lib/sf6/snapshots/usage.server"
 
 import { getUsageCharacter } from "@/lib/sf6/snapshots/usage.server"
 
-import { getControlPair, getAvailableOpponentCharacterIds, getMatchupCell } from "./matchup-cells"
-import { completeMean, mean, weightedMean } from "./math"
+import {
+  getAvailableOpponentCharacterIds,
+  getControlPair,
+  getMatchupCell,
+  getPlayerControlMatchups,
+} from "./matchup-cells"
+import { boundedRatio, completeMean, mean, weightedMean } from "./math"
 
 type PerformanceSummary = {
   unweightedAverage: number | null
@@ -78,7 +83,7 @@ const getPerformanceSummary = (
   })
   const weighted = weightedMean(weightedRows)
   const allUsage = usageBlock?.rows.reduce((sum, row) => sum + row.playRate, 0) ?? 0
-  const usedUsage = weightedRows.reduce((sum, row) => sum + row.weight, 0)
+  const usedUsage = weighted?.weight ?? 0
   const sorted = values.toSorted((left, right) => right - left)
   const trimmed = sorted.length >= 6 ? sorted.slice(3) : []
   const average = mean(values)
@@ -86,7 +91,7 @@ const getPerformanceSummary = (
   return {
     unweightedAverage: average,
     weightedAverage: weighted?.value ?? null,
-    weightCoverage: usageBlock === undefined || allUsage === 0 ? null : usedUsage / allUsage,
+    weightCoverage: usageBlock === undefined ? null : boundedRatio(usedUsage, allUsage),
     floor: Math.min(...values),
     favorableCount: values.filter((value) => value >= 50).length,
     availableCount: values.length,
@@ -103,21 +108,20 @@ const getPlayerControlSummary = (
   playerControl: Exclude<PlayerControl, "combined">,
   usageBlocks?: Record<Exclude<PlayerControl, "combined">, UsageBlock>,
 ): PlayerControlSummary => {
-  const matchupIds: Exclude<ControlMatchup, "combined">[] =
-    playerControl === "classic"
-      ? ["classic-classic", "classic-modern"]
-      : ["modern-classic", "modern-modern"]
-  const opponentControls: Exclude<PlayerControl, "combined">[] =
-    playerControl === "classic" ? ["classic", "modern"] : ["classic", "modern"]
-  const summaries = matchupIds.map((controlMatchup, index) => {
-    const opponentControl = opponentControls[index]
-    return getPerformanceSummary(
-      controlBlocks[controlMatchup],
-      controlMatchup,
-      characterId,
-      opponentControl === undefined ? undefined : usageBlocks?.[opponentControl],
+  const summaries = getPlayerControlMatchups(playerControl)
+    .filter(
+      (controlMatchup): controlMatchup is Exclude<ControlMatchup, "combined"> =>
+        controlMatchup !== "combined",
     )
-  })
+    .map((controlMatchup) => {
+      const opponentControl = getControlPair(controlMatchup).opponent === "C" ? "classic" : "modern"
+      return getPerformanceSummary(
+        controlBlocks[controlMatchup],
+        controlMatchup,
+        characterId,
+        usageBlocks?.[opponentControl],
+      )
+    })
   const performance = completeMean(summaries.map((summary) => summary.unweightedAverage))
   const weighted = completeMean(summaries.map((summary) => summary.weightedAverage))
   const weightCoverage = completeMean(summaries.map((summary) => summary.weightCoverage))

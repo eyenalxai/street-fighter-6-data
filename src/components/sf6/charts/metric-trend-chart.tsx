@@ -23,10 +23,14 @@ type MetricTrendPoint = {
   label: string
   [key: string]: number | string | null
 }
+type MetricTrendDomain = [number | "auto", number | "auto"]
 
 const MetricTrendChart = ({
   data,
   series,
+  xAxisLabel,
+  yDomain,
+  tickFormatter,
   valueLabel,
   formatter,
   referenceValue,
@@ -36,6 +40,9 @@ const MetricTrendChart = ({
 }: {
   data: readonly MetricTrendPoint[]
   series: readonly MetricTrendSeries[]
+  xAxisLabel: string
+  yDomain: MetricTrendDomain
+  tickFormatter: (value: number) => string
   valueLabel: string
   formatter: (value: number | null) => string
   referenceValue?: number
@@ -54,7 +61,7 @@ const MetricTrendChart = ({
     return emptyLabel ?? null
   }
   return (
-    <AnalyticsChart config={config} className="h-[360px]">
+    <AnalyticsChart config={config} className="h-90">
       <LineChart accessibilityLayer data={data} margin={ANALYTICS_CHART_MARGIN}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
         <XAxis
@@ -64,12 +71,12 @@ const MetricTrendChart = ({
           textAnchor="end"
           height={50}
           interval={0}
-          label="Reporting period"
+          label={xAxisLabel}
         />
         <YAxis
-          domain={[0, 100]}
+          domain={yDomain}
           tick={ANALYTICS_AXIS_TICK}
-          tickFormatter={(value) => `${value}%`}
+          tickFormatter={tickFormatter}
           label={valueLabel}
         />
         {referenceValue === undefined ? null : (
@@ -103,7 +110,7 @@ const MetricTrendChart = ({
         {series.map((item) => (
           <Line
             key={item.key}
-            type="monotone"
+            type="linear"
             dataKey={item.key}
             name={item.label}
             stroke={`var(--color-${item.key})`}
@@ -117,4 +124,4 @@ const MetricTrendChart = ({
   )
 }
 
-export { MetricTrendChart, type MetricTrendPoint, type MetricTrendSeries }
+export { MetricTrendChart, type MetricTrendDomain, type MetricTrendPoint, type MetricTrendSeries }

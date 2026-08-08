@@ -2,8 +2,7 @@ import { expect, test } from "bun:test"
 
 import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 
-import { getMatchupChanges } from "./changes"
-import { getSimilarProfiles } from "./profiles"
+import { getMatchupProfile, getSimilarProfiles } from "./profiles"
 
 const profileBlock: ProcessedDiaLeague = {
   p: ["ryu", "ken", "chunli", "guile", "honda", "zangief", "cammy"],
@@ -29,28 +28,20 @@ test("similar profiles require common numeric opponents and report overlap", () 
   }
 })
 
-test("matchup flips exclude cells that touch the 50% boundary", () => {
-  const before: ProcessedDiaLeague = {
-    p: ["ryu", "ken", "chunli"],
-    m: [
-      [null, 0.4, 0.5],
-      [0.6, null, 0.5],
-      [0.5, 0.5, null],
+test("weighted disadvantage contributions use normalized percentage-point shares", () => {
+  const profile = getMatchupProfile(profileBlock, "combined", "ryu", {
+    rank: "all-master",
+    playerControl: "combined",
+    rows: [
+      { characterId: "chunli", playRate: 20, previousRate: 0, count: 1 },
+      { characterId: "zangief", playRate: 80, previousRate: 0, count: 1 },
     ],
-  }
-  const after: ProcessedDiaLeague = {
-    p: ["ryu", "ken", "chunli"],
-    m: [
-      [null, 0.6, 0.6],
-      [0.4, null, 0.5],
-      [0.4, 0.5, null],
-    ],
-  }
-  const changes = getMatchupChanges(before, after, "combined")
-  expect(changes.find((row) => row.characterId === "ryu" && row.opponentId === "ken")?.flip).toBe(
-    true,
-  )
+  })
+  const chunli = profile.rows.find((row) => row.opponentId === "chunli")
+  const zangief = profile.rows.find((row) => row.opponentId === "zangief")
+  expect(chunli?.weightedDisadvantageContribution).toBe(2)
+  expect(zangief?.weightedDisadvantageContribution).toBe(16)
   expect(
-    changes.find((row) => row.characterId === "ryu" && row.opponentId === "chunli")?.flip,
-  ).toBe(false)
+    profile.rows.reduce((sum, row) => sum + (row.weightedDisadvantageContribution ?? 0), 0),
+  ).toBe(18)
 })

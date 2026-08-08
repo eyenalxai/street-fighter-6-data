@@ -15,6 +15,13 @@ const completeMean = (values: readonly (number | null | undefined)[]): number | 
   return numbers.length === values.length ? mean(numbers) : null
 }
 
+const boundedRatio = (numerator: number, denominator: number): number | null => {
+  if (denominator <= 0) {
+    return null
+  }
+  return Math.min(1, Math.max(0, numerator / denominator))
+}
+
 const weightedMean = (
   values: readonly { value: number; weight: number }[],
 ): { value: number; weight: number } | null => {
@@ -63,4 +70,4 @@ const pearsonCorrelation = (left: readonly number[], right: readonly number[]): 
   return numerator / Math.sqrt(leftVariance * rightVariance)
 }
 
-export { completeMean, mean, pearsonCorrelation, standardDeviation, weightedMean }
+export { boundedRatio, completeMean, mean, pearsonCorrelation, standardDeviation, weightedMean }

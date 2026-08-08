@@ -1,13 +1,31 @@
-import type { CharacterId, ControlMatchup } from "@/lib/sf6/model"
+import type { CharacterId, ControlMatchup, PlayerControl } from "@/lib/sf6/model"
 import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 
 import { CHARACTERS } from "@/lib/sf6/model"
 
-import type { MetricEntry, MatchupChangeRow } from "./comparisons"
+import type { MetricEntry } from "./comparisons"
 import type { UsagePoint } from "./usage"
 
-import { getMatchupCell } from "./matchup-cells"
-import { getUsageRate } from "./usage"
+import { getRosterMetrics } from "./comparisons"
+import { getMatchupCell, getPlayerControlMatchups } from "./matchup-cells"
+import { getCharacterPerformance } from "./performance"
+import { getUsageRate, getUsageStats } from "./usage"
+
+type ChangeSummary = {
+  performanceSpread: number | null
+  effectiveRosterSize: number | null
+  topFiveShare: number
+  matchupImbalance: number | null
+}
+type MatchupChangeRow = {
+  controlMatchup: ControlMatchup
+  characterId: CharacterId
+  opponentId: CharacterId
+  before: number
+  after: number
+  delta: number
+  flip: boolean
+}
 
 const getMatchupChanges = (
   before: ProcessedDiaLeague,
@@ -31,6 +49,7 @@ const getMatchupChanges = (
       }
       return [
         {
+          controlMatchup,
           characterId: character.id,
           opponentId: opponent.id,
           before: beforeCell.winRate,
@@ -44,6 +63,60 @@ const getMatchupChanges = (
     }),
   ).toSorted((left, right) => Math.abs(right.delta) - Math.abs(left.delta))
 
+const getChangeSummary = (entry: MetricEntry, playerControl: PlayerControl): ChangeSummary => {
+  const rows = getRosterMetrics(entry, null, playerControl)
+  const performances = rows.flatMap((row) => (row.performance === null ? [] : [row.performance]))
+  const matchupValues = rows.flatMap((row) => {
+    const performance = getCharacterPerformance(
+      { combined: entry.block, controls: entry.controlBlocks },
+      { selected: entry.usage, controls: entry.usageControls },
+      row.characterId,
+      playerControl,
+    )
+    const imbalance = performance.summary?.matchupImbalance
+    return imbalance === null || imbalance === undefined ? [] : [imbalance]
+  })
+  const usageStats = getUsageStats(entry.usage)
+  return {
+    performanceSpread:
+      performances.length === 0 ? null : Math.max(...performances) - Math.min(...performances),
+    effectiveRosterSize: usageStats.effectiveRosterSize,
+    topFiveShare: usageStats.topFiveShare,
+    matchupImbalance:
+      matchupValues.length === 0
+        ? null
+        : matchupValues.reduce((sum, value) => sum + value, 0) / matchupValues.length,
+  }
+}
+
+const getMatchupChangesForPlayerControl = (
+  before: MetricEntry,
+  after: MetricEntry,
+  playerControl: PlayerControl,
+): MatchupChangeRow[] =>
+  getPlayerControlMatchups(playerControl)
+    .flatMap((controlMatchup) => {
+      if (controlMatchup === "combined") {
+        return getMatchupChanges(before.block, after.block, controlMatchup)
+      }
+      const beforeControls = before.controlBlocks
+      const afterControls = after.controlBlocks
+      return beforeControls === null || afterControls === null
+        ? []
+        : getMatchupChanges(
+            beforeControls[controlMatchup],
+            afterControls[controlMatchup],
+            controlMatchup,
+          )
+    })
+    .toSorted(
+      (left, right) =>
+        Math.abs(right.delta) - Math.abs(left.delta) ||
+        left.controlMatchup.localeCompare(right.controlMatchup) ||
+        left.characterId.localeCompare(right.characterId) ||
+        left.opponentId.localeCompare(right.opponentId),
+    )
+
 const getUsagePoints = (entries: readonly MetricEntry[], characterId: CharacterId): UsagePoint[] =>
   entries.map((entry) => {
     return {
@@ -52,4 +125,11 @@ const getUsagePoints = (entries: readonly MetricEntry[], characterId: CharacterI
     }
   })
 
-export { getMatchupChanges, getUsagePoints }
+export {
+  getChangeSummary,
+  getMatchupChanges,
+  getMatchupChangesForPlayerControl,
+  getUsagePoints,
+  type ChangeSummary,
+  type MatchupChangeRow,
+}

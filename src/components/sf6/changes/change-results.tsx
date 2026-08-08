@@ -7,7 +7,7 @@ import { ChangeCharacterTable } from "@/components/sf6/changes/character-table"
 import { ChangeDeltaChart } from "@/components/sf6/charts/change-delta-chart"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricSummary } from "@/components/sf6/metric-summary"
-import { DeltaMetric, MetricValue } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import {
   Table,
   TableBody,
@@ -71,19 +71,21 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
           items={[
             {
               label: "Performance spread",
-              value: <DeltaMetric value={data.before.performanceSpread} />,
+              value: (
+                <MetricValue value={data.before.performanceSpread} format="percentagePoints" />
+              ),
             },
             {
               label: "Effective roster size",
-              value: <MetricValue value={data.before.effectiveRosterSize} kind="number" />,
+              value: <MetricValue value={data.before.effectiveRosterSize} format="number" />,
             },
             {
               label: "Top-five usage",
-              value: <MetricValue value={data.before.topFiveShare} kind="usage" />,
+              value: <MetricValue value={data.before.topFiveShare} format="percent" />,
             },
             {
               label: "Matchup imbalance",
-              value: <DeltaMetric value={data.before.matchupImbalance} />,
+              value: <MetricValue value={data.before.matchupImbalance} format="percentagePoints" />,
             },
           ]}
         />
@@ -92,19 +94,19 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
           items={[
             {
               label: "Performance spread",
-              value: <DeltaMetric value={data.after.performanceSpread} />,
+              value: <MetricValue value={data.after.performanceSpread} format="percentagePoints" />,
             },
             {
               label: "Effective roster size",
-              value: <MetricValue value={data.after.effectiveRosterSize} kind="number" />,
+              value: <MetricValue value={data.after.effectiveRosterSize} format="number" />,
             },
             {
               label: "Top-five usage",
-              value: <MetricValue value={data.after.topFiveShare} kind="usage" />,
+              value: <MetricValue value={data.after.topFiveShare} format="percent" />,
             },
             {
               label: "Matchup imbalance",
-              value: <DeltaMetric value={data.after.matchupImbalance} />,
+              value: <MetricValue value={data.after.matchupImbalance} format="percentagePoints" />,
             },
           ]}
         />
@@ -125,11 +127,14 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
       <div className="grid gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Focused performance persistence"
-          description="The selected endpoints are marked by their surrounding monthly series."
+          description="Full available monthly history is shown; selected endpoints are marked, and later movement appears when later snapshots exist."
         >
           <MetricTrendChart
             data={performanceData}
             series={focusSeries}
+            xAxisLabel="Reporting period"
+            yDomain={[0, 100]}
+            tickFormatter={(value) => `${value.toFixed(0)}%`}
             valueLabel="Average win rate"
             formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
             referenceValue={50}
@@ -142,11 +147,14 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
         </AnalyticsPanel>
         <AnalyticsPanel
           title="Focused popularity persistence"
-          description="Inspect reversion or sustained movement after the selected change."
+          description="Full available monthly history is shown; inspect reversion or sustained movement after the selected change when later snapshots exist."
         >
           <MetricTrendChart
             data={usageData}
             series={focusSeries}
+            xAxisLabel="Reporting period"
+            yDomain={[0, "auto"]}
+            tickFormatter={(value) => `${value.toFixed(0)}%`}
             valueLabel="Usage share"
             formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
             referencePeriods={[
@@ -158,7 +166,7 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
       </div>
       <AnalyticsPanel
         title="Largest matchup changes"
-        description="Only cells with numeric results in both periods are included. A flip crosses 50% between the selected periods."
+        description="Only cells with numeric results in both periods are included. Results follow the selected player-control scope and remain separated by opponent control. A flip crosses 50% between the selected periods."
         contentClassName="p-0"
       >
         <ToggleGroup
@@ -178,6 +186,7 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Control matchup</TableHead>
               <TableHead>Character</TableHead>
               <TableHead>Opponent</TableHead>
               <TableHead className="text-right">Before</TableHead>
@@ -191,17 +200,26 @@ const ChangeResults = ({ data, meta }: { data: ChangeExplorerData; meta: MetaDat
               .filter((row) => !onlyFlips || row.flip)
               .slice(0, 40)
               .map((row) => (
-                <TableRow key={`${row.characterId}-${row.opponentId}`}>
+                <TableRow key={`${row.controlMatchup}-${row.characterId}-${row.opponentId}`}>
+                  <TableCell>
+                    {meta.controls.find((control) => control.id === row.controlMatchup)?.label ??
+                      row.controlMatchup}
+                  </TableCell>
                   <TableCell>{getCharacterName(row.characterId)}</TableCell>
                   <TableCell>{getCharacterName(row.opponentId)}</TableCell>
                   <TableCell className="text-right">
-                    <MetricValue value={row.before} kind="winRate" />
+                    <MetricValue value={row.before} format="percent" tone="winRate" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <MetricValue value={row.after} kind="winRate" />
+                    <MetricValue value={row.after} format="percent" tone="winRate" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <DeltaMetric value={row.delta} />
+                    <MetricValue
+                      value={row.delta}
+                      format="percentagePoints"
+                      tone="directional"
+                      signed
+                    />
                   </TableCell>
                   <TableCell>{row.flip ? "Yes" : "No"}</TableCell>
                 </TableRow>

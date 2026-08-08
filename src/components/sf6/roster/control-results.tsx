@@ -3,7 +3,7 @@ import type { MetaData, RosterOverviewData } from "@/lib/sf6/query-options"
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { ControlDeltaChart } from "@/components/sf6/charts/control-delta-chart"
-import { DeltaMetric, MetricValue } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   Table,
@@ -76,22 +76,22 @@ const ControlResults = ({ data, meta }: { data: ControlsData; meta: MetaData }) 
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.classic} kind="winRate" />
+                  <MetricValue value={row.classic} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.modern} kind="winRate" />
+                  <MetricValue value={row.modern} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.performanceDelta} />
+                  <MetricValue value={row.performanceDelta} format="percentagePoints" signed />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.classicUsage} kind="usage" />
+                  <MetricValue value={row.classicUsage} format="percent" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.modernUsage} kind="usage" />
+                  <MetricValue value={row.modernUsage} format="percent" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.usageDelta} />
+                  <MetricValue value={row.usageDelta} format="percentagePoints" signed />
                 </TableCell>
               </TableRow>
             ))}

@@ -54,21 +54,6 @@ type RankMetricPoint = {
   weightCoverage: number | null
   usage: number | null
 }
-type ChangeSummary = {
-  performanceSpread: number | null
-  effectiveRosterSize: number | null
-  topFiveShare: number
-  matchupImbalance: number | null
-}
-type MatchupChangeRow = {
-  characterId: CharacterId
-  opponentId: CharacterId
-  before: number
-  after: number
-  delta: number
-  flip: boolean
-}
-
 const getCharacterMetric = (
   entry: MetricEntry,
   characterId: CharacterId,
@@ -225,37 +210,15 @@ const getCharacterStability = (
   }
 }
 
-const getChangeSummary = (entry: MetricEntry, playerControl: PlayerControl): ChangeSummary => {
-  const rows = getRosterMetrics(entry, null, playerControl)
-  const performances = rows.flatMap((row) => (row.performance === null ? [] : [row.performance]))
-  const matchupValues = rows.flatMap((row) => {
-    const summary = getPerformanceSummary(entry.block, "combined", row.characterId, entry.usage)
-    return summary.matchupImbalance === null ? [] : [summary.matchupImbalance]
-  })
-  return {
-    performanceSpread:
-      performances.length === 0 ? null : Math.max(...performances) - Math.min(...performances),
-    effectiveRosterSize: getUsageStats(entry.usage).effectiveRosterSize,
-    topFiveShare: getUsageStats(entry.usage).topFiveShare,
-    matchupImbalance:
-      matchupValues.length === 0
-        ? null
-        : matchupValues.reduce((sum, value) => sum + value, 0) / matchupValues.length,
-  }
-}
-
 export {
   getCharacterMetric,
   getCharacterStability,
-  getChangeSummary,
   getLandscapeSeries,
   getRankMetric,
   getRankLandscapeSeries,
   getRosterMetrics,
   type CharacterMetricRow,
-  type ChangeSummary,
   type LandscapePoint,
-  type MatchupChangeRow,
   type MetricEntry,
   type RankLandscapePoint,
   type RankMetricPoint,

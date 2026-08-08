@@ -40,7 +40,7 @@ const ProfileRowSchema = z.object({
   status: z.enum(["numeric", "unavailable", "mirror"]),
   winRate: z.number().min(0).max(100).nullable(),
   opponentUsage: z.number().min(0).max(100).nullable(),
-  weightedDisadvantage: z.number().min(0).nullable(),
+  weightedDisadvantageContribution: z.number().min(0).max(50).nullable(),
 })
 const SummarySchema = z.object({
   unweightedAverage: z.number().min(0).max(100).nullable(),

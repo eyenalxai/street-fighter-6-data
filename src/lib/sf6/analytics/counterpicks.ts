@@ -5,7 +5,7 @@ import type { UsageBlock } from "@/lib/sf6/snapshots/usage.server"
 import { getUsageCharacter } from "@/lib/sf6/snapshots/usage.server"
 
 import { getAvailablePlayerCharacterIds, getMatchupCell } from "./matchup-cells"
-import { mean, weightedMean } from "./math"
+import { boundedRatio, mean, weightedMean } from "./math"
 
 type CounterpickOrder = "weighted" | "average" | "floor"
 type CounterpickRow = {
@@ -91,6 +91,8 @@ const getCounterpickCandidates = (
       : order === "average"
         ? row.unweightedAverage
         : (row.weightedAverage ?? -Infinity)
+  const weightCoverage =
+    usageBlock === undefined ? null : boundedRatio(selectedUsageShare ?? 0, totalUsageShare)
   return {
     rows: rows.toSorted(
       (left, right) =>
@@ -99,14 +101,8 @@ const getCounterpickCandidates = (
         left.characterId.localeCompare(right.characterId),
     ),
     excludedCandidateCount,
-    selectedUsageShare:
-      selectedUsageShare === null || totalUsageShare === 0
-        ? null
-        : (selectedUsageShare / totalUsageShare) * 100,
-    weightCoverage:
-      usageBlock === undefined || totalUsageShare === 0 || selectedUsageShare === null
-        ? null
-        : selectedUsageShare / totalUsageShare,
+    selectedUsageShare: weightCoverage === null ? null : weightCoverage * 100,
+    weightCoverage,
   }
 }
 

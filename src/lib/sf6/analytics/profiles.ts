@@ -9,7 +9,7 @@ import { getUsageCharacter } from "@/lib/sf6/snapshots/usage.server"
 import type { PerformanceSummary } from "./performance"
 
 import { getAvailablePlayerCharacterIds, getMatchupCell } from "./matchup-cells"
-import { pearsonCorrelation } from "./math"
+import { boundedRatio, pearsonCorrelation } from "./math"
 import { getPerformanceSummary } from "./performance"
 
 type MatchupProfileRow = {
@@ -17,7 +17,7 @@ type MatchupProfileRow = {
   status: "numeric" | "unavailable" | "mirror"
   winRate: number | null
   opponentUsage: number | null
-  weightedDisadvantage: number | null
+  weightedDisadvantageContribution: number | null
 }
 type SimilarProfile = {
   characterId: CharacterId
@@ -36,7 +36,7 @@ const getMatchupProfile = (
   characterId: CharacterId,
   usageBlock?: UsageBlock,
 ): { rows: MatchupProfileRow[]; summary: PerformanceSummary } => {
-  const rows = CHARACTERS.map(({ id: opponentId }) => {
+  const baseRows = CHARACTERS.map(({ id: opponentId }) => {
     const cell = getMatchupCell(block, controlMatchup, characterId, opponentId)
     const usage = usageBlock === undefined ? null : getUsageCharacter(usageBlock, opponentId)
     return {
@@ -44,10 +44,25 @@ const getMatchupProfile = (
       status: cell.status,
       winRate: cell.winRate,
       opponentUsage: usage?.playRate ?? null,
-      weightedDisadvantage:
-        cell.winRate === null || usage === null
+    }
+  })
+  let totalReportedUsage = 0
+  for (const row of baseRows) {
+    if (row.status === "numeric" && row.winRate !== null && row.opponentUsage !== null) {
+      totalReportedUsage += Math.max(0, row.opponentUsage)
+    }
+  }
+  const rows = baseRows.map((row) => {
+    const usageShare =
+      row.status !== "numeric" || row.winRate === null || row.opponentUsage === null
+        ? null
+        : boundedRatio(Math.max(0, row.opponentUsage), totalReportedUsage)
+    return {
+      ...row,
+      weightedDisadvantageContribution:
+        usageShare === null || row.winRate === null
           ? null
-          : Math.max(0, 50 - cell.winRate) * usage.playRate,
+          : Math.max(0, 50 - row.winRate) * usageShare,
     }
   })
   return {

@@ -1,16 +1,13 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { RosterOverviewView } from "@/components/sf6/views/roster-overview-view"
+import { getRosterModePlayerControl } from "@/lib/sf6/analysis-scope"
 import {
   metaQueryOptions,
   resolvePeriod,
   rosterOverviewQueryOptions,
 } from "@/lib/sf6/query-options"
-import {
-  getEffectivePlayerControl,
-  getPeriodsForRank,
-  getRankComparisonPeriods,
-} from "@/lib/sf6/rank-selection"
+import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { RosterSearchSchema } from "@/lib/sf6/search"
 
 const RosterPage = () => {
@@ -36,7 +33,11 @@ const Route = createFileRoute("/_analytics/roster")({
       rosterOverviewQueryOptions({
         period,
         rank: deps.search.rank,
-        playerControl: getEffectivePlayerControl(deps.search.rank, deps.search.playerControl),
+        playerControl: getRosterModePlayerControl(
+          deps.search.rank,
+          deps.search.mode,
+          deps.search.playerControl,
+        ),
         mode: deps.search.mode,
       }),
     )

@@ -1,16 +1,13 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { CharacterExplorerView } from "@/components/sf6/views/character-explorer-view"
+import { getCharacterModePlayerControl } from "@/lib/sf6/analysis-scope"
 import {
   characterExplorerQueryOptions,
   metaQueryOptions,
   resolvePeriod,
 } from "@/lib/sf6/query-options"
-import {
-  getEffectivePlayerControl,
-  getPeriodsForRank,
-  getRankComparisonPeriods,
-} from "@/lib/sf6/rank-selection"
+import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { CharacterExplorerSearchSchema } from "@/lib/sf6/search"
 
 const CharactersPage = () => {
@@ -36,7 +33,11 @@ const Route = createFileRoute("/_analytics/characters")({
       characterExplorerQueryOptions({
         period,
         rank: deps.search.rank,
-        playerControl: getEffectivePlayerControl(deps.search.rank, deps.search.playerControl),
+        playerControl: getCharacterModePlayerControl(
+          deps.search.rank,
+          deps.search.mode,
+          deps.search.playerControl,
+        ),
         characters: deps.search.characters,
         mode: deps.search.mode,
       }),

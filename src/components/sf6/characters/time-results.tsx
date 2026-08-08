@@ -5,7 +5,7 @@ import type { CharacterExplorerData, MetaData } from "@/lib/sf6/query-options"
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
-import { DeltaMetric, MetricValue } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import {
   Table,
   TableBody,
@@ -98,6 +98,9 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
                     : `${item.label} average`,
               }
             })}
+            xAxisLabel="Reporting period"
+            yDomain={[0, 100]}
+            tickFormatter={(value) => `${value.toFixed(0)}%`}
             valueLabel={
               performanceMetric === "weighted"
                 ? "Popularity-weighted performance"
@@ -115,6 +118,9 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
           <MetricTrendChart
             data={usageData}
             series={series}
+            xAxisLabel="Reporting period"
+            yDomain={[0, "auto"]}
+            tickFormatter={(value) => `${value.toFixed(0)}%`}
             valueLabel="Usage share"
             formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
           />
@@ -151,16 +157,22 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
                     : formatReportingPeriod(row.stability.firstPeriod)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.stability.performanceRange} />
+                  <MetricValue value={row.stability.performanceRange} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.stability.performanceStandardDeviation} kind="number" />
+                  <MetricValue
+                    value={row.stability.performanceStandardDeviation}
+                    format="percentagePoints"
+                  />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.stability.usageRange} />
+                  <MetricValue value={row.stability.usageRange} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.stability.usageStandardDeviation} kind="number" />
+                  <MetricValue
+                    value={row.stability.usageStandardDeviation}
+                    format="percentagePoints"
+                  />
                 </TableCell>
               </TableRow>
             ))}

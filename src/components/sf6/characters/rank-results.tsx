@@ -3,7 +3,7 @@ import type { CharacterExplorerData, MetaData } from "@/lib/sf6/query-options"
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
-import { DeltaMetric } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import {
   Table,
   TableBody,
@@ -57,6 +57,9 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
           <MetricTrendChart
             data={performanceData}
             series={chartSeries}
+            xAxisLabel="Rank"
+            yDomain={[0, 100]}
+            tickFormatter={(value) => `${value.toFixed(0)}%`}
             valueLabel="Average win rate"
             formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
             referenceValue={50}
@@ -70,6 +73,9 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
           <MetricTrendChart
             data={usageData}
             series={chartSeries}
+            xAxisLabel="Rank"
+            yDomain={[0, "auto"]}
+            tickFormatter={(value) => `${value.toFixed(0)}%`}
             valueLabel="Usage share"
             formatter={(value) => (value === null ? "—" : `${value.toFixed(1)}%`)}
           />
@@ -100,10 +106,10 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.performanceRange} />
+                  <MetricValue value={row.performanceRange} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.usageRange} />
+                  <MetricValue value={row.usageRange} format="percentagePoints" />
                 </TableCell>
                 <TableCell>{row.peakRankId ?? "—"}</TableCell>
                 <TableCell>{row.troughRankId ?? "—"}</TableCell>

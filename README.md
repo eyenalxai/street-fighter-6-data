@@ -59,11 +59,18 @@ result for the active view rather than the complete snapshot collection.
 “Average win rate” means an unweighted mean of reported win rates against
 available opponents. Popularity-weighted metrics use opponent usage share and
 renormalize over the available weighted cells; they do not represent match
-volume. Usage share is a character share of the selected population, while
-effective roster size is the exponential Shannon entropy of those shares. The
-UI displays reporting periods as month and year labels such as `Jul 2026`; the
-canonical data key remains `YYYYMM`. Missing values remain `—` and are not
-converted into zeroes.
+volume. Weighted disadvantage contribution is a percentage-point contribution
+from each reported opponent's positive deficit, normalized over the reported
+opponent usage weight. Usage share is a character share of the selected
+population, while effective roster size is the exponential Shannon entropy of
+those shares. Snapshot and Over Time modes use the selected player-control
+population; Landscape and Across Ranks use combined controls; control
+comparison modes compare both styles. Change Explorer's matchup results follow
+the selected player-control scope and display the individual control pairings.
+Persistence charts show the full available history, with the selected
+comparison periods marked. The UI displays reporting periods as month and year
+labels such as `Jul 2026`; the canonical data key remains `YYYYMM`. Missing
+values remain `—` and are not converted into zeroes.
 
 `src/components/ui/` is formatted by oxfmt but excluded from oxlint
 (shadcn-managed components).

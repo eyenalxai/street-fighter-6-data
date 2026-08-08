@@ -6,7 +6,7 @@ import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MatchupProfileChart } from "@/components/sf6/charts/matchup-profile-chart"
 import { ControlMatchupResults } from "@/components/sf6/control-matchup-results"
 import { MetricSummary } from "@/components/sf6/metric-summary"
-import { DeltaMetric, MetricValue } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import {
   Table,
   TableBody,
@@ -57,20 +57,21 @@ const MatchupProfileResults = ({
             <div>
               <p className="font-medium">{getCharacterName(character)}</p>
               <p className="text-xs text-muted-foreground">
-                Usage <MetricValue value={data.playerUsage} kind="usage" />
+                Usage <MetricValue value={data.playerUsage} format="percent" />
               </p>
             </div>
           </div>
           <MetricValue
             value={data.headToHead.winRate}
-            kind="winRate"
+            format="percent"
+            tone="winRate"
             className="text-center text-4xl font-semibold"
           />
           <div className="flex items-center justify-end gap-3 text-right">
             <div>
               <p className="font-medium">{getCharacterName(opponent)}</p>
               <p className="text-xs text-muted-foreground">
-                Usage <MetricValue value={data.opponentUsage} kind="usage" />
+                Usage <MetricValue value={data.opponentUsage} format="percent" />
               </p>
             </div>
             <CharacterBadge characterId={opponent} />
@@ -84,15 +85,19 @@ const MatchupProfileResults = ({
         items={[
           {
             label: "Unweighted average",
-            value: <MetricValue value={data.summary.unweightedAverage} kind="winRate" />,
+            value: (
+              <MetricValue value={data.summary.unweightedAverage} format="percent" tone="winRate" />
+            ),
           },
           {
             label: "Usage-weighted average",
-            value: <MetricValue value={data.summary.weightedAverage} kind="winRate" />,
+            value: (
+              <MetricValue value={data.summary.weightedAverage} format="percent" tone="winRate" />
+            ),
           },
           {
             label: "Worst matchup",
-            value: <MetricValue value={data.summary.floor} kind="winRate" />,
+            value: <MetricValue value={data.summary.floor} format="percent" tone="winRate" />,
           },
           {
             label: "Favorable matchups",
@@ -100,16 +105,26 @@ const MatchupProfileResults = ({
           },
           {
             label: "Reported coverage",
-            value: <MetricValue value={data.summary.coverage} kind="coverage" />,
+            value: <MetricValue value={data.summary.coverage} format="coverage" />,
           },
           {
             label: "Usage weight coverage",
-            value: <MetricValue value={data.summary.weightCoverage} kind="coverage" />,
+            value: <MetricValue value={data.summary.weightCoverage} format="coverage" />,
           },
-          { label: "Top-three lift", value: <DeltaMetric value={data.summary.topThreeLift} /> },
+          {
+            label: "Top-three lift",
+            value: (
+              <MetricValue
+                value={data.summary.topThreeLift}
+                format="percentagePoints"
+                tone="directional"
+                signed
+              />
+            ),
+          },
           {
             label: "Matchup imbalance",
-            value: <DeltaMetric value={data.summary.matchupImbalance} />,
+            value: <MetricValue value={data.summary.matchupImbalance} format="percentagePoints" />,
             description: "Mean absolute distance from 50%.",
           },
         ]}
@@ -131,7 +146,7 @@ const MatchupProfileResults = ({
               <TableHead>Opponent</TableHead>
               <TableHead className="text-right">Win rate</TableHead>
               <TableHead className="text-right">Opponent usage</TableHead>
-              <TableHead className="text-right">Weighted disadvantage</TableHead>
+              <TableHead className="text-right">Weighted disadvantage contribution</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -145,13 +160,16 @@ const MatchupProfileResults = ({
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.winRate} kind="winRate" />
+                  <MetricValue value={row.winRate} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.opponentUsage} kind="usage" />
+                  <MetricValue value={row.opponentUsage} format="percent" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeltaMetric value={row.weightedDisadvantage} />
+                  <MetricValue
+                    value={row.weightedDisadvantageContribution}
+                    format="percentagePoints"
+                  />
                 </TableCell>
                 <TableCell className="text-muted-foreground">{row.status}</TableCell>
               </TableRow>
@@ -176,7 +194,7 @@ const MatchupProfileResults = ({
                 <TableRow key={point.id}>
                   <TableCell>{point.label}</TableCell>
                   <TableCell className="text-right">
-                    <MetricValue value={point.winRate} kind="winRate" />
+                    <MetricValue value={point.winRate} format="percent" tone="winRate" />
                   </TableCell>
                 </TableRow>
               ))}
@@ -199,7 +217,7 @@ const MatchupProfileResults = ({
                 <TableRow key={point.period}>
                   <TableCell>{formatReportingPeriod(point.period)}</TableCell>
                   <TableCell className="text-right">
-                    <MetricValue value={point.winRate} kind="winRate" />
+                    <MetricValue value={point.winRate} format="percent" tone="winRate" />
                   </TableCell>
                 </TableRow>
               ))}

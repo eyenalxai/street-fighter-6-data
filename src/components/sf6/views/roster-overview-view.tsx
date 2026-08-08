@@ -17,12 +17,9 @@ import { ControlResults } from "@/components/sf6/roster/control-results"
 import { LandscapeResults } from "@/components/sf6/roster/landscape-results"
 import { SnapshotResults } from "@/components/sf6/roster/snapshot-results"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
+import { getRosterModePlayerControl } from "@/lib/sf6/analysis-scope"
 import { rosterOverviewQueryOptions } from "@/lib/sf6/query-options"
-import {
-  getEffectivePlayerControl,
-  getPeriodsForRank,
-  getRankComparisonPeriods,
-} from "@/lib/sf6/rank-selection"
+import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 type RosterOverviewViewProps = {
@@ -51,9 +48,17 @@ const RosterOverviewView = ({ period, search, meta }: RosterOverviewViewProps) =
   const input = {
     period,
     rank: search.rank,
-    playerControl: getEffectivePlayerControl(search.rank, search.playerControl),
+    playerControl: getRosterModePlayerControl(search.rank, search.mode, search.playerControl),
     mode: search.mode,
   }
+  const playerControlDisabled = search.mode !== "snapshot" || isMasterSubdivisionRank(search.rank)
+  const playerControlDescription = isMasterSubdivisionRank(search.rank)
+    ? "Master subdivisions combine all control styles."
+    : search.mode === "landscape"
+      ? "Landscape uses combined controls for comparable rank and time summaries."
+      : search.mode === "controls"
+        ? "Control differences compare Classic and Modern populations."
+        : undefined
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
     rosterOverviewQueryOptions(input),
     input,
@@ -84,7 +89,8 @@ const RosterOverviewView = ({ period, search, meta }: RosterOverviewViewProps) =
       <PlayerControlField
         value={input.playerControl}
         controls={meta.playerControls}
-        disabled={isMasterSubdivisionRank(search.rank)}
+        disabled={playerControlDisabled}
+        description={playerControlDescription}
         onChange={(value) => {
           change({ playerControl: value })
         }}

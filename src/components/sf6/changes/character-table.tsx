@@ -3,7 +3,7 @@ import { useMemo, useState } from "react"
 import type { ChangeExplorerData } from "@/lib/sf6/query-options"
 
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
-import { DeltaMetric, MetricValue } from "@/components/sf6/metric-value"
+import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableTableHead } from "@/components/sf6/sortable-table-head"
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table"
 
@@ -105,34 +105,44 @@ const ChangeCharacterTable = ({ rows }: { rows: readonly ChangeRow[] }) => {
               </div>
             </TableCell>
             <TableCell className="text-right">
-              <DeltaMetric value={row.performanceDelta} />
+              <MetricValue
+                value={row.performanceDelta}
+                format="percentagePoints"
+                tone="directional"
+                signed
+              />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.beforePerformance} kind="winRate" />
+              <MetricValue value={row.beforePerformance} format="percent" tone="winRate" />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.performance} kind="winRate" />
+              <MetricValue value={row.performance} format="percent" tone="winRate" />
             </TableCell>
             <TableCell className="text-right">
-              <DeltaMetric value={row.weightedPerformanceDelta} />
+              <MetricValue
+                value={row.weightedPerformanceDelta}
+                format="percentagePoints"
+                tone="directional"
+                signed
+              />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.beforeWeightedPerformance} kind="winRate" />
+              <MetricValue value={row.beforeWeightedPerformance} format="percent" tone="winRate" />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.weightedPerformance} kind="winRate" />
+              <MetricValue value={row.weightedPerformance} format="percent" tone="winRate" />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.weightCoverage} kind="coverage" />
+              <MetricValue value={row.weightCoverage} format="coverage" />
             </TableCell>
             <TableCell className="text-right">
-              <DeltaMetric value={row.usageDelta} />
+              <MetricValue value={row.usageDelta} format="percentagePoints" signed />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.beforeUsage} kind="usage" />
+              <MetricValue value={row.beforeUsage} format="percent" />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.usage} kind="usage" />
+              <MetricValue value={row.usage} format="percent" />
             </TableCell>
             <TableCell>{row.debut ? "Yes" : "—"}</TableCell>
           </TableRow>

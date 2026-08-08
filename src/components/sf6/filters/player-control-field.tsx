@@ -9,11 +9,13 @@ const PlayerControlField = ({
   controls,
   onChange,
   disabled = false,
+  description,
 }: {
   value: PlayerControl
   controls: MetaData["playerControls"]
   onChange: (value: PlayerControl) => void
   disabled?: boolean
+  description?: string
 }) => (
   <SelectField
     label="Player controls"
@@ -24,7 +26,9 @@ const PlayerControlField = ({
     onChange={(next) => {
       onChange(PlayerControlSchema.parse(next))
     }}
-    description={disabled ? "Master subdivisions combine all control styles." : undefined}
+    description={
+      description ?? (disabled ? "Master subdivisions combine all control styles." : undefined)
+    }
     disabled={disabled}
   />
 )

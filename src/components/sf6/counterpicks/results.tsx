@@ -60,13 +60,13 @@ const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.weightedAverage} kind="winRate" />
+                  <MetricValue value={row.weightedAverage} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.unweightedAverage} kind="winRate" />
+                  <MetricValue value={row.unweightedAverage} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.floor} kind="winRate" />
+                  <MetricValue value={row.floor} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right font-mono">
                   {row.favorableCount} / {data.opponents.length}
@@ -78,7 +78,8 @@ const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta
                         row.matchups.find((matchup) => matchup.opponentId === opponentId)
                           ?.winRate ?? null
                       }
-                      kind="winRate"
+                      format="percent"
+                      tone="winRate"
                     />
                   </TableCell>
                 ))}

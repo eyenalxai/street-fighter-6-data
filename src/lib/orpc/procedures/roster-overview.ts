@@ -15,7 +15,7 @@ import {
 import { getControlComparison } from "@/lib/sf6/analytics/performance"
 import { getUsageStats } from "@/lib/sf6/analytics/usage"
 import { CharacterIdSchema, PlayerControlSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
-import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
+import { getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank, RankIdSchema, RANKS } from "@/lib/sf6/ranks"
 import { getSnapshotPeriodAvailability } from "@/lib/sf6/snapshot-periods.server"
 import { getUsageBlock } from "@/lib/sf6/snapshots/usage.server"
@@ -92,15 +92,13 @@ const rosterOverviewProcedure = os
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
       const availability = await getSnapshotPeriodAvailability()
-      const periods =
-        input.mode === "landscape"
-          ? getRankComparisonPeriods(availability.regularPeriods, availability.subdivisionPeriods)
-          : getPeriodsForRank(
-              input.rank,
-              availability.regularPeriods,
-              availability.subdivisionPeriods,
-            )
-      const previousPeriod = periods[periods.indexOf(input.period) - 1] ?? null
+      const selectedRankPeriods = getPeriodsForRank(
+        input.rank,
+        availability.regularPeriods,
+        availability.subdivisionPeriods,
+      )
+      const previousPeriod =
+        selectedRankPeriods[selectedRankPeriods.indexOf(input.period) - 1] ?? null
       if (input.mode === "snapshot") {
         const [current, previous] = await Promise.all([
           getMetricEntry(input.period, input.rank, input.playerControl),
@@ -163,7 +161,7 @@ const rosterOverviewProcedure = os
         }
       }
 
-      const timeEntries = await getPeriodEntries(periods, input.rank, "combined")
+      const timeEntries = await getPeriodEntries(selectedRankPeriods, input.rank, "combined")
       const rankList = RANKS.filter(
         (rank) =>
           !isMasterSubdivisionRank(rank.id) ||

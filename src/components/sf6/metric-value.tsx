@@ -1,78 +1,85 @@
 import { cn } from "@/lib/utils"
 
-type MetricKind = "winRate" | "usage" | "delta" | "coverage" | "number"
+type MetricFormat = "percent" | "percentagePoints" | "coverage" | "number"
+type MetricTone = "neutral" | "winRate" | "directional"
 
-const formatMetric = (value: number | null | undefined, kind: MetricKind): string => {
+const formatMetric = (
+  value: number | null | undefined,
+  format: MetricFormat,
+  signed = false,
+  precision = format === "coverage" ? 0 : format === "number" ? 1 : 1,
+): string => {
   if (value === null || value === undefined) {
     return "—"
   }
-  if (kind === "coverage") {
-    return `${(value * 100).toFixed(0)}%`
-  }
-  if (kind === "number") {
-    return value.toFixed(1)
-  }
-  const sign = kind === "delta" && value > 0 ? "+" : ""
-  return `${sign}${value.toFixed(1)}%`
+  const displayValue = format === "coverage" ? value * 100 : value
+  const roundedValue = Number(displayValue.toFixed(precision))
+  const sign = roundedValue > 0 && signed ? "+" : roundedValue < 0 ? "−" : ""
+  const suffix =
+    format === "percent" || format === "coverage" ? "%" : format === "percentagePoints" ? " pp" : ""
+  return `${sign}${Math.abs(roundedValue).toFixed(precision)}${suffix}`
 }
 
-const metricToken = (value: number | null | undefined, kind: MetricKind): string => {
+const metricToken = (
+  value: number | null | undefined,
+  format: MetricFormat,
+  tone: MetricTone,
+  signed: boolean,
+  precision: number,
+): string => {
   if (value === null || value === undefined) {
     return "text-muted-foreground"
   }
-  if (kind === "winRate") {
-    if (value >= 55) {
+  const displayValue = Number((format === "coverage" ? value * 100 : value).toFixed(precision))
+  if (tone === "winRate") {
+    if (displayValue >= 55) {
       return "text-wr-strong"
     }
-    if (value >= 52) {
+    if (displayValue >= 52) {
       return "text-wr-good"
     }
-    if (value > 48) {
+    if (displayValue > 48) {
       return "text-wr-even"
     }
-    if (value > 45) {
+    if (displayValue > 45) {
       return "text-wr-bad"
     }
     return "text-wr-weak"
   }
-  if (kind === "delta") {
-    return value > 0 ? "text-wr-strong" : value < 0 ? "text-wr-weak" : "text-muted-foreground"
+  if (tone === "directional" && signed) {
+    return displayValue > 0
+      ? "text-wr-strong"
+      : displayValue < 0
+        ? "text-wr-weak"
+        : "text-muted-foreground"
   }
   return "text-foreground"
 }
 
 const MetricValue = ({
   value,
-  kind,
+  format,
+  tone = "neutral",
+  signed = false,
+  precision = format === "coverage" ? 0 : format === "number" ? 1 : 1,
   className,
 }: {
   value: number | null | undefined
-  kind: MetricKind
+  format: MetricFormat
+  tone?: MetricTone
+  signed?: boolean
+  precision?: number
   className?: string
 }) => (
-  <span className={cn("font-mono tabular-nums", metricToken(value, kind), className)}>
-    {formatMetric(value, kind)}
+  <span
+    className={cn(
+      "font-mono tabular-nums",
+      metricToken(value, format, tone, signed, precision),
+      className,
+    )}
+  >
+    {formatMetric(value, format, signed, precision)}
   </span>
 )
 
-const formatDelta = (value: number | null | undefined): string => {
-  if (value === null || value === undefined) {
-    return "—"
-  }
-  const sign = value > 0 ? "+" : value < 0 ? "−" : ""
-  return `${sign}${Math.abs(value).toFixed(1)} pp`
-}
-
-const DeltaMetric = ({
-  value,
-  className,
-}: {
-  value: number | null | undefined
-  className?: string
-}) => (
-  <span className={cn("font-mono tabular-nums", metricToken(value, "delta"), className)}>
-    {formatDelta(value)}
-  </span>
-)
-
-export { DeltaMetric, MetricValue, formatDelta, formatMetric }
+export { MetricValue, formatMetric, type MetricFormat, type MetricTone }
