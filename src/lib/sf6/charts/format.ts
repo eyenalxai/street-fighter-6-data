@@ -28,6 +28,26 @@ const formatChartNumberTick = (value: number): string => roundChartValue(value, 
 const formatChartNumber = (value: number | null): string =>
   value === null ? "—" : roundChartValue(value, 1).toString()
 
+const formatCompactReportingPeriodTick = (value: string): string => {
+  if (/^\d{6}$/u.test(value)) {
+    const year = value.slice(2, 4)
+    const month = Number(value.slice(4, 6))
+    const monthName = new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" }).format(
+      new Date(Date.UTC(2024, month - 1, 1)),
+    )
+    return `${monthName} ’${year}`
+  }
+
+  const formattedPeriod = /^(?<month>[A-Za-z]{3})\s+(?<year>\d{4})$/u.exec(value)
+  const month = formattedPeriod?.groups?.month
+  const year = formattedPeriod?.groups?.year
+  if (month !== undefined && year !== undefined) {
+    return `${month} ’${year.slice(2)}`
+  }
+
+  return value
+}
+
 const CHART_TICK_FORMATTERS = {
   percent: formatChartPercentTick,
   percentagePoints: formatChartPercentagePointsTick,
@@ -52,6 +72,7 @@ export {
   CHART_VALUE_FORMATTERS,
   formatChartNumber,
   formatChartNumberTick,
+  formatCompactReportingPeriodTick,
   formatChartPercent,
   formatChartPercentTick,
   formatChartPercentagePoints,

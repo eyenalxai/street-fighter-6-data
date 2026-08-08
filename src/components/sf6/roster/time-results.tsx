@@ -3,6 +3,7 @@ import type { RosterOverviewData } from "@/lib/sf6/query-options"
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { TimeConsistencyTable } from "@/components/sf6/roster/consistency-tables"
+import { formatCompactReportingPeriodTick } from "@/lib/sf6/charts/format"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { AXIS_LABELS, METRIC_LABELS } from "@/lib/sf6/presentation"
 
@@ -27,6 +28,7 @@ const RosterTimeResults = ({ data }: { data: TimeData }) => {
           xAxisLabel={AXIS_LABELS.reportingPeriod}
           valueFormat="percentagePoints"
           valueLabel="Win rate spread (percentage points)"
+          xTickFormatter={formatCompactReportingPeriodTick}
         />
       </AnalyticsPanel>
       <AnalyticsPanel

@@ -12,6 +12,7 @@ import {
   ANALYTICS_AXIS_TICK,
   ANALYTICS_LINE_CHART_LEGEND_PROPS,
   ANALYTICS_LINE_CHART_MARGIN,
+  ANALYTICS_X_AXIS_MIN_TICK_GAP,
   ANALYTICS_X_AXIS_TICK,
   ANALYTICS_Y_AXIS_WIDTH,
   analyticsAngledXAxisLabel,
@@ -42,6 +43,7 @@ const MetricTrendChart = ({
   referenceLabel,
   emptyLabel,
   size = "compact",
+  xTickFormatter,
 }: {
   data: readonly MetricTrendPoint[]
   series: readonly MetricTrendSeries[]
@@ -52,6 +54,7 @@ const MetricTrendChart = ({
   referenceLabel?: string
   emptyLabel?: ReactNode
   size?: ComponentProps<typeof AnalyticsChart>["size"]
+  xTickFormatter?: (value: string) => string
 }): ReactNode => {
   const config = useMemo(
     () =>
@@ -87,8 +90,10 @@ const MetricTrendChart = ({
           angle={-40}
           textAnchor="end"
           height={ANALYTICS_ANGLED_X_AXIS_HEIGHT}
-          interval={0}
+          interval="preserveStartEnd"
+          minTickGap={ANALYTICS_X_AXIS_MIN_TICK_GAP}
           tickMargin={8}
+          tickFormatter={xTickFormatter}
           label={analyticsAngledXAxisLabel(xAxisLabel)}
         />
         <YAxis

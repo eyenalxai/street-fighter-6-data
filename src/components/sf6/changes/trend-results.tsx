@@ -2,6 +2,7 @@ import type { ChangeExplorerData, MetaData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
+import { formatCompactReportingPeriodTick } from "@/lib/sf6/charts/format"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { AXIS_LABELS, formatPeriodRange } from "@/lib/sf6/presentation"
 
@@ -51,6 +52,7 @@ const ChangeTrendResults = ({ data, meta }: { data: TrendsData; meta: MetaData }
           valueLabel={AXIS_LABELS.averageWinRate}
           referenceValue={50}
           referenceLabel="50%"
+          xTickFormatter={formatCompactReportingPeriodTick}
         />
       </AnalyticsPanel>
       <AnalyticsPanel
@@ -63,6 +65,7 @@ const ChangeTrendResults = ({ data, meta }: { data: TrendsData; meta: MetaData }
           xAxisLabel={AXIS_LABELS.reportingPeriod}
           valueFormat="percent"
           valueLabel={AXIS_LABELS.usageShare}
+          xTickFormatter={formatCompactReportingPeriodTick}
         />
       </AnalyticsPanel>
     </div>

@@ -9,6 +9,7 @@ import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { formatCompactReportingPeriodTick } from "@/lib/sf6/charts/format"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { AXIS_LABELS } from "@/lib/sf6/presentation"
 import {
@@ -192,6 +193,7 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
             }
             referenceValue={50}
             referenceLabel="50%"
+            xTickFormatter={formatCompactReportingPeriodTick}
           />
         </AnalyticsPanel>
         <AnalyticsPanel
@@ -204,6 +206,7 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
             xAxisLabel={AXIS_LABELS.reportingPeriod}
             valueFormat="percent"
             valueLabel={AXIS_LABELS.usageShare}
+            xTickFormatter={formatCompactReportingPeriodTick}
           />
         </AnalyticsPanel>
       </div>
