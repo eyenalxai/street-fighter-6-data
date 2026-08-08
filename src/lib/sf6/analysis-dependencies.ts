@@ -60,7 +60,7 @@ const getRosterPeriodOptions = (
   if (view === "time") {
     return []
   }
-  return view === "ranks" || view === "stability"
+  return view === "ranks"
     ? getRankComparisonPeriods(regularPeriods, subdivisionPeriods)
     : getPeriodsForRank(
         view === "controls" ? getControlComparisonRank(rank) : rank,
@@ -122,9 +122,6 @@ const getRosterLoaderDeps = (search: RosterSearch): RosterSearchValue => {
     }
     case "time": {
       return { view: search.view, rank: search.rank }
-    }
-    case "stability": {
-      return { view: search.view, period: search.period, rank: search.rank }
     }
     default: {
       throw new Error("Unknown roster view")

@@ -1,9 +1,10 @@
 import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
-import type { RosterOverviewData } from "@/lib/sf6/query-options"
+import type { MetaData, RosterOverviewData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
+import { RankConsistencyTable } from "@/components/sf6/roster/consistency-tables"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { compareNumbers, compareRankIds, createTableSortFn } from "@/lib/sf6/table-sorting"
 
@@ -54,7 +55,7 @@ const rosterRankColumns: SortableColumnDef<RankRow>[] = [
   },
 ]
 
-const RosterRankResults = ({ data }: { data: RankData }) => {
+const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) => {
   const chartData = data.rankLandscape.map((point) => {
     return {
       label: point.label,
@@ -101,6 +102,13 @@ const RosterRankResults = ({ data }: { data: RankData }) => {
           initialSorting={ROSTER_RANK_INITIAL_SORTING}
           getRowId={(row) => row.rankId}
         />
+      </AnalyticsPanel>
+      <AnalyticsPanel
+        title="Character consistency across ranks"
+        description="Lower win rate ranges indicate characters whose average win rate changes less between ranks in the selected period."
+        contentClassName="p-0"
+      >
+        <RankConsistencyTable data={data.characterConsistency} meta={meta} />
       </AnalyticsPanel>
     </div>
   )

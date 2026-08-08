@@ -14,7 +14,7 @@ const RosterSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
   rank: RankIdSchema.default("all-master"),
   playerControl: PlayerControlSchema.default("combined"),
-  view: z.enum(["snapshot", "controls", "ranks", "time", "stability"]).default("snapshot"),
+  view: z.enum(["snapshot", "controls", "ranks", "time"]).default("snapshot"),
 })
 
 const CharacterExplorerSearchSchema = z.object({

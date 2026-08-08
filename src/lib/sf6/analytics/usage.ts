@@ -1,7 +1,7 @@
 import type { CharacterId, PlayerControl, ReportingPeriod } from "@/lib/sf6/model"
 import type { UsageBlock, UsageCharacterRow } from "@/lib/sf6/snapshots/usage.server"
 
-import { standardDeviation } from "./math"
+import { getTimeStability } from "./stability"
 
 type UsagePoint = {
   period: ReportingPeriod
@@ -68,23 +68,17 @@ const getUsageSeries = (
     })
 
 const getUsageStability = (points: readonly UsagePoint[]) => {
-  const values = points.flatMap((point) => (point.playRate === null ? [] : [point.playRate]))
-  const first = points.find((point) => point.playRate !== null)?.period ?? null
-  const last = points.toReversed().find((point) => point.playRate !== null)?.period ?? null
-  const adjacentChanges = points
-    .map((point, index) => {
-      const previous = points[index - 1]?.playRate
-      return previous === null || previous === undefined || point.playRate === null
-        ? null
-        : Math.abs(point.playRate - previous)
-    })
-    .filter((value): value is number => value !== null)
+  const stability = getTimeStability(
+    points.map(({ period, playRate }) => {
+      return { period, value: playRate }
+    }),
+  )
   return {
-    firstPeriod: first,
-    lastPeriod: last,
-    range: values.length === 0 ? null : Math.max(...values) - Math.min(...values),
-    standardDeviation: standardDeviation(values),
-    largestAdjacentChange: adjacentChanges.length === 0 ? null : Math.max(...adjacentChanges),
+    firstPeriod: stability.firstPeriod,
+    lastPeriod: stability.lastPeriod,
+    range: stability.range,
+    standardDeviation: stability.standardDeviation,
+    largestAdjacentChange: stability.largestAdjacentChange,
   }
 }
 

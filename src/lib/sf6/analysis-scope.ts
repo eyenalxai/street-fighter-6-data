@@ -24,7 +24,6 @@ type RosterInput =
   | { view: "controls"; period: ReportingPeriod; rank: RankId }
   | { view: "ranks"; period: ReportingPeriod }
   | { view: "time"; rank: RankId }
-  | { view: "stability"; period: ReportingPeriod; rank: RankId }
 
 type CharacterInput =
   | {
@@ -139,13 +138,6 @@ const buildRosterInput = (
     }
     case "time": {
       return { view: search.view, rank }
-    }
-    case "stability": {
-      return {
-        view: search.view,
-        period: requiredPeriod(search.period, period),
-        rank,
-      }
     }
     default: {
       throw new Error("Unknown roster view")

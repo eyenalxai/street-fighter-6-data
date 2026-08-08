@@ -3,10 +3,11 @@ import * as z from "zod"
 
 import { getControlComparison } from "@/lib/sf6/analytics/average-win-rate"
 import {
-  getCharacterStability,
   getLandscapeSeries,
   getRankLandscapeSeries,
+  getRosterRankConsistency,
   getRosterMetrics,
+  getRosterTimeConsistency,
 } from "@/lib/sf6/analytics/comparisons"
 import {
   getMetricEntry,
@@ -43,11 +44,6 @@ const RosterOverviewInputSchema = z.discriminatedUnion("view", [
     view: z.literal("time"),
     rank: RankIdSchema,
   }),
-  z.object({
-    view: z.literal("stability"),
-    period: ReportingPeriodSchema,
-    rank: RankIdSchema,
-  }),
 ])
 const LandscapeSummarySchema = z.object({
   averageWinRateSpread: z.number().min(0).max(100).nullable(),
@@ -81,26 +77,28 @@ const RankPointSchema = z.object({
 const RanksOutputSchema = z.object({
   view: z.literal("ranks"),
   rankLandscape: RankPointSchema.array(),
+  characterConsistency: z
+    .object({
+      characterId: CharacterIdSchema,
+      winRateRange: z.number().min(0).max(100).nullable(),
+      peakRankId: RankIdSchema.nullable(),
+      troughRankId: RankIdSchema.nullable(),
+    })
+    .array(),
 })
 const TimeOutputSchema = z.object({
   view: z.literal("time"),
   time: TimePointSchema.array(),
-})
-const StabilityOutputSchema = z.object({
-  view: z.literal("stability"),
-  stability: z
+  characterConsistency: z
     .object({
       characterId: CharacterIdSchema,
       firstPeriod: ReportingPeriodSchema.nullable(),
       lastPeriod: ReportingPeriodSchema.nullable(),
       peakPeriod: ReportingPeriodSchema.nullable(),
       troughPeriod: ReportingPeriodSchema.nullable(),
-      peakRankId: RankIdSchema.nullable(),
-      troughRankId: RankIdSchema.nullable(),
-      timeRange: z.number().min(0).max(100).nullable(),
-      timeStandardDeviation: z.number().min(0).nullable(),
+      winRateRange: z.number().min(0).max(100).nullable(),
+      winRateStandardDeviation: z.number().min(0).nullable(),
       largestAdjacentChange: z.number().min(0).max(100).nullable(),
-      rankRange: z.number().min(0).max(100).nullable(),
     })
     .array(),
 })
@@ -109,7 +107,6 @@ const RosterOverviewOutputSchema = z.discriminatedUnion("view", [
   ControlsOutputSchema,
   RanksOutputSchema,
   TimeOutputSchema,
-  StabilityOutputSchema,
 ])
 
 const rosterOverviewProcedure = os
@@ -195,6 +192,7 @@ const rosterOverviewProcedure = os
         return {
           view: "ranks" as const,
           rankLandscape: getRankLandscapeSeries(rankEntries, "combined"),
+          characterConsistency: getRosterRankConsistency(rankEntries, "combined"),
         }
       }
 
@@ -208,50 +206,11 @@ const rosterOverviewProcedure = os
         return {
           view: "time" as const,
           time: getLandscapeSeries(timeEntries, "combined"),
+          characterConsistency: getRosterTimeConsistency(timeEntries, "combined"),
         }
       }
 
-      const periods = getPeriodsForRank(
-        input.rank,
-        availability.regularPeriods,
-        availability.subdivisionPeriods,
-      )
-      const rankList = RANKS.filter(
-        (rank) =>
-          !isMasterSubdivisionRank(rank.id) ||
-          availability.subdivisionPeriods.includes(input.period),
-      )
-      const [timeEntries, rankEntries] = await Promise.all([
-        getPeriodEntries(periods, input.rank, "combined"),
-        getRankEntries(input.period, rankList),
-      ])
-      const characterIds = new Set(
-        timeEntries.flatMap((entry) => entry.usage.rows.map((row) => row.characterId)),
-      )
-      const stability = [...characterIds]
-        .map((characterId) => {
-          const timePoints = timeEntries.map((entry) => {
-            const row = getRosterMetrics(entry, null, "combined").find(
-              (candidate) => candidate.characterId === characterId,
-            )
-            return { period: entry.period, value: row?.averageWinRate ?? null }
-          })
-          const rankValues = rankEntries.map(({ rank, entry }) => {
-            const row = getRosterMetrics(entry, null, "combined").find(
-              (candidate) => candidate.characterId === characterId,
-            )
-            return { rankId: rank.id, value: row?.averageWinRate ?? null }
-          })
-          return {
-            characterId,
-            ...getCharacterStability(timePoints, rankValues),
-          }
-        })
-        .toSorted(
-          (left, right) =>
-            (left.timeStandardDeviation ?? Infinity) - (right.timeStandardDeviation ?? Infinity),
-        )
-      return { view: "stability" as const, stability }
+      throw new Error("Unknown roster view")
     }),
   )
 

@@ -3,16 +3,13 @@ import * as z from "zod"
 
 import { getControlComparison } from "@/lib/sf6/analytics/average-win-rate"
 import { getUsagePoints } from "@/lib/sf6/analytics/changes"
-import {
-  getCharacterMetric,
-  getCharacterStability,
-  getRankMetric,
-} from "@/lib/sf6/analytics/comparisons"
+import { getCharacterMetric, getRankMetric } from "@/lib/sf6/analytics/comparisons"
 import {
   getMetricEntry,
   getPeriodEntries,
   getRankEntries,
 } from "@/lib/sf6/analytics/loaders.server"
+import { getRankStability, getTimeStability } from "@/lib/sf6/analytics/stability"
 import {
   CharacterIdSchema,
   NonEmptyCharacterSelectionSchema,
@@ -157,20 +154,18 @@ const characterExplorerProcedure = os
                   : current.usage - before.usage,
             }
           })
-          const averageWinRateStability = getCharacterStability(
+          const averageWinRateStability = getTimeStability(
             points.map((point) => {
               return { period: point.period, value: point.averageWinRate }
             }),
-            [],
           )
-          const usageStability = getCharacterStability(
+          const usageStability = getTimeStability(
             getUsagePoints(timeEntries, characterId).map((point) => {
               return {
                 period: point.period,
                 value: point.playRate,
               }
             }),
-            [],
           )
           return {
             characterId,
@@ -178,10 +173,10 @@ const characterExplorerProcedure = os
             stability: {
               firstPeriod: usageStability.firstPeriod,
               lastPeriod: usageStability.lastPeriod,
-              averageWinRateRange: averageWinRateStability.timeRange,
-              averageWinRateStandardDeviation: averageWinRateStability.timeStandardDeviation,
-              usageRange: usageStability.timeRange,
-              usageStandardDeviation: usageStability.timeStandardDeviation,
+              averageWinRateRange: averageWinRateStability.range,
+              averageWinRateStandardDeviation: averageWinRateStability.standardDeviation,
+              usageRange: usageStability.range,
+              usageStandardDeviation: usageStability.standardDeviation,
             },
           }
         })
@@ -225,33 +220,23 @@ const characterExplorerProcedure = os
         view: "ranks" as const,
         series: input.characters.map((characterId) => {
           const points = getRankMetric(rankEntries, characterId, "combined")
-          const averageWinRateValues = points.flatMap((point) =>
-            point.averageWinRate === null ? [] : [point.averageWinRate],
+          const averageWinRateStability = getRankStability(
+            points.map((point) => {
+              return { rankId: point.rankId, value: point.averageWinRate }
+            }),
           )
-          const usageValues = points.flatMap((point) => (point.usage === null ? [] : [point.usage]))
-          const peak = points
-            .filter((point) => point.averageWinRate !== null)
-            .toSorted(
-              (left, right) =>
-                (right.averageWinRate ?? -Infinity) - (left.averageWinRate ?? -Infinity),
-            )[0]
-          const trough = points
-            .filter((point) => point.averageWinRate !== null)
-            .toSorted(
-              (left, right) =>
-                (left.averageWinRate ?? Infinity) - (right.averageWinRate ?? Infinity),
-            )[0]
+          const usageStability = getRankStability(
+            points.map((point) => {
+              return { rankId: point.rankId, value: point.usage }
+            }),
+          )
           return {
             characterId,
             points,
-            averageWinRateRange:
-              averageWinRateValues.length === 0
-                ? null
-                : Math.max(...averageWinRateValues) - Math.min(...averageWinRateValues),
-            usageRange:
-              usageValues.length === 0 ? null : Math.max(...usageValues) - Math.min(...usageValues),
-            peakRankId: peak?.rankId ?? null,
-            troughRankId: trough?.rankId ?? null,
+            averageWinRateRange: averageWinRateStability.range,
+            usageRange: usageStability.range,
+            peakRankId: averageWinRateStability.peakRankId,
+            troughRankId: averageWinRateStability.troughRankId,
           }
         }),
       }

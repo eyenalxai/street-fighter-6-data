@@ -1,5 +1,5 @@
 import type { CharacterId, PlayerControl, ReportingPeriod } from "@/lib/sf6/model"
-import type { Rank, RankId } from "@/lib/sf6/ranks"
+import type { Rank } from "@/lib/sf6/ranks"
 import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 import type { ControlBlocks } from "@/lib/sf6/snapshots/dia.server"
 import type { UsageBlock } from "@/lib/sf6/snapshots/usage.server"
@@ -7,7 +7,8 @@ import type { UsageBlock } from "@/lib/sf6/snapshots/usage.server"
 import { CHARACTERS } from "@/lib/sf6/model"
 
 import { getCharacterAverageWinRate, getAverageWinRateSummary } from "./average-win-rate"
-import { getUsageDelta, getUsageRate, getUsageStats, getUsageStability } from "./usage"
+import { getRankStability, getTimeStability } from "./stability"
+import { getUsageDelta, getUsageRate, getUsageStats } from "./usage"
 
 type MetricEntry = {
   period: ReportingPeriod
@@ -174,48 +175,76 @@ const getRankMetric = (
     }
   })
 
-const getCharacterStability = (
-  points: readonly { period: ReportingPeriod; value: number | null }[],
-  rankPoints: readonly { rankId?: RankId; value: number | null }[],
+const getCharacterIds = (entries: readonly MetricEntry[]): CharacterId[] => [
+  ...new Set(entries.flatMap((entry) => entry.usage.rows.map((row) => row.characterId))),
+]
+
+const getRosterTimeConsistency = (entries: readonly MetricEntry[], playerControl: PlayerControl) =>
+  getCharacterIds(entries)
+    .map((characterId) => {
+      const stability = getTimeStability(
+        entries.map((entry) => {
+          return {
+            period: entry.period,
+            value: getCharacterMetric(entry, characterId, playerControl).averageWinRate,
+          }
+        }),
+      )
+      return {
+        characterId,
+        firstPeriod: stability.firstPeriod,
+        lastPeriod: stability.lastPeriod,
+        peakPeriod: stability.peakPeriod,
+        troughPeriod: stability.troughPeriod,
+        winRateRange: stability.range,
+        winRateStandardDeviation: stability.standardDeviation,
+        largestAdjacentChange: stability.largestAdjacentChange,
+      }
+    })
+    .toSorted(
+      (left, right) =>
+        (left.winRateStandardDeviation ?? Infinity) -
+          (right.winRateStandardDeviation ?? Infinity) ||
+        left.characterId.localeCompare(right.characterId),
+    )
+
+const getRosterRankConsistency = (
+  entries: readonly { rank: Rank; entry: MetricEntry }[],
+  playerControl: PlayerControl,
 ) => {
-  const time = getUsageStability(
-    points.map(({ period, value }) => {
-      return { period, playRate: value }
-    }),
-  )
-  const rankValues = rankPoints.flatMap((point) => (point.value === null ? [] : [point.value]))
-  const numericTime = points.filter(
-    (point): point is { period: ReportingPeriod; value: number } => point.value !== null,
-  )
-  const numericRanks = rankPoints.filter(
-    (point): point is { rankId: RankId; value: number } =>
-      point.rankId !== undefined && point.value !== null,
-  )
-  const peakTime = numericTime.toSorted((left, right) => right.value - left.value)[0]
-  const troughTime = numericTime.toSorted((left, right) => left.value - right.value)[0]
-  const peakRank = numericRanks.toSorted((left, right) => right.value - left.value)[0]
-  const troughRank = numericRanks.toSorted((left, right) => left.value - right.value)[0]
-  return {
-    firstPeriod: time.firstPeriod,
-    lastPeriod: time.lastPeriod,
-    peakPeriod: peakTime?.period ?? null,
-    troughPeriod: troughTime?.period ?? null,
-    peakRankId: peakRank?.rankId ?? null,
-    troughRankId: troughRank?.rankId ?? null,
-    timeRange: time.range,
-    timeStandardDeviation: time.standardDeviation,
-    largestAdjacentChange: time.largestAdjacentChange,
-    rankRange: rankValues.length === 0 ? null : Math.max(...rankValues) - Math.min(...rankValues),
-  }
+  const characterIds = getCharacterIds(entries.map(({ entry }) => entry))
+  return characterIds
+    .map((characterId) => {
+      const stability = getRankStability(
+        entries.map(({ rank, entry }) => {
+          return {
+            rankId: rank.id,
+            value: getCharacterMetric(entry, characterId, playerControl).averageWinRate,
+          }
+        }),
+      )
+      return {
+        characterId,
+        winRateRange: stability.range,
+        peakRankId: stability.peakRankId,
+        troughRankId: stability.troughRankId,
+      }
+    })
+    .toSorted(
+      (left, right) =>
+        (left.winRateRange ?? Infinity) - (right.winRateRange ?? Infinity) ||
+        left.characterId.localeCompare(right.characterId),
+    )
 }
 
 export {
   getCharacterMetric,
-  getCharacterStability,
   getLandscapeSeries,
   getRankMetric,
   getRankLandscapeSeries,
+  getRosterRankConsistency,
   getRosterMetrics,
+  getRosterTimeConsistency,
   type CharacterMetricRow,
   type LandscapePoint,
   type MetricEntry,

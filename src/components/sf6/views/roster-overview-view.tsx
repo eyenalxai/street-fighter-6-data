@@ -16,7 +16,6 @@ import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { RosterRankResults } from "@/components/sf6/roster/rank-results"
 import { SnapshotResults } from "@/components/sf6/roster/snapshot-results"
-import { RosterStabilityResults } from "@/components/sf6/roster/stability-results"
 import { RosterTimeResults } from "@/components/sf6/roster/time-results"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { getControlComparisonRanks, getRosterPeriodOptions } from "@/lib/sf6/analysis-dependencies"
@@ -29,7 +28,6 @@ const viewOptions = [
   { value: "controls", label: "Control styles" },
   { value: "ranks", label: "Across ranks" },
   { value: "time", label: "Over time" },
-  { value: "stability", label: "Stability" },
 ] as const
 
 type RosterOverviewViewProps = {
@@ -131,11 +129,9 @@ const RosterResults = ({
       unsupportedDescription="Master subdivision snapshots combine all control styles. Choose All Master or a standard rank to compare Classic and Modern players."
     />
   ) : input.view === "ranks" && data.view === "ranks" ? (
-    <RosterRankResults data={data} />
+    <RosterRankResults data={data} meta={meta} />
   ) : input.view === "time" && data.view === "time" ? (
     <RosterTimeResults data={data} />
-  ) : input.view === "stability" && data.view === "stability" ? (
-    <RosterStabilityResults data={data} meta={meta} />
   ) : null
 
 const RosterOverviewView = ({ period, search, meta }: RosterOverviewViewProps) => {
