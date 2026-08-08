@@ -16,7 +16,7 @@ const matchupTimeColumns: SortableColumnDef<TimeRow>[] = [
   {
     id: "period",
     accessorFn: (row) => row.period,
-    header: "Period",
+    header: "Reporting period",
     sortFn: createTableSortFn(compareReportingPeriods),
     cell: ({ row }) => formatReportingPeriod(row.original.period),
   },
@@ -35,7 +35,7 @@ const matchupTimeColumns: SortableColumnDef<TimeRow>[] = [
 const MatchupTimeResults = ({ data }: { data: TimeData }) => (
   <AnalyticsPanel
     title="Matchup over time"
-    description="Monthly points use the selected control context and preserve unavailable gaps."
+    description="Each row uses the selected control matchup. Unavailable results stay blank."
     contentClassName="p-0"
   >
     <SortableDataTable

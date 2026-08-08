@@ -4,6 +4,7 @@ import type { MatchupExplorerData } from "@/lib/sf6/query-options"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import { MATCHUP_STATUS_LABELS } from "@/lib/sf6/presentation"
 import {
   compareCharacterIds,
   compareEnum,
@@ -73,7 +74,7 @@ const profileColumns: SortableColumnDef<ProfileRow>[] = [
     header: "Status",
     sortFn: createTableSortFn(compareProfileStatuses),
     meta: { cellClassName: "text-muted-foreground" },
-    cell: ({ row }) => row.original.status,
+    cell: ({ row }) => MATCHUP_STATUS_LABELS[row.original.status],
   },
 ]
 

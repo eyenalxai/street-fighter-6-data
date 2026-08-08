@@ -24,13 +24,17 @@ import {
   hasSelectedCharacters,
 } from "@/lib/sf6/analysis-dependencies"
 import { buildCharacterInput, getActiveInputKey } from "@/lib/sf6/analysis-scope"
+import {
+  MASTER_SUBDIVISION_CONTROL_COMPARISON_UNSUPPORTED,
+  VIEW_LABELS,
+} from "@/lib/sf6/presentation"
 import { characterExplorerQueryOptions } from "@/lib/sf6/query-options"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 const viewOptions = [
-  { value: "time", label: "Over time" },
-  { value: "ranks", label: "Across ranks" },
-  { value: "controls", label: "Control styles" },
+  { value: "time", label: VIEW_LABELS.time },
+  { value: "ranks", label: VIEW_LABELS.ranks },
+  { value: "controls", label: VIEW_LABELS.controls },
 ] as const
 
 type CharacterExplorerViewProps = {
@@ -57,9 +61,9 @@ const CharacterQueryView = ({ input, meta }: { input: CharacterInput; meta: Meta
           data={data}
           meta={meta}
           chartTitle="Control win rate difference"
-          chartDescription="Positive values favor Modern player controls for the selected character."
-          tableTitle="Selected character control results"
-          unsupportedDescription="Master subdivision snapshots contain combined control data only. Choose All Master or a standard rank to compare Classic and Modern players."
+          chartDescription="Positive values show a higher average win rate with Modern player controls."
+          tableTitle="Control-style results"
+          unsupportedDescription={MASTER_SUBDIVISION_CONTROL_COMPARISON_UNSUPPORTED}
         />
       ) : null}
     </ResultsContent>
@@ -93,7 +97,7 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
   const toolbar = (
     <AnalysisToolbar
       title="Character explorer"
-      description="Follow selected characters through time, ranks, and control styles."
+      description="Compare selected characters across reporting periods, ranks, and control styles."
       views={
         <AnalysisViewTabs
           value={search.view}
@@ -140,7 +144,7 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
         onChange={(value) => {
           change({ characters: value })
         }}
-        description="Select up to five characters to compare."
+        description="Select up to five characters."
       />
     </AnalysisToolbar>
   )
@@ -151,7 +155,7 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
       ) : (
         <AnalysisSelectionEmpty
           title="Select characters"
-          description="Choose one or more characters to compare over time, ranks, or control styles."
+          description="Select one or more characters to compare."
         />
       )}
     </AnalysisPage>

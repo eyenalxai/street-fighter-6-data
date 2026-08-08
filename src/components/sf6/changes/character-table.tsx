@@ -44,7 +44,7 @@ const changeColumns: SortableColumnDef<ChangeRow>[] = [
   {
     id: "beforeAverageWinRate",
     accessorFn: (row) => row.beforeAverageWinRate ?? undefined,
-    header: "Before win rate",
+    header: "Start win rate",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -56,7 +56,7 @@ const changeColumns: SortableColumnDef<ChangeRow>[] = [
   {
     id: "averageWinRate",
     accessorFn: (row) => row.averageWinRate ?? undefined,
-    header: "After win rate",
+    header: "End win rate",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -85,7 +85,7 @@ const changeColumns: SortableColumnDef<ChangeRow>[] = [
   {
     id: "beforeWeightedAverageWinRate",
     accessorFn: (row) => row.beforeWeightedAverageWinRate ?? undefined,
-    header: "Before weighted",
+    header: "Start weighted win rate",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -101,7 +101,7 @@ const changeColumns: SortableColumnDef<ChangeRow>[] = [
   {
     id: "weightedAverageWinRate",
     accessorFn: (row) => row.weightedAverageWinRate ?? undefined,
-    header: "After weighted",
+    header: "End weighted win rate",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -135,7 +135,7 @@ const changeColumns: SortableColumnDef<ChangeRow>[] = [
   {
     id: "beforeUsage",
     accessorFn: (row) => row.beforeUsage ?? undefined,
-    header: "Before usage",
+    header: "Start usage share",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -145,7 +145,7 @@ const changeColumns: SortableColumnDef<ChangeRow>[] = [
   {
     id: "usage",
     accessorFn: (row) => row.usage ?? undefined,
-    header: "After usage",
+    header: "End usage share",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -155,7 +155,7 @@ const changeColumns: SortableColumnDef<ChangeRow>[] = [
   {
     id: "debut",
     accessorFn: (row) => row.debut,
-    header: "Debut in later period",
+    header: "Debut in end period",
     sortFn: createTableSortFn(compareBooleans),
     cell: ({ row }) => (row.original.debut ? "Yes" : "—"),
   },

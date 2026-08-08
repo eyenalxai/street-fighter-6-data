@@ -64,7 +64,7 @@ const CharacterMultiField = ({
             <ComboboxChipsInput id={id} placeholder={placeholder} />
           </ComboboxChips>
           <ComboboxContent anchor={anchor}>
-            <ComboboxEmpty>No matching characters.</ComboboxEmpty>
+            <ComboboxEmpty>No characters match this search.</ComboboxEmpty>
             <ComboboxList>
               {(characterId) => {
                 const parsedCharacterId = CharacterIdSchema.parse(characterId)
@@ -87,7 +87,7 @@ const CharacterMultiField = ({
           disabled={value.length === 0}
         >
           <X data-icon="inline-start" />
-          Clear all
+          Clear
         </Button>
       </div>
       {description === undefined ? null : <FieldDescription>{description}</FieldDescription>}

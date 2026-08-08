@@ -17,6 +17,18 @@ const ChangesPage = () => {
 }
 
 const Route = createFileRoute("/_analytics/changes")({
+  head: () => {
+    return {
+      meta: [
+        { title: "Change explorer · SF6 Ranked Lab" },
+        {
+          name: "description",
+          content:
+            "Compare average win rate, usage share, matchups, and environment metrics between two reporting periods.",
+        },
+      ],
+    }
+  },
   validateSearch: ChangeSearchSchema,
   loaderDeps: ({ search }) => getChangeLoaderDeps(search),
   loader: async ({ context: { queryClient }, deps }) => {

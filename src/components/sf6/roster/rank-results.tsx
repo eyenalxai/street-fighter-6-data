@@ -6,6 +6,7 @@ import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { RankConsistencyTable } from "@/components/sf6/roster/consistency-tables"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import { AXIS_LABELS, METRIC_LABELS } from "@/lib/sf6/presentation"
 import { compareNumbers, compareRankIds, createTableSortFn } from "@/lib/sf6/table-sorting"
 
 type RankData = Extract<RosterOverviewData, { view: "ranks" }>
@@ -24,7 +25,7 @@ const rosterRankColumns: SortableColumnDef<RankRow>[] = [
   {
     id: "averageWinRateSpread",
     accessorFn: (row) => row.averageWinRateSpread ?? undefined,
-    header: "Win rate spread",
+    header: METRIC_LABELS.winRateSpread,
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -36,7 +37,7 @@ const rosterRankColumns: SortableColumnDef<RankRow>[] = [
   {
     id: "effectiveRosterSize",
     accessorFn: (row) => row.effectiveRosterSize ?? undefined,
-    header: "Effective roster size",
+    header: METRIC_LABELS.effectiveRosterSize,
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -46,7 +47,7 @@ const rosterRankColumns: SortableColumnDef<RankRow>[] = [
   {
     id: "topFiveShare",
     accessorFn: (row) => row.topFiveShare ?? undefined,
-    header: "Top-five usage",
+    header: METRIC_LABELS.topFiveUsage,
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -68,24 +69,32 @@ const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) =
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Win rate spread across ranks"
-          description="Each point is the highest character average minus the lowest character average at that rank."
+          description="Each point shows the highest character average win rate minus the lowest at that rank."
         >
           <MetricTrendChart
             data={chartData}
-            series={[{ key: "spread", label: "Win rate spread", color: "var(--chart-1)" }]}
-            xAxisLabel="Rank"
+            series={[
+              { key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" },
+            ]}
+            xAxisLabel={AXIS_LABELS.rank}
             valueFormat="percentagePoints"
             valueLabel="Win rate spread (percentage points)"
           />
         </AnalyticsPanel>
         <AnalyticsPanel
           title="Effective roster size across ranks"
-          description="Higher values indicate a more diverse usage environment at that rank."
+          description="Higher values show a more diverse usage share environment at that rank."
         >
           <MetricTrendChart
             data={chartData}
-            series={[{ key: "diversity", label: "Effective roster size", color: "var(--chart-2)" }]}
-            xAxisLabel="Rank"
+            series={[
+              {
+                key: "diversity",
+                label: METRIC_LABELS.effectiveRosterSize,
+                color: "var(--chart-2)",
+              },
+            ]}
+            xAxisLabel={AXIS_LABELS.rank}
             valueFormat="number"
             valueLabel="Effective roster size (characters)"
           />
@@ -93,7 +102,7 @@ const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) =
       </div>
       <AnalyticsPanel
         title="Rank landscape"
-        description="The selected period's spread and usage concentration at each rank."
+        description="Win rate spread and top-five usage share for the selected reporting period."
         contentClassName="p-0"
       >
         <SortableDataTable
@@ -105,7 +114,7 @@ const RosterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) =
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Character consistency across ranks"
-        description="Lower win rate ranges indicate characters whose average win rate changes less between ranks in the selected period."
+        description="Lower win rate ranges show characters with a steadier average win rate across ranks."
         contentClassName="p-0"
       >
         <RankConsistencyTable data={data.characterConsistency} meta={meta} />

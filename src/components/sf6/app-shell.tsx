@@ -85,8 +85,9 @@ const AppShell = ({ children }: AppShellProps) => {
         {children}
       </main>
       <footer className="border-t border-border px-4 py-4 text-xs text-muted-foreground md:px-6">
-        Source: Capcom Buckler ranked battle-diagram and usage-rate snapshots. Usage is a percentage
-        share; popularity-weighted results estimate environment relevance, not match volume.
+        Source: Capcom Buckler ranked battle-diagram and usage-rate snapshots. Usage share is a
+        percentage of the population. Weighted results estimate environment relevance. They do not
+        show match volume.
       </footer>
     </div>
   )

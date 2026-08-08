@@ -19,12 +19,12 @@ const withSnapshotErrors = async <T>(operation: () => Promise<T>): Promise<T> =>
     if (error instanceof SnapshotReadError || error instanceof SnapshotValidationError) {
       console.error(error)
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Analytics data is temporarily unavailable",
+        message: "The system cannot load analytics data. Try again later.",
       })
     }
     console.error(error)
     throw new ORPCError("INTERNAL_SERVER_ERROR", {
-      message: "Ranked analytics request failed",
+      message: "The analytics request failed. Try again.",
     })
   }
 }

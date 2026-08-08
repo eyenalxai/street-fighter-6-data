@@ -22,6 +22,18 @@ const CharactersPage = () => {
 }
 
 const Route = createFileRoute("/_analytics/characters")({
+  head: () => {
+    return {
+      meta: [
+        { title: "Character explorer · SF6 Ranked Lab" },
+        {
+          name: "description",
+          content:
+            "Compare selected characters across reporting periods, ranks, and control styles.",
+        },
+      ],
+    }
+  },
   validateSearch: CharacterExplorerSearchSchema,
   loaderDeps: ({ search }) => getCharacterLoaderDeps(search),
   loader: async ({ context: { queryClient }, deps }) => {

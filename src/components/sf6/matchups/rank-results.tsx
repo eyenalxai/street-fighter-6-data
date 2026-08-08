@@ -34,7 +34,7 @@ const matchupRankColumns: SortableColumnDef<RankRow>[] = [
 const MatchupRankResults = ({ data }: { data: RankData }) => (
   <AnalyticsPanel
     title="Matchup across ranks"
-    description="Combined-control progression keeps standard ranks comparable with Master subdivisions."
+    description="Combined controls keep standard ranks comparable with Master subdivisions."
     contentClassName="p-0"
   >
     <SortableDataTable

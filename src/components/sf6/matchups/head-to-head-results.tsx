@@ -6,6 +6,7 @@ import { CharacterBadge } from "@/components/sf6/character-badge"
 import { ControlMatchupResults } from "@/components/sf6/control-matchup-results"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
+import { getControlLabel } from "@/lib/sf6/presentation"
 
 type HeadToHeadData = Extract<MatchupExplorerData, { view: "head-to-head" }>
 
@@ -26,8 +27,8 @@ const HeadToHeadResults = ({
 }) => (
   <div className="flex flex-col gap-4">
     <AnalyticsPanel
-      title="Selected matchup"
-      description={`${getCharacterName(character)} vs ${getCharacterName(opponent)} · ${formatReportingPeriod(period)} · ${meta.controls.find((control) => control.id === controls)?.label ?? controls}`}
+      title="Head to head"
+      description={`${getCharacterName(character)} vs ${getCharacterName(opponent)} · ${formatReportingPeriod(period)} · ${getControlLabel(meta.controls, controls)}`}
     >
       <div className="grid items-center gap-5 sm:grid-cols-[1fr_auto_1fr]">
         <div className="flex items-center gap-3">
@@ -35,7 +36,7 @@ const HeadToHeadResults = ({
           <div>
             <p className="font-medium">{getCharacterName(character)}</p>
             <p className="text-xs text-muted-foreground">
-              Usage <MetricValue value={data.playerUsage} format="percent" />
+              Usage share <MetricValue value={data.playerUsage} format="percent" />
             </p>
           </div>
         </div>
@@ -49,7 +50,7 @@ const HeadToHeadResults = ({
           <div>
             <p className="font-medium">{getCharacterName(opponent)}</p>
             <p className="text-xs text-muted-foreground">
-              Usage <MetricValue value={data.opponentUsage} format="percent" />
+              Usage share <MetricValue value={data.opponentUsage} format="percent" />
             </p>
           </div>
           <CharacterBadge characterId={opponent} />

@@ -84,7 +84,7 @@ const controlColumns: SortableColumnDef<ControlRow>[] = [
   {
     id: "usageDelta",
     accessorFn: (row) => row.usageDelta ?? undefined,
-    header: "Usage delta",
+    header: "Usage share change",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",

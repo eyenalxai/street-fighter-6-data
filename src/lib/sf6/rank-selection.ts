@@ -30,7 +30,7 @@ const getBoundaryPeriod = (
 ): ReportingPeriod => {
   const period = boundary === "earliest" ? periods.at(0) : periods.at(-1)
   if (period === undefined) {
-    throw new Error("No reporting periods are available for this rank")
+    throw new Error("This rank has no reporting periods.")
   }
   return period
 }
@@ -41,7 +41,7 @@ const resolveNearestPeriod = (
 ): ReportingPeriod => {
   const latest = periods.at(-1)
   if (latest === undefined) {
-    throw new Error("No reporting periods are available for this rank")
+    throw new Error("This rank has no reporting periods.")
   }
   if (requested === undefined || periods.includes(requested)) {
     return requested ?? latest

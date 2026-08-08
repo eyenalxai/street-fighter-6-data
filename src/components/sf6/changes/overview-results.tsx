@@ -6,6 +6,7 @@ import { ChangeDeltaChart } from "@/components/sf6/charts/change-delta-chart"
 import { MetricSummary } from "@/components/sf6/metric-summary"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
+import { formatLaterMinusEarlier, formatPeriodArrow, METRIC_LABELS } from "@/lib/sf6/presentation"
 
 type OverviewData = Extract<ChangeExplorerData, { view: "overview" }>
 
@@ -27,30 +28,30 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <MetricSummary
-          title={`Before · ${formatReportingPeriod(data.fromPeriod)}`}
+          title={`Start · ${formatReportingPeriod(data.fromPeriod)}`}
           items={[
             {
-              label: "Win rate spread",
+              label: METRIC_LABELS.winRateSpread,
               value: (
                 <MetricValue value={data.before.averageWinRateSpread} format="percentagePoints" />
               ),
             },
             {
-              label: "Effective roster size",
+              label: METRIC_LABELS.effectiveRosterSize,
               value: <MetricValue value={data.before.effectiveRosterSize} format="number" />,
             },
             {
-              label: "Top-five usage",
+              label: METRIC_LABELS.topFiveUsage,
               value: <MetricValue value={data.before.topFiveShare} format="percent" />,
             },
             {
-              label: "Matchup imbalance",
+              label: METRIC_LABELS.matchupImbalance,
               value: <MetricValue value={data.before.matchupImbalance} format="percentagePoints" />,
             },
           ]}
         />
         <MetricSummary
-          title={`After · ${formatReportingPeriod(data.toPeriod)}`}
+          title={`End · ${formatReportingPeriod(data.toPeriod)}`}
           items={[
             {
               label: "Win rate spread",
@@ -59,29 +60,29 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
               ),
             },
             {
-              label: "Effective roster size",
+              label: METRIC_LABELS.effectiveRosterSize,
               value: <MetricValue value={data.after.effectiveRosterSize} format="number" />,
             },
             {
-              label: "Top-five usage",
+              label: METRIC_LABELS.topFiveUsage,
               value: <MetricValue value={data.after.topFiveShare} format="percent" />,
             },
             {
-              label: "Matchup imbalance",
+              label: METRIC_LABELS.matchupImbalance,
               value: <MetricValue value={data.after.matchupImbalance} format="percentagePoints" />,
             },
           ]}
         />
       </div>
       <AnalyticsPanel
-        title="Average win rate and popularity movers"
-        description="Characters to the right gained usage; characters higher on the chart gained average win rate. This visualizes change around the selected periods without making a causal claim."
+        title="Average win rate and usage share changes"
+        description="Right shows a positive usage share change. Up shows a positive average win rate change. Reference lines mark zero change."
       >
         <ChangeDeltaChart data={scatterData} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Character changes"
-        description={`${formatReportingPeriod(data.fromPeriod)} → ${formatReportingPeriod(data.toPeriod)} · deltas are later minus earlier`}
+        description={`${formatPeriodArrow(data.fromPeriod, data.toPeriod)} · ${formatLaterMinusEarlier()}`}
         contentClassName="p-0"
       >
         <div className="overflow-x-auto">

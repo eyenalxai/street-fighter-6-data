@@ -8,6 +8,7 @@ import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { formatCounterpickCoverage, METRIC_LABELS } from "@/lib/sf6/presentation"
 import {
   compareCharacterIds,
   compareNumbers,
@@ -95,7 +96,7 @@ const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta
       {
         id: "favorable",
         accessorFn: (row) => ratio(row.favorableCount, data.opponents.length),
-        header: "Favorable",
+        header: METRIC_LABELS.favorableAtOrAbove50,
         sortFn: createTableSortFn(compareNumbers),
         sortDescFirst: true,
         meta: { align: "right", cellClassName: "font-mono" },
@@ -128,8 +129,8 @@ const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta
         <EmptyHeader>
           <EmptyTitle>No complete candidates</EmptyTitle>
           <EmptyDescription>
-            {data.excludedCandidateCount} candidates lacked at least one reported matchup against
-            the selected opponents.
+            {data.excludedCandidateCount} candidates lack a reported matchup against at least one
+            selected opponent.
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -138,7 +139,7 @@ const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta
   return (
     <AnalyticsPanel
       title="Counterpick candidates"
-      description={`Selected opponents represent ${data.selectedUsageShare === null ? "an unknown share" : `${data.selectedUsageShare.toFixed(1)}%`} of the opponent usage population (${data.weightCoverage === null ? "unknown" : `${(data.weightCoverage * 100).toFixed(0)}%`} of available popularity weight). Weighted averages renormalize only over selected opponents; they are not match-volume measurements.`}
+      description={formatCounterpickCoverage(data.selectedUsageShare, data.weightCoverage)}
       contentClassName="p-0"
     >
       <SortableDataTable

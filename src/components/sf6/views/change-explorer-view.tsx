@@ -20,14 +20,15 @@ import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { hasSelectedCharacters } from "@/lib/sf6/analysis-dependencies"
 import { buildChangeInput, getActiveInputKey } from "@/lib/sf6/analysis-scope"
+import { VIEW_LABELS } from "@/lib/sf6/presentation"
 import { changeExplorerQueryOptions } from "@/lib/sf6/query-options"
 import { getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 const viewOptions = [
-  { value: "overview", label: "Overview" },
-  { value: "trends", label: "Character trends" },
-  { value: "matchups", label: "Matchup shifts" },
+  { value: "overview", label: VIEW_LABELS.overview },
+  { value: "trends", label: VIEW_LABELS.trends },
+  { value: "matchups", label: VIEW_LABELS.matchups },
 ] as const
 
 type ChangeExplorerViewProps = {
@@ -71,7 +72,7 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
   const toolbar = (
     <AnalysisToolbar
       title="Change explorer"
-      description="Compare average win rate, popularity, matchup, and environment movement."
+      description="Compare average win rate, usage share, matchups, and environment metrics between two reporting periods."
       views={
         <AnalysisViewTabs
           value={search.view}
@@ -84,7 +85,7 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
       }
     >
       <ReportingPeriodField
-        label="From period"
+        label="Start period"
         value={fromPeriod}
         periods={periods}
         onChange={(value) => {
@@ -92,7 +93,7 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
         }}
       />
       <ReportingPeriodField
-        label="To period"
+        label="End period"
         value={toPeriod}
         periods={periods}
         onChange={(value) => {
@@ -124,7 +125,7 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
           onChange={(value) => {
             change({ focusCharacters: value })
           }}
-          description="Focus series show whether changes persist or revert across the selected interval."
+          description="Select characters to compare across the reporting period range."
         />
       ) : null}
     </AnalysisToolbar>
@@ -134,7 +135,7 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
       {input.view === "trends" && !hasSelectedCharacters(input.focusCharacters) ? (
         <AnalysisSelectionEmpty
           title="Select focus characters"
-          description="Choose one or more characters to compare trends across the selected interval."
+          description="Select one or more characters to compare across the reporting period range."
         />
       ) : (
         <ChangeQueryView input={input} meta={meta} />

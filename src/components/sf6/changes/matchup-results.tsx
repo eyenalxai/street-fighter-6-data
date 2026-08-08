@@ -7,7 +7,8 @@ import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { CONTROL_MATCHUPS, formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
+import { CONTROL_MATCHUPS, getCharacterName } from "@/lib/sf6/model"
+import { formatPeriodArrow } from "@/lib/sf6/presentation"
 import {
   compareBooleans,
   compareCharacterIds,
@@ -50,7 +51,7 @@ const matchupChangeColumns: SortableColumnDef<MatchupChangeRow>[] = [
   {
     id: "before",
     accessorFn: (row) => row.before,
-    header: "Before",
+    header: "Start",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     meta: { align: "right" },
@@ -59,7 +60,7 @@ const matchupChangeColumns: SortableColumnDef<MatchupChangeRow>[] = [
   {
     id: "after",
     accessorFn: (row) => row.after,
-    header: "After",
+    header: "End",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     meta: { align: "right" },
@@ -91,7 +92,7 @@ const ChangeMatchupResults = ({ data }: { data: MatchupsData }) => {
   return (
     <AnalyticsPanel
       title="Largest matchup changes"
-      description={`${formatReportingPeriod(data.fromPeriod)} → ${formatReportingPeriod(data.toPeriod)} · numeric cells only; a flip crosses 50% between periods.`}
+      description={`${formatPeriodArrow(data.fromPeriod, data.toPeriod)} · Reported cells only. A flip crosses 50% between periods.`}
       action={
         <ToggleGroup
           value={[onlyFlips ? "flips" : "all"]}

@@ -28,6 +28,7 @@ import {
   buildMatchupInput,
   getActiveInputKey,
 } from "@/lib/sf6/analysis-scope"
+import { VIEW_LABELS } from "@/lib/sf6/presentation"
 import {
   counterpickPlannerQueryOptions,
   matchupExplorerQueryOptions,
@@ -36,11 +37,11 @@ import { getEffectiveControls } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 const viewOptions = [
-  { value: "head-to-head", label: "Head to head" },
-  { value: "profile", label: "Profile" },
-  { value: "ranks", label: "Across ranks" },
-  { value: "time", label: "Over time" },
-  { value: "counterpicks", label: "Counterpick planner" },
+  { value: "head-to-head", label: VIEW_LABELS.headToHead },
+  { value: "profile", label: VIEW_LABELS.profile },
+  { value: "ranks", label: VIEW_LABELS.ranks },
+  { value: "time", label: VIEW_LABELS.time },
+  { value: "counterpicks", label: VIEW_LABELS.counterpicks },
 ] as const
 
 type MatchupExplorerViewProps = {
@@ -51,7 +52,7 @@ type MatchupExplorerViewProps = {
 
 const requirePeriod = (period: ReportingPeriod | undefined): ReportingPeriod => {
   if (period === undefined) {
-    throw new Error("A reporting period is required for this matchup view")
+    throw new Error("This view needs a reporting period.")
   }
   return period
 }
@@ -116,7 +117,7 @@ const CounterpickView = ({ period, search, meta }: MatchupExplorerViewProps) =>
   ) : (
     <AnalysisSelectionEmpty
       title="Select opponents"
-      description="Choose one or more opponents to calculate counterpick candidates."
+      description="Select one or more opponents to find counterpick candidates."
     />
   )
 
@@ -151,7 +152,7 @@ const MatchupExplorerView = ({ period, search, meta }: MatchupExplorerViewProps)
   const toolbar = (
     <AnalysisToolbar
       title="Matchup explorer"
-      description="Compare a matchup, inspect a character profile, or plan counterpicks."
+      description="Compare matchups, inspect character profiles, and plan counterpicks."
       views={
         <AnalysisViewTabs
           value={search.view}
@@ -208,7 +209,7 @@ const MatchupExplorerView = ({ period, search, meta }: MatchupExplorerViewProps)
           onChange={(value) => {
             change({ opponents: value })
           }}
-          description="Candidates must have a numeric result against every selected opponent."
+          description="Each candidate needs a reported result against every selected opponent."
         />
       )}
       {showOpponent ? (

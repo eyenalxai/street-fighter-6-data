@@ -107,7 +107,7 @@ const requiredPeriod = (
 ): ReportingPeriod => {
   const period = resolved ?? requested
   if (period === undefined) {
-    throw new Error("A reporting period is required for this view")
+    throw new Error("This view needs a reporting period.")
   }
   return period
 }

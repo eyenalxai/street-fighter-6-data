@@ -10,6 +10,7 @@ import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatReportingPeriod } from "@/lib/sf6/model"
+import { AXIS_LABELS } from "@/lib/sf6/presentation"
 import {
   compareCharacterIds,
   compareNumbers,
@@ -151,7 +152,7 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Average win rate over time"
-          description="Toggle between the unweighted character average and an opponent-popularity-weighted estimate. Missing historical characters remain gaps."
+          description="Switch between the unweighted average and a usage-share-weighted estimate. Missing characters stay blank."
           action={
             <ToggleGroup
               value={[averageWinRateMetric]}
@@ -167,7 +168,7 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
               aria-label="Average win rate metric"
             >
               <ToggleGroupItem value="unweighted">Unweighted</ToggleGroupItem>
-              <ToggleGroupItem value="weighted">Popularity-weighted</ToggleGroupItem>
+              <ToggleGroupItem value="weighted">Usage-weighted</ToggleGroupItem>
             </ToggleGroup>
           }
         >
@@ -182,33 +183,33 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
                     : `${item.label} average`,
               }
             })}
-            xAxisLabel="Reporting period"
+            xAxisLabel={AXIS_LABELS.reportingPeriod}
             valueFormat="percent"
             valueLabel={
               averageWinRateMetric === "weighted"
-                ? "Popularity-weighted average win rate"
-                : "Average win rate"
+                ? "Usage-weighted average win rate"
+                : AXIS_LABELS.averageWinRate
             }
             referenceValue={50}
             referenceLabel="50%"
           />
         </AnalyticsPanel>
         <AnalyticsPanel
-          title="Popularity over time"
-          description="Character usage share within the selected rank and player-control population."
+          title="Usage share over time"
+          description="Character usage share in the selected rank and player-control population."
         >
           <MetricTrendChart
             data={usageData}
             series={series}
-            xAxisLabel="Reporting period"
+            xAxisLabel={AXIS_LABELS.reportingPeriod}
             valueFormat="percent"
-            valueLabel="Usage share"
+            valueLabel={AXIS_LABELS.usageShare}
           />
         </AnalyticsPanel>
       </div>
       <AnalyticsPanel
         title="Character stability"
-        description="Range and standard deviation describe volatility across the selected monthly series."
+        description="Range and standard deviation show change across the reporting period series."
         contentClassName="p-0"
       >
         <SortableDataTable

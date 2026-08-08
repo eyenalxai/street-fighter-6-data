@@ -9,6 +9,7 @@ import type { RankId } from "@/lib/sf6/ranks"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import { METRIC_LABELS } from "@/lib/sf6/presentation"
 import {
   compareCharacterIds,
   compareNumbers,
@@ -101,7 +102,7 @@ const snapshotColumns: SortableColumnDef<SnapshotRow>[] = [
   {
     id: "weightCoverage",
     accessorFn: (row) => row.weightCoverage ?? undefined,
-    header: "Weight coverage",
+    header: METRIC_LABELS.usageWeightCoverage,
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -111,7 +112,7 @@ const snapshotColumns: SortableColumnDef<SnapshotRow>[] = [
   {
     id: "usage",
     accessorFn: (row) => row.usage ?? undefined,
-    header: "Usage",
+    header: "Usage share",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -160,7 +161,7 @@ const snapshotColumns: SortableColumnDef<SnapshotRow>[] = [
   {
     id: "favorable",
     accessorFn: (row) => ratio(row.favorableCount, row.possibleCount),
-    header: "Favorable",
+    header: METRIC_LABELS.favorableAtOrAbove50,
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",

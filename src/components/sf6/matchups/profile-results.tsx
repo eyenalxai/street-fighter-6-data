@@ -7,6 +7,7 @@ import { MatchupProfileTable, SimilarProfilesTable } from "@/components/sf6/matc
 import { MetricSummary } from "@/components/sf6/metric-summary"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
+import { getControlLabel, METRIC_LABELS } from "@/lib/sf6/presentation"
 
 type ProfileData = Extract<MatchupExplorerData, { view: "profile" }>
 
@@ -38,7 +39,7 @@ const MatchupProfileResults = ({
     <div className="flex flex-col gap-4">
       <MetricSummary
         title={`${getCharacterName(character)} profile`}
-        description={`${formatReportingPeriod(period)} · ${meta.controls.find((control) => control.id === controls)?.label ?? controls}`}
+        description={`${formatReportingPeriod(period)} · ${getControlLabel(meta.controls, controls)}`}
         items={[
           {
             label: "Unweighted average",
@@ -57,11 +58,11 @@ const MatchupProfileResults = ({
             value: <MetricValue value={data.summary.floor} format="percent" tone="winRate" />,
           },
           {
-            label: "Favorable matchups",
+            label: METRIC_LABELS.favorableMatchups,
             value: `${data.summary.favorableCount} / ${data.summary.possibleCount}`,
           },
           {
-            label: "Usage weight coverage",
+            label: METRIC_LABELS.usageWeightCoverage,
             value: <MetricValue value={data.summary.weightCoverage} format="coverage" />,
           },
           {
@@ -78,26 +79,26 @@ const MatchupProfileResults = ({
           {
             label: "Matchup imbalance",
             value: <MetricValue value={data.summary.matchupImbalance} format="percentagePoints" />,
-            description: "Mean absolute distance from 50%.",
+            description: "Mean distance from 50%.",
           },
         ]}
       />
       <AnalyticsPanel
-        title="Opponent popularity and matchup result"
-        description="The chart highlights which matchup results matter more in the observed usage environment."
+        title="Opponent usage share and matchup result"
+        description="The chart shows which matchup results matter more in the current usage share environment."
       >
         <MatchupProfileChart data={profileChartData} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Full matchup profile"
-        description="Unavailable and mirror rows remain visible so incomplete coverage is distinguishable from a poor result."
+        description="Unavailable and mirror matchups stay visible. This separates missing data from a poor result."
         contentClassName="p-0"
       >
         <MatchupProfileTable rows={data.profile} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Similar matchup profiles"
-        description="Pearson correlation compares common numeric opponent results; at least five shared opponents are required."
+        description="Correlation compares shared numeric opponents. The table needs at least five shared opponents."
         contentClassName="p-0"
       >
         <SimilarProfilesTable rows={data.similarProfiles} />

@@ -15,10 +15,10 @@ const ResultsErrorFallback = ({ resetErrorBoundary }: { resetErrorBoundary: () =
     variant="destructive"
     className="min-h-[280px] place-content-center justify-items-center text-center"
   >
-    <AlertTitle>Results could not load</AlertTitle>
+    <AlertTitle>The results did not load</AlertTitle>
     <AlertDescription>
-      Try again or change one of the controls above. The controls remain available while this result
-      is unavailable.
+      Change a control above or select Try again. The controls stay available while results are
+      unavailable.
     </AlertDescription>
     <Button type="button" variant="outline" onClick={resetErrorBoundary} className="mt-2">
       Try again

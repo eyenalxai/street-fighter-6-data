@@ -14,7 +14,7 @@ type SnapshotSchema<TSnapshot> = {
 
 class SnapshotNotFoundError extends Error {
   constructor(period: string, source: string) {
-    super(`No ${source} snapshot is available for reporting period ${period}`)
+    super(`No ${source} snapshot exists for reporting period ${period}.`)
     this.name = "SnapshotNotFoundError"
   }
 }
@@ -23,8 +23,8 @@ class SnapshotReadError extends Error {
   constructor(period: ReportingPeriod | undefined, source: string) {
     super(
       period === undefined
-        ? `No processed ${source} snapshots are available`
-        : `The processed ${source} snapshot for reporting period ${period} could not be read`,
+        ? `No processed ${source} snapshots exist.`
+        : `The system cannot read the processed ${source} snapshot for reporting period ${period}.`,
     )
     this.name = "SnapshotReadError"
   }
@@ -32,7 +32,7 @@ class SnapshotReadError extends Error {
 
 class SnapshotValidationError extends Error {
   constructor(period: ReportingPeriod, source: string) {
-    super(`The processed ${source} snapshot for reporting period ${period} failed validation`)
+    super(`The processed ${source} snapshot for reporting period ${period} is invalid.`)
     this.name = "SnapshotValidationError"
   }
 }

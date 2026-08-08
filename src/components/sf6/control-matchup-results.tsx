@@ -5,6 +5,7 @@ import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { MASTER_SUBDIVISION_PAIRING_UNAVAILABLE } from "@/lib/sf6/presentation"
 import { compareNumbers, compareStrings, createTableSortFn } from "@/lib/sf6/table-sorting"
 
 type ControlMatchupRow = {
@@ -38,15 +39,13 @@ const controlMatchupColumns: SortableColumnDef<ControlMatchupRow>[] = [
 const ControlMatchupResults = ({ rows }: { rows: readonly ControlMatchupRow[] }) => (
   <AnalyticsPanel
     title="Reported win rate by control pairing"
-    description="Each row is the reported result for this exact player-control and opponent-control pairing."
+    description="Each row shows the reported result for one player-control and opponent-control pairing."
   >
     {rows.length === 0 ? (
       <Empty className="min-h-32">
         <EmptyHeader>
-          <EmptyTitle>No data available for this rank</EmptyTitle>
-          <EmptyDescription>
-            Master subdivisions report all control styles together, not separate pairings.
-          </EmptyDescription>
+          <EmptyTitle>No data for this rank</EmptyTitle>
+          <EmptyDescription>{MASTER_SUBDIVISION_PAIRING_UNAVAILABLE}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     ) : (

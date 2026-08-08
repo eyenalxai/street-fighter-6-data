@@ -6,6 +6,7 @@ import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import { AXIS_LABELS, getRankLabel } from "@/lib/sf6/presentation"
 import {
   compareCharacterIds,
   compareNumbers,
@@ -53,7 +54,7 @@ const characterRankColumns: SortableColumnDef<RankRow>[] = [
   {
     id: "usageRange",
     accessorFn: (row) => row.usageRange ?? undefined,
-    header: "Popularity range",
+    header: "Usage share range",
     sortFn: createTableSortFn(compareNumbers),
     sortDescFirst: true,
     sortUndefined: "last",
@@ -63,18 +64,20 @@ const characterRankColumns: SortableColumnDef<RankRow>[] = [
   {
     id: "peakRankId",
     accessorFn: (row) => row.peakRankId ?? undefined,
-    header: "Peak win rate",
+    header: "Peak rank",
     sortFn: createTableSortFn(compareRankIds),
     sortUndefined: "last",
-    cell: ({ row }) => row.original.peakRankId ?? "—",
+    cell: ({ row }) =>
+      row.original.peakRankId === null ? "—" : getRankLabel(row.original.peakRankId),
   },
   {
     id: "troughRankId",
     accessorFn: (row) => row.troughRankId ?? undefined,
-    header: "Trough win rate",
+    header: "Trough rank",
     sortFn: createTableSortFn(compareRankIds),
     sortUndefined: "last",
-    cell: ({ row }) => row.original.troughRankId ?? "—",
+    cell: ({ row }) =>
+      row.original.troughRankId === null ? "—" : getRankLabel(row.original.troughRankId),
   },
 ]
 
@@ -113,29 +116,29 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
           <MetricTrendChart
             data={averageWinRateData}
             series={chartSeries}
-            xAxisLabel="Rank"
+            xAxisLabel={AXIS_LABELS.rank}
             valueFormat="percent"
-            valueLabel="Average win rate"
+            valueLabel={AXIS_LABELS.averageWinRate}
             referenceValue={50}
             referenceLabel="50%"
           />
         </AnalyticsPanel>
         <AnalyticsPanel
-          title="Popularity across ranks"
+          title="Usage share across ranks"
           description="Combined-control usage share for the same character and rank sequence."
         >
           <MetricTrendChart
             data={usageData}
             series={chartSeries}
-            xAxisLabel="Rank"
+            xAxisLabel={AXIS_LABELS.rank}
             valueFormat="percent"
-            valueLabel="Usage share"
+            valueLabel={AXIS_LABELS.usageShare}
           />
         </AnalyticsPanel>
       </div>
       <AnalyticsPanel
         title="Rank progression summary"
-        description="Ranges are maximum minus minimum across the displayed rank points."
+        description="Each range is the maximum minus the minimum across the displayed ranks."
         contentClassName="p-0"
       >
         <SortableDataTable

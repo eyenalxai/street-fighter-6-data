@@ -3,7 +3,7 @@ import type { Rank } from "@/lib/sf6/ranks"
 import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 import type { UsageBlock } from "@/lib/sf6/snapshots/usage.server"
 
-import { CHARACTERS } from "@/lib/sf6/model"
+import { formatReportingPeriod, CHARACTERS } from "@/lib/sf6/model"
 import { getUsageCharacter } from "@/lib/sf6/snapshots/usage.server"
 
 import type { AverageWinRateSummary } from "./average-win-rate"
@@ -147,7 +147,7 @@ const getPairTrend = (
     .map(({ period, block }) => {
       return {
         period,
-        label: period,
+        label: formatReportingPeriod(period),
         id: period,
         winRate: getMatchupCell(block, controlMatchup, characterId, opponentId).winRate,
       }

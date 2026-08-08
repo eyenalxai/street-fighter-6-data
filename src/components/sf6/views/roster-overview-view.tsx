@@ -20,14 +20,18 @@ import { RosterTimeResults } from "@/components/sf6/roster/time-results"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import { getControlComparisonRanks, getRosterPeriodOptions } from "@/lib/sf6/analysis-dependencies"
 import { buildRosterInput, getActiveInputKey } from "@/lib/sf6/analysis-scope"
+import {
+  MASTER_SUBDIVISION_CONTROL_COMPARISON_UNSUPPORTED,
+  VIEW_LABELS,
+} from "@/lib/sf6/presentation"
 import { rosterOverviewQueryOptions } from "@/lib/sf6/query-options"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
 const viewOptions = [
-  { value: "snapshot", label: "Snapshot" },
-  { value: "controls", label: "Control styles" },
-  { value: "ranks", label: "Across ranks" },
-  { value: "time", label: "Over time" },
+  { value: "snapshot", label: VIEW_LABELS.snapshot },
+  { value: "controls", label: VIEW_LABELS.controls },
+  { value: "ranks", label: VIEW_LABELS.ranks },
+  { value: "time", label: VIEW_LABELS.time },
 ] as const
 
 type RosterOverviewViewProps = {
@@ -58,7 +62,7 @@ const RosterToolbar = ({
   return (
     <AnalysisToolbar
       title="Roster overview"
-      description="Compare ranked average win rate, popularity, controls, and environment shape."
+      description="Compare average win rate, usage share, control styles, and environment metrics."
       views={
         <AnalysisViewTabs
           value={search.view}
@@ -123,10 +127,10 @@ const RosterResults = ({
       data={data}
       meta={meta}
       chartTitle="Modern minus Classic"
-      chartDescription="Positive values mean the character's average win rate is higher with Modern controls."
+      chartDescription="Positive values show a higher average win rate with Modern player controls."
       tableTitle="Control-style results"
-      tableDescription="Average win rate combines both opponent control styles. Usage is each character's share among that control population."
-      unsupportedDescription="Master subdivision snapshots combine all control styles. Choose All Master or a standard rank to compare Classic and Modern players."
+      tableDescription="Average win rate combines both opponent control styles. Usage share is each character's share in that control population."
+      unsupportedDescription={MASTER_SUBDIVISION_CONTROL_COMPARISON_UNSUPPORTED}
     />
   ) : input.view === "ranks" && data.view === "ranks" ? (
     <RosterRankResults data={data} meta={meta} />

@@ -85,8 +85,15 @@ const getUsageStability = (points: readonly UsagePoint[]) => {
 const sortUsageRows = (rows: readonly UsageCharacterRow[]) =>
   rows.toSorted((left, right) => right.playRate - left.playRate)
 
-const playerControlLabel = (control: PlayerControl): string =>
-  control === "combined" ? "All control styles" : control === "classic" ? "Classic" : "Modern"
+const playerControlLabel = (control: PlayerControl): string => {
+  if (control === "combined") {
+    return "All control styles"
+  }
+  if (control === "classic") {
+    return "Classic players"
+  }
+  return "Modern players"
+}
 
 export {
   getUsageDelta,

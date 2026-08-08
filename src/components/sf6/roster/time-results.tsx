@@ -4,6 +4,7 @@ import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { TimeConsistencyTable } from "@/components/sf6/roster/consistency-tables"
 import { formatReportingPeriod } from "@/lib/sf6/model"
+import { AXIS_LABELS, METRIC_LABELS } from "@/lib/sf6/presentation"
 
 type TimeData = Extract<RosterOverviewData, { view: "time" }>
 
@@ -20,24 +21,32 @@ const RosterTimeResults = ({ data }: { data: TimeData }) => {
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Win rate spread over time"
-          description="Highest character average minus lowest character average for each reporting period."
+          description="Highest character average win rate minus lowest character average win rate for each reporting period."
         >
           <MetricTrendChart
             data={chartData}
-            series={[{ key: "spread", label: "Win rate spread", color: "var(--chart-1)" }]}
-            xAxisLabel="Reporting period"
+            series={[
+              { key: "spread", label: METRIC_LABELS.winRateSpread, color: "var(--chart-1)" },
+            ]}
+            xAxisLabel={AXIS_LABELS.reportingPeriod}
             valueFormat="percentagePoints"
             valueLabel="Win rate spread (percentage points)"
           />
         </AnalyticsPanel>
         <AnalyticsPanel
           title="Effective roster size over time"
-          description="Exponential Shannon entropy of usage shares; higher values indicate a more diverse environment."
+          description="Higher values show a more diverse usage share environment."
         >
           <MetricTrendChart
             data={chartData}
-            series={[{ key: "diversity", label: "Effective roster size", color: "var(--chart-2)" }]}
-            xAxisLabel="Reporting period"
+            series={[
+              {
+                key: "diversity",
+                label: METRIC_LABELS.effectiveRosterSize,
+                color: "var(--chart-2)",
+              },
+            ]}
+            xAxisLabel={AXIS_LABELS.reportingPeriod}
             valueFormat="number"
             valueLabel="Effective roster size (characters)"
           />
@@ -45,7 +54,7 @@ const RosterTimeResults = ({ data }: { data: TimeData }) => {
       </div>
       <AnalyticsPanel
         title="Character consistency over time"
-        description="Lower win rate range and standard deviation indicate a steadier win rate across the selected rank's reporting periods."
+        description="Lower win rate range and standard deviation show a steadier average win rate across reporting periods."
         contentClassName="p-0"
       >
         <TimeConsistencyTable data={data.characterConsistency} />

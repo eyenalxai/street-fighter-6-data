@@ -45,7 +45,7 @@ const CharacterField = ({
       >
         <ComboboxInput id={id} className="w-full" placeholder="Search characters" />
         <ComboboxContent>
-          <ComboboxEmpty>No matching characters.</ComboboxEmpty>
+          <ComboboxEmpty>No characters match this search.</ComboboxEmpty>
           <ComboboxList>
             {(characterId) => {
               const parsedCharacterId = CharacterIdSchema.parse(characterId)

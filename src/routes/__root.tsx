@@ -36,7 +36,7 @@ const NotFound = () => (
   <main className="flex min-h-screen items-center justify-center">
     <div className="flex flex-col items-center gap-2 text-center">
       <h1 className="text-lg font-semibold">Page not found</h1>
-      <p className="text-muted-foreground">The requested analytics page does not exist.</p>
+      <p className="text-muted-foreground">This page does not exist.</p>
     </div>
   </main>
 )

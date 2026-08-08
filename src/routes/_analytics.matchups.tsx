@@ -23,6 +23,17 @@ const MatchupsPage = () => {
 }
 
 const Route = createFileRoute("/_analytics/matchups")({
+  head: () => {
+    return {
+      meta: [
+        { title: "Matchup explorer · SF6 Ranked Lab" },
+        {
+          name: "description",
+          content: "Compare matchups, inspect character profiles, and plan counterpicks.",
+        },
+      ],
+    }
+  },
   validateSearch: MatchupSearchSchema,
   loaderDeps: ({ search }) => getMatchupLoaderDeps(search),
   loader: async ({ context: { queryClient }, deps }) => {

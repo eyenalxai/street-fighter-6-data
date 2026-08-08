@@ -3,6 +3,7 @@ import type { MetaData } from "@/lib/sf6/query-options"
 
 import { SelectField } from "@/components/sf6/filters/select-field"
 import { ControlMatchupSchema } from "@/lib/sf6/model"
+import { MASTER_SUBDIVISION_COMBINED_CONTROLS } from "@/lib/sf6/presentation"
 
 const ControlMatchupField = ({
   label = "Control matchup",
@@ -28,9 +29,7 @@ const ControlMatchupField = ({
     onChange={(next) => {
       onChange(ControlMatchupSchema.parse(next))
     }}
-    description={
-      disabled ? "Master subdivisions include all control styles together." : description
-    }
+    description={disabled ? MASTER_SUBDIVISION_COMBINED_CONTROLS : description}
     disabled={disabled}
   />
 )

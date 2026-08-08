@@ -1,8 +1,6 @@
-const ResultsStatus = ({
-  message = "Results loaded from ranked Buckler snapshots.",
-}: {
-  message?: string
-}) => (
+import { RESULTS_STATUS } from "@/lib/sf6/presentation"
+
+const ResultsStatus = ({ message = RESULTS_STATUS.loaded }: { message?: string }) => (
   <p aria-live="polite" className="sr-only">
     {message}
   </p>
