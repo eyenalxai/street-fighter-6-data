@@ -1,23 +1,24 @@
 import { useState } from "react"
 
+import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
 import type { CharacterExplorerData, MetaData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatReportingPeriod } from "@/lib/sf6/model"
+import {
+  compareCharacterIds,
+  compareNumbers,
+  compareReportingPeriods,
+  createTableSortFn,
+} from "@/lib/sf6/table-sorting"
 
 type TimeData = Extract<CharacterExplorerData, { view: "time" }>
+type TimeRow = TimeData["series"][number]
 
 const COLORS = [
   "var(--chart-1)",
@@ -25,6 +26,88 @@ const COLORS = [
   "var(--chart-3)",
   "var(--chart-4)",
   "var(--chart-5)",
+]
+
+const CHARACTER_TIME_INITIAL_SORTING = [{ id: "character", desc: false }]
+
+const characterTimeColumns: SortableColumnDef<TimeRow>[] = [
+  {
+    id: "character",
+    accessorFn: (row) => row.characterId,
+    header: "Character",
+    sortFn: createTableSortFn(compareCharacterIds),
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <CharacterBadge characterId={row.original.characterId} size="small" />
+        <CharacterName characterId={row.original.characterId} />
+      </div>
+    ),
+  },
+  {
+    id: "firstPeriod",
+    accessorFn: (row) => row.stability.firstPeriod ?? undefined,
+    header: "First recorded",
+    sortFn: createTableSortFn(compareReportingPeriods),
+    sortUndefined: "last",
+    cell: ({ row }) =>
+      row.original.stability.firstPeriod === null
+        ? "—"
+        : formatReportingPeriod(row.original.stability.firstPeriod),
+  },
+  {
+    id: "averageWinRateRange",
+    accessorFn: (row) => row.stability.averageWinRateRange ?? undefined,
+    header: "Win rate range",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.stability.averageWinRateRange} format="percentagePoints" />
+    ),
+  },
+  {
+    id: "averageWinRateStandardDeviation",
+    accessorFn: (row) => row.stability.averageWinRateStandardDeviation ?? undefined,
+    header: "Win rate deviation",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue
+        value={row.original.stability.averageWinRateStandardDeviation}
+        format="percentagePoints"
+      />
+    ),
+  },
+  {
+    id: "usageRange",
+    accessorFn: (row) => row.stability.usageRange ?? undefined,
+    header: "Usage range",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.stability.usageRange} format="percentagePoints" />
+    ),
+  },
+  {
+    id: "usageStandardDeviation",
+    accessorFn: (row) => row.stability.usageStandardDeviation ?? undefined,
+    header: "Usage deviation",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue
+        value={row.original.stability.usageStandardDeviation}
+        format="percentagePoints"
+      />
+    ),
+  },
 ]
 
 const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }) => {
@@ -128,56 +211,12 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
         description="Range and standard deviation describe volatility across the selected monthly series."
         contentClassName="p-0"
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Character</TableHead>
-              <TableHead>First recorded</TableHead>
-              <TableHead className="text-right">Win rate range</TableHead>
-              <TableHead className="text-right">Win rate deviation</TableHead>
-              <TableHead className="text-right">Usage range</TableHead>
-              <TableHead className="text-right">Usage deviation</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.series.map((row) => (
-              <TableRow key={row.characterId}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <CharacterBadge characterId={row.characterId} size="small" />
-                    <CharacterName characterId={row.characterId} />
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {row.stability.firstPeriod === null
-                    ? "—"
-                    : formatReportingPeriod(row.stability.firstPeriod)}
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue
-                    value={row.stability.averageWinRateRange}
-                    format="percentagePoints"
-                  />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue
-                    value={row.stability.averageWinRateStandardDeviation}
-                    format="percentagePoints"
-                  />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={row.stability.usageRange} format="percentagePoints" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue
-                    value={row.stability.usageStandardDeviation}
-                    format="percentagePoints"
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <SortableDataTable
+          data={data.series}
+          columns={characterTimeColumns}
+          initialSorting={CHARACTER_TIME_INITIAL_SORTING}
+          getRowId={(row) => row.characterId}
+        />
       </AnalyticsPanel>
     </div>
   )

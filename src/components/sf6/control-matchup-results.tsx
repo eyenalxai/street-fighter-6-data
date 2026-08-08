@@ -1,22 +1,39 @@
+import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
 import type { ControlMatchup } from "@/lib/sf6/model"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricValue } from "@/components/sf6/metric-value"
+import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { compareNumbers, compareStrings, createTableSortFn } from "@/lib/sf6/table-sorting"
 
 type ControlMatchupRow = {
   controlMatchup: Exclude<ControlMatchup, "combined">
   label: string
   winRate: number | null
 }
+
+const CONTROL_MATCHUP_INITIAL_SORTING = [{ id: "controlMatchup", desc: false }]
+
+const controlMatchupColumns: SortableColumnDef<ControlMatchupRow>[] = [
+  {
+    id: "controlMatchup",
+    accessorFn: (row) => row.label,
+    header: "Control pairing",
+    sortFn: createTableSortFn(compareStrings),
+    cell: ({ row }) => row.original.label,
+  },
+  {
+    id: "winRate",
+    accessorFn: (row) => row.winRate ?? undefined,
+    header: "Win rate",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.winRate} format="percent" tone="winRate" />,
+  },
+]
 
 const ControlMatchupResults = ({ rows }: { rows: readonly ControlMatchupRow[] }) => (
   <AnalyticsPanel
@@ -33,26 +50,12 @@ const ControlMatchupResults = ({ rows }: { rows: readonly ControlMatchupRow[] })
         </EmptyHeader>
       </Empty>
     ) : (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead scope="col">Control pairing</TableHead>
-            <TableHead scope="col" className="text-right">
-              Win rate
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((control) => (
-            <TableRow key={control.controlMatchup}>
-              <TableCell>{control.label}</TableCell>
-              <TableCell className="text-right">
-                <MetricValue value={control.winRate} format="percent" tone="winRate" />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <SortableDataTable
+        data={rows}
+        columns={controlMatchupColumns}
+        initialSorting={CONTROL_MATCHUP_INITIAL_SORTING}
+        getRowId={(row) => row.controlMatchup}
+      />
     )}
   </AnalyticsPanel>
 )

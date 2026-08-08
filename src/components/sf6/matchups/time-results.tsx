@@ -1,18 +1,36 @@
+import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
 import type { MatchupExplorerData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricValue } from "@/components/sf6/metric-value"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import { formatReportingPeriod } from "@/lib/sf6/model"
+import { compareNumbers, compareReportingPeriods, createTableSortFn } from "@/lib/sf6/table-sorting"
 
 type TimeData = Extract<MatchupExplorerData, { view: "time" }>
+type TimeRow = TimeData["timeProgression"][number]
+
+const MATCHUP_TIME_INITIAL_SORTING = [{ id: "period", desc: false }]
+
+const matchupTimeColumns: SortableColumnDef<TimeRow>[] = [
+  {
+    id: "period",
+    accessorFn: (row) => row.period,
+    header: "Period",
+    sortFn: createTableSortFn(compareReportingPeriods),
+    cell: ({ row }) => formatReportingPeriod(row.original.period),
+  },
+  {
+    id: "winRate",
+    accessorFn: (row) => row.winRate ?? undefined,
+    header: "Win rate",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.winRate} format="percent" tone="winRate" />,
+  },
+]
 
 const MatchupTimeResults = ({ data }: { data: TimeData }) => (
   <AnalyticsPanel
@@ -20,24 +38,12 @@ const MatchupTimeResults = ({ data }: { data: TimeData }) => (
     description="Monthly points use the selected control context and preserve unavailable gaps."
     contentClassName="p-0"
   >
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Period</TableHead>
-          <TableHead className="text-right">Win rate</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.timeProgression.map((point) => (
-          <TableRow key={point.period}>
-            <TableCell>{formatReportingPeriod(point.period)}</TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={point.winRate} format="percent" tone="winRate" />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <SortableDataTable
+      data={data.timeProgression}
+      columns={matchupTimeColumns}
+      initialSorting={MATCHUP_TIME_INITIAL_SORTING}
+      getRowId={(row) => row.period}
+    />
   </AnalyticsPanel>
 )
 

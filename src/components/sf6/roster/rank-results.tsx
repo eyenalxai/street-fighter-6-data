@@ -1,18 +1,58 @@
+import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
 import type { RosterOverviewData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import { compareNumbers, compareRankIds, createTableSortFn } from "@/lib/sf6/table-sorting"
 
 type RankData = Extract<RosterOverviewData, { view: "ranks" }>
+type RankRow = RankData["rankLandscape"][number]
+
+const ROSTER_RANK_INITIAL_SORTING = [{ id: "rank", desc: false }]
+
+const rosterRankColumns: SortableColumnDef<RankRow>[] = [
+  {
+    id: "rank",
+    accessorFn: (row) => row.rankId,
+    header: "Rank",
+    sortFn: createTableSortFn(compareRankIds),
+    cell: ({ row }) => row.original.label,
+  },
+  {
+    id: "averageWinRateSpread",
+    accessorFn: (row) => row.averageWinRateSpread ?? undefined,
+    header: "Win rate spread",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.averageWinRateSpread} format="percentagePoints" />
+    ),
+  },
+  {
+    id: "effectiveRosterSize",
+    accessorFn: (row) => row.effectiveRosterSize ?? undefined,
+    header: "Effective roster size",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.effectiveRosterSize} format="number" />,
+  },
+  {
+    id: "topFiveShare",
+    accessorFn: (row) => row.topFiveShare ?? undefined,
+    header: "Top-five usage",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.topFiveShare} format="percent" />,
+  },
+]
 
 const RosterRankResults = ({ data }: { data: RankData }) => {
   const chartData = data.rankLandscape.map((point) => {
@@ -55,32 +95,12 @@ const RosterRankResults = ({ data }: { data: RankData }) => {
         description="The selected period's spread and usage concentration at each rank."
         contentClassName="p-0"
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Rank</TableHead>
-              <TableHead className="text-right">Win rate spread</TableHead>
-              <TableHead className="text-right">Effective roster size</TableHead>
-              <TableHead className="text-right">Top-five usage</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.rankLandscape.map((point) => (
-              <TableRow key={point.rankId}>
-                <TableCell>{point.label}</TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={point.averageWinRateSpread} format="percentagePoints" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={point.effectiveRosterSize} format="number" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={point.topFiveShare} format="percent" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <SortableDataTable
+          data={data.rankLandscape}
+          columns={rosterRankColumns}
+          initialSorting={ROSTER_RANK_INITIAL_SORTING}
+          getRowId={(row) => row.rankId}
+        />
       </AnalyticsPanel>
     </div>
   )

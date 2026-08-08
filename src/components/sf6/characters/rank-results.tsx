@@ -1,25 +1,81 @@
+import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
 import type { CharacterExplorerData, MetaData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricTrendChart } from "@/components/sf6/charts/metric-trend-chart"
 import { MetricValue } from "@/components/sf6/metric-value"
+import { SortableDataTable } from "@/components/sf6/sortable-data-table"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  compareCharacterIds,
+  compareNumbers,
+  compareRankIds,
+  createTableSortFn,
+} from "@/lib/sf6/table-sorting"
 
 type RankData = Extract<CharacterExplorerData, { view: "ranks" }>
+type RankRow = RankData["series"][number]
 const COLORS = [
   "var(--chart-1)",
   "var(--chart-2)",
   "var(--chart-3)",
   "var(--chart-4)",
   "var(--chart-5)",
+]
+
+const CHARACTER_RANK_INITIAL_SORTING = [{ id: "character", desc: false }]
+
+const characterRankColumns: SortableColumnDef<RankRow>[] = [
+  {
+    id: "character",
+    accessorFn: (row) => row.characterId,
+    header: "Character",
+    sortFn: createTableSortFn(compareCharacterIds),
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <CharacterBadge characterId={row.original.characterId} size="small" />
+        <CharacterName characterId={row.original.characterId} />
+      </div>
+    ),
+  },
+  {
+    id: "averageWinRateRange",
+    accessorFn: (row) => row.averageWinRateRange ?? undefined,
+    header: "Win rate range",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.averageWinRateRange} format="percentagePoints" />
+    ),
+  },
+  {
+    id: "usageRange",
+    accessorFn: (row) => row.usageRange ?? undefined,
+    header: "Popularity range",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.usageRange} format="percentagePoints" />,
+  },
+  {
+    id: "peakRankId",
+    accessorFn: (row) => row.peakRankId ?? undefined,
+    header: "Peak win rate",
+    sortFn: createTableSortFn(compareRankIds),
+    sortUndefined: "last",
+    cell: ({ row }) => row.original.peakRankId ?? "—",
+  },
+  {
+    id: "troughRankId",
+    accessorFn: (row) => row.troughRankId ?? undefined,
+    header: "Trough win rate",
+    sortFn: createTableSortFn(compareRankIds),
+    sortUndefined: "last",
+    cell: ({ row }) => row.original.troughRankId ?? "—",
+  },
 ]
 
 const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) => {
@@ -82,37 +138,12 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
         description="Ranges are maximum minus minimum across the displayed rank points."
         contentClassName="p-0"
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Character</TableHead>
-              <TableHead className="text-right">Win rate range</TableHead>
-              <TableHead className="text-right">Popularity range</TableHead>
-              <TableHead>Peak win rate</TableHead>
-              <TableHead>Trough win rate</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.series.map((row) => (
-              <TableRow key={row.characterId}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <CharacterBadge characterId={row.characterId} size="small" />
-                    <CharacterName characterId={row.characterId} />
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={row.averageWinRateRange} format="percentagePoints" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={row.usageRange} format="percentagePoints" />
-                </TableCell>
-                <TableCell>{row.peakRankId ?? "—"}</TableCell>
-                <TableCell>{row.troughRankId ?? "—"}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <SortableDataTable
+          data={data.series}
+          columns={characterRankColumns}
+          initialSorting={CHARACTER_RANK_INITIAL_SORTING}
+          getRowId={(row) => row.characterId}
+        />
       </AnalyticsPanel>
     </div>
   )

@@ -2,18 +2,10 @@ import type { CharacterId, ControlMatchup, ReportingPeriod } from "@/lib/sf6/mod
 import type { MatchupExplorerData, MetaData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
-import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MatchupProfileChart } from "@/components/sf6/charts/matchup-profile-chart"
+import { MatchupProfileTable, SimilarProfilesTable } from "@/components/sf6/matchups/profile-tables"
 import { MetricSummary } from "@/components/sf6/metric-summary"
 import { MetricValue } from "@/components/sf6/metric-value"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { formatReportingPeriod, getCharacterName } from "@/lib/sf6/model"
 
 type ProfileData = Extract<MatchupExplorerData, { view: "profile" }>
@@ -101,71 +93,14 @@ const MatchupProfileResults = ({
         description="Unavailable and mirror rows remain visible so incomplete coverage is distinguishable from a poor result."
         contentClassName="p-0"
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Opponent</TableHead>
-              <TableHead className="text-right">Win rate</TableHead>
-              <TableHead className="text-right">Opponent usage</TableHead>
-              <TableHead className="text-right">Weighted disadvantage contribution</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.profile.map((row) => (
-              <TableRow key={row.opponentId}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <CharacterBadge characterId={row.opponentId} size="small" />
-                    <CharacterName characterId={row.opponentId} />
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={row.winRate} format="percent" tone="winRate" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={row.opponentUsage} format="percent" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue
-                    value={row.weightedDisadvantageContribution}
-                    format="percentagePoints"
-                  />
-                </TableCell>
-                <TableCell className="text-muted-foreground">{row.status}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <MatchupProfileTable rows={data.profile} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Similar matchup profiles"
         description="Pearson correlation compares common numeric opponent results; at least five shared opponents are required."
         contentClassName="p-0"
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Character</TableHead>
-              <TableHead className="text-right">Correlation</TableHead>
-              <TableHead className="text-right">Shared opponents</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.similarProfiles.map((row) => (
-              <TableRow key={row.characterId}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <CharacterBadge characterId={row.characterId} size="small" />
-                    <CharacterName characterId={row.characterId} />
-                  </div>
-                </TableCell>
-                <TableCell className="text-right font-mono">{row.correlation.toFixed(2)}</TableCell>
-                <TableCell className="text-right font-mono">{row.overlap}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <SimilarProfilesTable rows={data.similarProfiles} />
       </AnalyticsPanel>
     </div>
   )

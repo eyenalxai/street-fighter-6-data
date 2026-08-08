@@ -197,7 +197,7 @@ const matchupExplorerProcedure = os
           view: "profile" as const,
           profile: profile.rows,
           summary: profile.summary,
-          similarProfiles: getSimilarProfiles(block, controls, input.character).slice(0, 8),
+          similarProfiles: getSimilarProfiles(block, controls, input.character),
         }
       }
 

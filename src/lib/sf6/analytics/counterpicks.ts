@@ -7,7 +7,6 @@ import { getUsageCharacter } from "@/lib/sf6/snapshots/usage.server"
 import { getAvailablePlayerCharacterIds, getMatchupCell } from "./matchup-cells"
 import { boundedRatio, mean, weightedMean } from "./math"
 
-type CounterpickOrder = "weighted" | "average" | "floor"
 type CounterpickRow = {
   characterId: CharacterId
   weightedAverage: number | null
@@ -29,7 +28,6 @@ const getCounterpickCandidates = (
   controlMatchup: ControlMatchup,
   opponents: readonly CharacterId[],
   usageBlock: UsageBlock | undefined,
-  order: CounterpickOrder,
 ): CounterpickResult => {
   let excludedCandidateCount = 0
   const opponentUsage = opponents.map((opponentId) => {
@@ -85,30 +83,14 @@ const getCounterpickCandidates = (
       },
     ]
   })
-  const sortValue = (row: CounterpickRow): number =>
-    order === "floor"
-      ? row.floor
-      : order === "average"
-        ? row.unweightedAverage
-        : (row.weightedAverage ?? -Infinity)
   const weightCoverage =
     usageBlock === undefined ? null : boundedRatio(selectedUsageShare ?? 0, totalUsageShare)
   return {
-    rows: rows.toSorted(
-      (left, right) =>
-        sortValue(right) - sortValue(left) ||
-        right.unweightedAverage - left.unweightedAverage ||
-        left.characterId.localeCompare(right.characterId),
-    ),
+    rows,
     excludedCandidateCount,
     selectedUsageShare: weightCoverage === null ? null : weightCoverage * 100,
     weightCoverage,
   }
 }
 
-export {
-  getCounterpickCandidates,
-  type CounterpickOrder,
-  type CounterpickResult,
-  type CounterpickRow,
-}
+export { getCounterpickCandidates, type CounterpickResult, type CounterpickRow }

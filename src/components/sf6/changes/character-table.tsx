@@ -1,159 +1,174 @@
-import { useMemo, useState } from "react"
-
+import type { SortableColumnDef } from "@/components/sf6/sortable-data-table"
 import type { ChangeExplorerData } from "@/lib/sf6/query-options"
 
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
 import { MetricValue } from "@/components/sf6/metric-value"
-import { SortableTableHead } from "@/components/sf6/sortable-table-head"
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table"
+import { SortableDataTable } from "@/components/sf6/sortable-data-table"
+import {
+  compareBooleans,
+  compareCharacterIds,
+  compareNumbers,
+  createTableSortFn,
+} from "@/lib/sf6/table-sorting"
 
 type ChangeRow = Extract<ChangeExplorerData, { view: "overview" }>["rows"][number]
-type ChangeSortKey =
-  | "character"
-  | "averageWinRateDelta"
-  | "beforeAverageWinRate"
-  | "averageWinRate"
-  | "weightedAverageWinRateDelta"
-  | "beforeWeightedAverageWinRate"
-  | "weightedAverageWinRate"
-  | "weightCoverage"
-  | "usageDelta"
-  | "beforeUsage"
-  | "usage"
-  | "debut"
+const changeColumns: SortableColumnDef<ChangeRow>[] = [
+  {
+    id: "character",
+    accessorFn: (row) => row.characterId,
+    header: "Character",
+    sortFn: createTableSortFn(compareCharacterIds),
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <CharacterBadge characterId={row.original.characterId} size="small" />
+        <CharacterName characterId={row.original.characterId} />
+      </div>
+    ),
+  },
+  {
+    id: "averageWinRateDelta",
+    accessorFn: (row) => row.averageWinRateDelta,
+    header: "Win rate change",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue
+        value={row.original.averageWinRateDelta}
+        format="percentagePoints"
+        tone="directional"
+        signed
+      />
+    ),
+  },
+  {
+    id: "beforeAverageWinRate",
+    accessorFn: (row) => row.beforeAverageWinRate ?? undefined,
+    header: "Before win rate",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.beforeAverageWinRate} format="percent" tone="winRate" />
+    ),
+  },
+  {
+    id: "averageWinRate",
+    accessorFn: (row) => row.averageWinRate ?? undefined,
+    header: "After win rate",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.averageWinRate} format="percent" tone="winRate" />
+    ),
+  },
+  {
+    id: "weightedAverageWinRateDelta",
+    accessorFn: (row) => row.weightedAverageWinRateDelta ?? undefined,
+    header: "Weighted win rate change",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue
+        value={row.original.weightedAverageWinRateDelta}
+        format="percentagePoints"
+        tone="directional"
+        signed
+      />
+    ),
+  },
+  {
+    id: "beforeWeightedAverageWinRate",
+    accessorFn: (row) => row.beforeWeightedAverageWinRate ?? undefined,
+    header: "Before weighted",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue
+        value={row.original.beforeWeightedAverageWinRate}
+        format="percent"
+        tone="winRate"
+      />
+    ),
+  },
+  {
+    id: "weightedAverageWinRate",
+    accessorFn: (row) => row.weightedAverageWinRate ?? undefined,
+    header: "After weighted",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.weightedAverageWinRate} format="percent" tone="winRate" />
+    ),
+  },
+  {
+    id: "weightCoverage",
+    accessorFn: (row) => row.weightCoverage ?? undefined,
+    header: "Weight coverage",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.weightCoverage} format="coverage" />,
+  },
+  {
+    id: "usageDelta",
+    accessorFn: (row) => row.usageDelta ?? undefined,
+    header: "Usage change",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => (
+      <MetricValue value={row.original.usageDelta} format="percentagePoints" signed />
+    ),
+  },
+  {
+    id: "beforeUsage",
+    accessorFn: (row) => row.beforeUsage ?? undefined,
+    header: "Before usage",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.beforeUsage} format="percent" />,
+  },
+  {
+    id: "usage",
+    accessorFn: (row) => row.usage ?? undefined,
+    header: "After usage",
+    sortFn: createTableSortFn(compareNumbers),
+    sortDescFirst: true,
+    sortUndefined: "last",
+    meta: { align: "right" },
+    cell: ({ row }) => <MetricValue value={row.original.usage} format="percent" />,
+  },
+  {
+    id: "debut",
+    accessorFn: (row) => row.debut,
+    header: "Debut in later period",
+    sortFn: createTableSortFn(compareBooleans),
+    cell: ({ row }) => (row.original.debut ? "Yes" : "—"),
+  },
+]
 
-const getValue = (row: ChangeRow, key: ChangeSortKey): number | string => {
-  if (key === "character") {
-    return row.characterId
-  }
-  if (key === "debut") {
-    return row.debut ? 1 : 0
-  }
-  return row[key] ?? -Infinity
-}
-
-const ChangeCharacterTable = ({ rows }: { rows: readonly ChangeRow[] }) => {
-  const [sort, setSort] = useState<{ key: ChangeSortKey; direction: "asc" | "desc" }>({
-    key: "averageWinRateDelta",
-    direction: "desc",
-  })
-  const sortedRows = useMemo(
-    () =>
-      rows.toSorted((left, right) => {
-        const leftValue = getValue(left, sort.key)
-        const rightValue = getValue(right, sort.key)
-        const result =
-          typeof leftValue === "string" && typeof rightValue === "string"
-            ? leftValue.localeCompare(rightValue)
-            : Number(leftValue) - Number(rightValue)
-        return sort.direction === "asc" ? result : -result
-      }),
-    [rows, sort],
-  )
-  const changeSort = (key: ChangeSortKey) => {
-    setSort((current) => {
-      return {
-        key,
-        direction: current.key === key && current.direction === "desc" ? "asc" : "desc",
-      }
-    })
-  }
-  const head = (label: string, key: ChangeSortKey) => (
-    <SortableTableHead
-      label={label}
-      active={sort.key === key}
-      direction={sort.direction}
-      onClick={() => {
-        changeSort(key)
-      }}
-      className="text-right [&>button]:w-full [&>button]:justify-end"
-    />
-  )
-
-  return (
-    <Table className="min-w-max">
-      <TableHeader>
-        <TableRow>
-          <SortableTableHead
-            label="Character"
-            active={sort.key === "character"}
-            direction={sort.direction}
-            onClick={() => {
-              changeSort("character")
-            }}
-          />
-          {head("Win rate change", "averageWinRateDelta")}
-          {head("Before win rate", "beforeAverageWinRate")}
-          {head("After win rate", "averageWinRate")}
-          {head("Weighted win rate change", "weightedAverageWinRateDelta")}
-          {head("Before weighted", "beforeWeightedAverageWinRate")}
-          {head("After weighted", "weightedAverageWinRate")}
-          {head("Weight coverage", "weightCoverage")}
-          {head("Usage change", "usageDelta")}
-          {head("Before usage", "beforeUsage")}
-          {head("After usage", "usage")}
-          {head("Debut in later period", "debut")}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sortedRows.map((row) => (
-          <TableRow key={row.characterId}>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <CharacterBadge characterId={row.characterId} size="small" />
-                <CharacterName characterId={row.characterId} />
-              </div>
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue
-                value={row.averageWinRateDelta}
-                format="percentagePoints"
-                tone="directional"
-                signed
-              />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={row.beforeAverageWinRate} format="percent" tone="winRate" />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={row.averageWinRate} format="percent" tone="winRate" />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue
-                value={row.weightedAverageWinRateDelta}
-                format="percentagePoints"
-                tone="directional"
-                signed
-              />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue
-                value={row.beforeWeightedAverageWinRate}
-                format="percent"
-                tone="winRate"
-              />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={row.weightedAverageWinRate} format="percent" tone="winRate" />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={row.weightCoverage} format="coverage" />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={row.usageDelta} format="percentagePoints" signed />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={row.beforeUsage} format="percent" />
-            </TableCell>
-            <TableCell className="text-right">
-              <MetricValue value={row.usage} format="percent" />
-            </TableCell>
-            <TableCell>{row.debut ? "Yes" : "—"}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
-}
+const ChangeCharacterTable = ({ rows }: { rows: readonly ChangeRow[] }) => (
+  <SortableDataTable
+    data={rows}
+    columns={changeColumns}
+    initialSorting={[{ id: "averageWinRateDelta", desc: true }]}
+    getRowId={(row) => row.characterId}
+    className="min-w-max"
+  />
+)
 
 export { ChangeCharacterTable }

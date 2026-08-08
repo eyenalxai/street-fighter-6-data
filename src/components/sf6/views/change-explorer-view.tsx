@@ -48,7 +48,7 @@ const ChangeQueryView = ({ input, meta }: { input: ChangeInput; meta: MetaData }
       ) : data.view === "trends" ? (
         <ChangeTrendResults data={data} meta={meta} />
       ) : (
-        <ChangeMatchupResults data={data} meta={meta} />
+        <ChangeMatchupResults data={data} />
       )}
     </ResultsContent>
   )

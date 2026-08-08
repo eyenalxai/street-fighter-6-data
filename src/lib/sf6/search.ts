@@ -32,7 +32,6 @@ const MatchupSearchSchema = z.object({
   opponent: CharacterIdSchema.default("ken"),
   controls: ControlMatchupSchema.default("combined"),
   opponents: UniqueCharacterIdsSchema.default([]),
-  order: z.enum(["weighted", "average", "floor"]).default("weighted"),
   view: z
     .enum(["head-to-head", "profile", "ranks", "time", "counterpicks"])
     .default("head-to-head"),

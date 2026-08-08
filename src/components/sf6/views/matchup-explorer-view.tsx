@@ -96,10 +96,8 @@ const CounterpickQueryView = ({
   period,
   search,
   meta,
-  onOrderChange,
 }: MatchupExplorerViewProps & {
   period: ReportingPeriod
-  onOrderChange: (order: MatchupSearch["order"]) => void
 }) => {
   const input = buildCounterpickInput(search, period)
   const { data, isUpdating } = useAnalyticsQuery(counterpickPlannerQueryOptions(input), input)
@@ -107,31 +105,14 @@ const CounterpickQueryView = ({
     <ResultsPending />
   ) : (
     <ResultsContent isUpdating={isUpdating}>
-      <CounterpickResults
-        data={data}
-        meta={meta}
-        order={input.order}
-        onOrderChange={onOrderChange}
-      />
+      <CounterpickResults data={data} meta={meta} />
     </ResultsContent>
   )
 }
 
-const CounterpickView = ({
-  period,
-  search,
-  meta,
-  onOrderChange,
-}: MatchupExplorerViewProps & {
-  onOrderChange: (order: MatchupSearch["order"]) => void
-}) =>
+const CounterpickView = ({ period, search, meta }: MatchupExplorerViewProps) =>
   hasSelectedCharacters(search.opponents) ? (
-    <CounterpickQueryView
-      period={requirePeriod(period)}
-      search={search}
-      meta={meta}
-      onOrderChange={onOrderChange}
-    />
+    <CounterpickQueryView period={requirePeriod(period)} search={search} meta={meta} />
   ) : (
     <AnalysisSelectionEmpty
       title="Select opponents"
@@ -258,14 +239,7 @@ const MatchupExplorerView = ({ period, search, meta }: MatchupExplorerViewProps)
   return (
     <AnalysisPage toolbar={toolbar} resetKey={getActiveInputKey(activeInput)}>
       {search.view === "counterpicks" ? (
-        <CounterpickView
-          period={period}
-          search={search}
-          meta={meta}
-          onOrderChange={(order) => {
-            change({ order })
-          }}
-        />
+        <CounterpickView period={period} search={search} meta={meta} />
       ) : (
         <MatchupQueryView period={period} search={search} meta={meta} />
       )}

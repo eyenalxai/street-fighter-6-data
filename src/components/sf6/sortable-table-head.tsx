@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { TableHead } from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 
 type SortDirection = "asc" | "desc"
 
@@ -10,8 +11,10 @@ const SortableTableHead = ({
   active,
   direction,
   onClick,
+  align = "left",
   className,
 }: {
+  align?: "left" | "right"
   label: string
   active: boolean
   direction: SortDirection
@@ -19,7 +22,10 @@ const SortableTableHead = ({
   className?: string
 }) => (
   <TableHead
-    className={className}
+    className={cn(
+      align === "right" && "text-right [&>button]:w-full [&>button]:justify-end",
+      className,
+    )}
     aria-sort={active ? (direction === "asc" ? "ascending" : "descending") : "none"}
   >
     <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 px-1" onClick={onClick}>

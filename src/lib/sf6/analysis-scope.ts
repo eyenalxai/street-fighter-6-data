@@ -76,7 +76,6 @@ type CounterpickInput = {
   rank: RankId
   controls: ControlMatchup
   opponents: CharacterId[]
-  order: "weighted" | "average" | "floor"
 }
 
 type ChangeInput =
@@ -248,7 +247,6 @@ const buildCounterpickInput = (
     rank,
     controls: getEffectiveControls(rank, search.controls ?? "combined"),
     opponents: search.opponents ?? [],
-    order: search.order ?? "weighted",
   }
 }
 

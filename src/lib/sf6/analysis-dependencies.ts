@@ -13,7 +13,6 @@ type RosterView = RosterSearch["view"]
 type CharacterView = CharacterExplorerSearch["view"]
 type MatchupView = MatchupSearch["view"]
 type ChangeView = ChangeSearch["view"]
-type CounterpickOrder = "weighted" | "average" | "floor"
 
 const hasSelectedCharacters = (characters: readonly CharacterId[] | undefined): boolean =>
   (characters?.length ?? 0) > 0
@@ -41,7 +40,6 @@ type MatchupSearchValue = {
   character?: CharacterId
   opponent?: CharacterId
   opponents?: CharacterId[]
-  order?: CounterpickOrder
 }
 
 type ChangeSearchValue = {
@@ -206,7 +204,6 @@ const getMatchupLoaderDeps = (search: MatchupSearch): MatchupSearchValue => {
         rank: search.rank,
         controls: search.controls,
         opponents: search.opponents,
-        order: search.order,
       }
     }
     default: {
@@ -241,5 +238,4 @@ export {
   type CharacterSearchValue,
   type MatchupSearchValue,
   type RosterSearchValue,
-  type CounterpickOrder,
 }

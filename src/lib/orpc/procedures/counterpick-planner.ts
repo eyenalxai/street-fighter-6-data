@@ -21,7 +21,6 @@ const CounterpickPlannerInputSchema = z.object({
   rank: RankIdSchema,
   controls: ControlMatchupSchema,
   opponents: NonEmptyUniqueCharacterIdsSchema,
-  order: z.enum(["weighted", "average", "floor"]),
 })
 const CounterpickPlannerOutputSchema = z.object({
   opponents: CharacterIdSchema.array(),
@@ -68,7 +67,7 @@ const counterpickPlannerProcedure = os
       ])
       return {
         opponents: input.opponents,
-        ...getCounterpickCandidates(block, controls, input.opponents, usage, input.order),
+        ...getCounterpickCandidates(block, controls, input.opponents, usage),
       }
     }),
   )
