@@ -1,6 +1,7 @@
 import { os } from "@orpc/server"
 import * as z from "zod"
 
+import { getControlComparison } from "@/lib/sf6/analytics/average-win-rate"
 import {
   getCharacterStability,
   getLandscapeSeries,
@@ -12,7 +13,6 @@ import {
   getPeriodEntries,
   getRankEntries,
 } from "@/lib/sf6/analytics/loaders.server"
-import { getControlComparison } from "@/lib/sf6/analytics/performance"
 import { getUsageStats } from "@/lib/sf6/analytics/usage"
 import { CharacterIdSchema, PlayerControlSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
 import { getPeriodsForRank } from "@/lib/sf6/rank-selection"
@@ -50,7 +50,7 @@ const RosterOverviewInputSchema = z.discriminatedUnion("view", [
   }),
 ])
 const LandscapeSummarySchema = z.object({
-  performanceSpread: z.number().min(0).max(100).nullable(),
+  averageWinRateSpread: z.number().min(0).max(100).nullable(),
   effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
   usageCoverage: z.number().min(0).max(1).nullable(),
@@ -67,14 +67,14 @@ const ControlsOutputSchema = z.object({
 })
 const TimePointSchema = z.object({
   period: ReportingPeriodSchema,
-  performanceSpread: z.number().min(0).max(100).nullable(),
+  averageWinRateSpread: z.number().min(0).max(100).nullable(),
   effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
 })
 const RankPointSchema = z.object({
   rankId: RankIdSchema,
   label: z.string(),
-  performanceSpread: z.number().min(0).max(100).nullable(),
+  averageWinRateSpread: z.number().min(0).max(100).nullable(),
   effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
 })
@@ -133,8 +133,8 @@ const rosterOverviewProcedure = os
             : getMetricEntry(previousPeriod, input.rank, input.playerControl),
         ])
         const rows = getRosterMetrics(current, previous, input.playerControl)
-        const performances = rows.flatMap((row) =>
-          row.performance === null ? [] : [row.performance],
+        const averageWinRates = rows.flatMap((row) =>
+          row.averageWinRate === null ? [] : [row.averageWinRate],
         )
         const weightCoverages = rows.flatMap((row) =>
           row.weightCoverage === null ? [] : [row.weightCoverage],
@@ -144,10 +144,10 @@ const rosterOverviewProcedure = os
           view: "snapshot" as const,
           rows,
           summary: {
-            performanceSpread:
-              performances.length === 0
+            averageWinRateSpread:
+              averageWinRates.length === 0
                 ? null
-                : Math.max(...performances) - Math.min(...performances),
+                : Math.max(...averageWinRates) - Math.min(...averageWinRates),
             effectiveRosterSize: usageStats.effectiveRosterSize,
             topFiveShare: usageStats.topFiveShare,
             usageCoverage:
@@ -234,13 +234,13 @@ const rosterOverviewProcedure = os
             const row = getRosterMetrics(entry, null, "combined").find(
               (candidate) => candidate.characterId === characterId,
             )
-            return { period: entry.period, performance: row?.performance ?? null }
+            return { period: entry.period, value: row?.averageWinRate ?? null }
           })
           const rankValues = rankEntries.map(({ rank, entry }) => {
             const row = getRosterMetrics(entry, null, "combined").find(
               (candidate) => candidate.characterId === characterId,
             )
-            return { rankId: rank.id, performance: row?.performance ?? null }
+            return { rankId: rank.id, value: row?.averageWinRate ?? null }
           })
           return {
             characterId,

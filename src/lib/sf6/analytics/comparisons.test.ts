@@ -54,12 +54,12 @@ test("roster metrics calculate later-minus-earlier deltas and debut markers", ()
     ["ryu", "ken"],
   )
   expect(rows.find((row) => row.characterId === "ryu")).toMatchObject({
-    performanceDelta: 10,
+    averageWinRateDelta: 10,
     usageDelta: null,
     debut: true,
   })
   expect(rows.find((row) => row.characterId === "ken")).toMatchObject({
-    performanceDelta: -10,
+    averageWinRateDelta: -10,
     usageDelta: -80,
     debut: false,
   })

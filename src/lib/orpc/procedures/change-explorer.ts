@@ -7,9 +7,9 @@ import { getMetricEntry, getPeriodEntries } from "@/lib/sf6/analytics/loaders.se
 import {
   CharacterIdSchema,
   ControlMatchupSchema,
+  NonEmptyCharacterSelectionSchema,
   PlayerControlSchema,
   ReportingPeriodSchema,
-  UniqueCharacterIdsSchema,
 } from "@/lib/sf6/model"
 import {
   filterPeriodsInRange,
@@ -36,7 +36,7 @@ const ChangeExplorerInputSchema = z.discriminatedUnion("view", [
     toPeriod: ReportingPeriodSchema,
     rank: RankIdSchema,
     playerControl: PlayerControlSchema,
-    focusCharacters: UniqueCharacterIdsSchema.min(1).max(5),
+    focusCharacters: NonEmptyCharacterSelectionSchema,
   }),
   z.object({
     view: z.literal("matchups"),
@@ -47,12 +47,12 @@ const ChangeExplorerInputSchema = z.discriminatedUnion("view", [
   }),
 ])
 const ChangeRowSchema = CharacterMetricRowSchema.extend({
-  beforePerformance: z.number().min(0).max(100).nullable(),
-  beforeWeightedPerformance: z.number().min(0).max(100).nullable(),
+  beforeAverageWinRate: z.number().min(0).max(100).nullable(),
+  beforeWeightedAverageWinRate: z.number().min(0).max(100).nullable(),
   beforeUsage: z.number().min(0).max(100).nullable(),
 })
 const SummarySchema = z.object({
-  performanceSpread: z.number().min(0).max(100).nullable(),
+  averageWinRateSpread: z.number().min(0).max(100).nullable(),
   effectiveRosterSize: z.number().positive().nullable(),
   topFiveShare: z.number().min(0).max(100),
   matchupImbalance: z.number().min(0).max(50).nullable(),
@@ -86,8 +86,8 @@ const TrendsOutputSchema = z.object({
       points: z
         .object({
           period: ReportingPeriodSchema,
-          performance: z.number().min(0).max(100).nullable(),
-          weightedPerformance: z.number().min(0).max(100).nullable(),
+          averageWinRate: z.number().min(0).max(100).nullable(),
+          weightedAverageWinRate: z.number().min(0).max(100).nullable(),
           usage: z.number().min(0).max(100).nullable(),
         })
         .array(),
@@ -130,8 +130,8 @@ const changeExplorerProcedure = os
           const before = beforeRows.find((candidate) => candidate.characterId === row.characterId)
           return {
             ...row,
-            beforePerformance: before?.performance ?? null,
-            beforeWeightedPerformance: before?.weightedPerformance ?? null,
+            beforeAverageWinRate: before?.averageWinRate ?? null,
+            beforeWeightedAverageWinRate: before?.weightedAverageWinRate ?? null,
             beforeUsage: before?.usage ?? null,
           }
         })
@@ -167,8 +167,8 @@ const changeExplorerProcedure = os
                 )
                 return {
                   period: entry.period,
-                  performance: row?.performance ?? null,
-                  weightedPerformance: row?.weightedPerformance ?? null,
+                  averageWinRate: row?.averageWinRate ?? null,
+                  weightedAverageWinRate: row?.weightedAverageWinRate ?? null,
                   usage: row?.usage ?? null,
                 }
               }),

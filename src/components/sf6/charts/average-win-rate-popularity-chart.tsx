@@ -20,27 +20,27 @@ import {
 import { collectRecordValues, computeAxisDomain } from "@/lib/sf6/charts/axis-domain"
 import { CHART_TICK_FORMATTERS, CHART_TOOLTIP_VALUE_FORMATTERS } from "@/lib/sf6/charts/format"
 
-type PerformancePopularityPoint = {
+type AverageWinRatePopularityPoint = {
   characterId: string
   name: string
-  performance: number
+  averageWinRate: number
   usage: number
-  weightedPerformance: number | null
+  weightedAverageWinRate: number | null
   floor: number | null
 }
 const PERFORMANCE_POPULARITY_CONFIG = {
-  performance: { label: "Average win rate", color: "var(--chart-1)" },
+  averageWinRate: { label: "Average win rate", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
-const PerformancePopularityChart = ({
+const AverageWinRatePopularityChart = ({
   data,
   usageReference,
 }: {
-  data: readonly PerformancePopularityPoint[]
+  data: readonly AverageWinRatePopularityPoint[]
   usageReference: number | null
 }) => {
   const xDomain = useMemo(
-    () => computeAxisDomain(collectRecordValues(data, ["performance"]), { anchors: [50] }),
+    () => computeAxisDomain(collectRecordValues(data, ["averageWinRate"]), { anchors: [50] }),
     [data],
   )
   const yDomain = useMemo(
@@ -57,7 +57,7 @@ const PerformancePopularityChart = ({
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis
           type="number"
-          dataKey="performance"
+          dataKey="averageWinRate"
           domain={xDomain}
           tick={ANALYTICS_AXIS_TICK}
           tickFormatter={CHART_TICK_FORMATTERS.percent}
@@ -96,10 +96,10 @@ const PerformancePopularityChart = ({
             />
           }
         />
-        <Scatter name="Characters" data={data} fill="var(--color-performance)" />
+        <Scatter name="Characters" data={data} fill="var(--color-averageWinRate)" />
       </ScatterChart>
     </AnalyticsChart>
   )
 }
 
-export { PerformancePopularityChart, type PerformancePopularityPoint }
+export { AverageWinRatePopularityChart, type AverageWinRatePopularityPoint }

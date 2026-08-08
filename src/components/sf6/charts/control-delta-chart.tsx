@@ -22,11 +22,11 @@ import { CHART_TICK_FORMATTERS, CHART_TOOLTIP_VALUE_FORMATTERS } from "@/lib/sf6
 
 type ControlDeltaPoint = {
   name: string
-  performanceDelta: number
+  averageWinRateDelta: number
   usageDelta: number
 }
 const CONTROL_DELTA_CONFIG = {
-  performanceDelta: { label: "Performance change", color: "var(--chart-1)" },
+  averageWinRateDelta: { label: "Win rate change", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
 const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => {
@@ -35,7 +35,7 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
     [data],
   )
   const yDomain = useMemo(
-    () => computeAxisDomain(collectRecordValues(data, ["performanceDelta"]), { anchors: [0] }),
+    () => computeAxisDomain(collectRecordValues(data, ["averageWinRateDelta"]), { anchors: [0] }),
     [data],
   )
 
@@ -54,13 +54,13 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
         />
         <YAxis
           type="number"
-          dataKey="performanceDelta"
+          dataKey="averageWinRateDelta"
           domain={yDomain}
           width={ANALYTICS_Y_AXIS_WIDTH}
           tick={ANALYTICS_AXIS_TICK}
           tickFormatter={CHART_TICK_FORMATTERS.percentagePoints}
           tickMargin={4}
-          label={analyticsYAxisLabel("Modern minus Classic performance")}
+          label={analyticsYAxisLabel("Modern minus Classic win rate")}
         />
         <ReferenceLine x={0} stroke="var(--muted-foreground)" />
         <ReferenceLine y={0} stroke="var(--muted-foreground)" />
@@ -77,7 +77,7 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
             />
           }
         />
-        <Scatter name="Control differences" data={data} fill="var(--color-performanceDelta)" />
+        <Scatter name="Control differences" data={data} fill="var(--color-averageWinRateDelta)" />
       </ScatterChart>
     </AnalyticsChart>
   )

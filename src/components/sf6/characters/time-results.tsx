@@ -28,20 +28,20 @@ const COLORS = [
 ]
 
 const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }) => {
-  const [performanceMetric, setPerformanceMetric] = useState<"unweighted" | "weighted">(
+  const [averageWinRateMetric, setAverageWinRateMetric] = useState<"unweighted" | "weighted">(
     "unweighted",
   )
   const points = data.series[0]?.points ?? []
-  const performanceData = points.map((point, index) => {
+  const averageWinRateData = points.map((point, index) => {
     const row: { label: string; [key: string]: number | string | null } = {
       label: formatReportingPeriod(point.period),
     }
     for (const series of data.series) {
       const seriesPoint = series.points[index]
       row[series.characterId] =
-        performanceMetric === "weighted"
-          ? (seriesPoint?.weightedPerformance ?? null)
-          : (seriesPoint?.performance ?? null)
+        averageWinRateMetric === "weighted"
+          ? (seriesPoint?.weightedAverageWinRate ?? null)
+          : (seriesPoint?.averageWinRate ?? null)
     }
     return row
   })
@@ -67,21 +67,21 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
-          title="Performance over time"
+          title="Average win rate over time"
           description="Toggle between the unweighted character average and an opponent-popularity-weighted estimate. Missing historical characters remain gaps."
           action={
             <ToggleGroup
-              value={[performanceMetric]}
+              value={[averageWinRateMetric]}
               onValueChange={(value) => {
                 const next = value[0]
                 if (next === "unweighted" || next === "weighted") {
-                  setPerformanceMetric(next)
+                  setAverageWinRateMetric(next)
                 }
               }}
               variant="outline"
               size="sm"
               spacing={0}
-              aria-label="Performance metric"
+              aria-label="Average win rate metric"
             >
               <ToggleGroupItem value="unweighted">Unweighted</ToggleGroupItem>
               <ToggleGroupItem value="weighted">Popularity-weighted</ToggleGroupItem>
@@ -89,12 +89,12 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
           }
         >
           <MetricTrendChart
-            data={performanceData}
+            data={averageWinRateData}
             series={series.map((item) => {
               return {
                 ...item,
                 label:
-                  performanceMetric === "weighted"
+                  averageWinRateMetric === "weighted"
                     ? `${item.label} weighted`
                     : `${item.label} average`,
               }
@@ -102,8 +102,8 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
             xAxisLabel="Reporting period"
             valueFormat="percent"
             valueLabel={
-              performanceMetric === "weighted"
-                ? "Popularity-weighted performance"
+              averageWinRateMetric === "weighted"
+                ? "Popularity-weighted average win rate"
                 : "Average win rate"
             }
             referenceValue={50}
@@ -133,8 +133,8 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
             <TableRow>
               <TableHead>Character</TableHead>
               <TableHead>First recorded</TableHead>
-              <TableHead className="text-right">Performance range</TableHead>
-              <TableHead className="text-right">Performance deviation</TableHead>
+              <TableHead className="text-right">Win rate range</TableHead>
+              <TableHead className="text-right">Win rate deviation</TableHead>
               <TableHead className="text-right">Usage range</TableHead>
               <TableHead className="text-right">Usage deviation</TableHead>
             </TableRow>
@@ -154,11 +154,14 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
                     : formatReportingPeriod(row.stability.firstPeriod)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.stability.performanceRange} format="percentagePoints" />
+                  <MetricValue
+                    value={row.stability.averageWinRateRange}
+                    format="percentagePoints"
+                  />
                 </TableCell>
                 <TableCell className="text-right">
                   <MetricValue
-                    value={row.stability.performanceStandardDeviation}
+                    value={row.stability.averageWinRateStandardDeviation}
                     format="percentagePoints"
                   />
                 </TableCell>

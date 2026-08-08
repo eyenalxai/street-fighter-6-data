@@ -6,11 +6,11 @@ import type { UsageBlock } from "@/lib/sf6/snapshots/usage.server"
 import { CHARACTERS } from "@/lib/sf6/model"
 import { getUsageCharacter } from "@/lib/sf6/snapshots/usage.server"
 
-import type { PerformanceSummary } from "./performance"
+import type { AverageWinRateSummary } from "./average-win-rate"
 
+import { getAverageWinRateSummary } from "./average-win-rate"
 import { getAvailablePlayerCharacterIds, getMatchupCell } from "./matchup-cells"
 import { boundedRatio, pearsonCorrelation } from "./math"
-import { getPerformanceSummary } from "./performance"
 
 type MatchupProfileRow = {
   opponentId: CharacterId
@@ -35,7 +35,7 @@ const getMatchupProfile = (
   controlMatchup: ControlMatchup,
   characterId: CharacterId,
   usageBlock?: UsageBlock,
-): { rows: MatchupProfileRow[]; summary: PerformanceSummary } => {
+): { rows: MatchupProfileRow[]; summary: AverageWinRateSummary } => {
   const baseRows = CHARACTERS.map(({ id: opponentId }) => {
     const cell = getMatchupCell(block, controlMatchup, characterId, opponentId)
     const usage = usageBlock === undefined ? null : getUsageCharacter(usageBlock, opponentId)
@@ -78,7 +78,7 @@ const getMatchupProfile = (
       }
       return left.winRate - right.winRate || left.opponentId.localeCompare(right.opponentId)
     }),
-    summary: getPerformanceSummary(block, controlMatchup, characterId, usageBlock),
+    summary: getAverageWinRateSummary(block, controlMatchup, characterId, usageBlock),
   }
 }
 

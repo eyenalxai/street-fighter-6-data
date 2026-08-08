@@ -23,12 +23,12 @@ import { CHART_TICK_FORMATTERS, CHART_TOOLTIP_VALUE_FORMATTERS } from "@/lib/sf6
 type ChangeDeltaPoint = {
   name: string
   usageDelta: number
-  performanceDelta: number
-  weightedPerformanceDelta: number | null
+  averageWinRateDelta: number
+  weightedAverageWinRateDelta: number | null
   debut: boolean
 }
 const CHANGE_DELTA_CONFIG = {
-  performanceDelta: { label: "Performance change", color: "var(--chart-1)" },
+  averageWinRateDelta: { label: "Win rate change", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
 const ChangeDeltaChart = ({ data }: { data: readonly ChangeDeltaPoint[] }) => {
@@ -37,7 +37,7 @@ const ChangeDeltaChart = ({ data }: { data: readonly ChangeDeltaPoint[] }) => {
     [data],
   )
   const yDomain = useMemo(
-    () => computeAxisDomain(collectRecordValues(data, ["performanceDelta"]), { anchors: [0] }),
+    () => computeAxisDomain(collectRecordValues(data, ["averageWinRateDelta"]), { anchors: [0] }),
     [data],
   )
 
@@ -56,13 +56,13 @@ const ChangeDeltaChart = ({ data }: { data: readonly ChangeDeltaPoint[] }) => {
         />
         <YAxis
           type="number"
-          dataKey="performanceDelta"
+          dataKey="averageWinRateDelta"
           domain={yDomain}
           width={ANALYTICS_Y_AXIS_WIDTH}
           tick={ANALYTICS_AXIS_TICK}
           tickFormatter={CHART_TICK_FORMATTERS.percentagePoints}
           tickMargin={4}
-          label={analyticsYAxisLabel("Performance change (percentage points)")}
+          label={analyticsYAxisLabel("Win rate change (percentage points)")}
         />
         <ReferenceLine x={0} stroke="var(--muted-foreground)" />
         <ReferenceLine y={0} stroke="var(--muted-foreground)" />
@@ -79,7 +79,7 @@ const ChangeDeltaChart = ({ data }: { data: readonly ChangeDeltaPoint[] }) => {
             />
           }
         />
-        <Scatter name="Character changes" data={data} fill="var(--color-performanceDelta)" />
+        <Scatter name="Character changes" data={data} fill="var(--color-averageWinRateDelta)" />
       </ScatterChart>
     </AnalyticsChart>
   )

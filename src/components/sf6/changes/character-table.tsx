@@ -10,12 +10,12 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 type ChangeRow = Extract<ChangeExplorerData, { view: "overview" }>["rows"][number]
 type ChangeSortKey =
   | "character"
-  | "performanceDelta"
-  | "beforePerformance"
-  | "performance"
-  | "weightedPerformanceDelta"
-  | "beforeWeightedPerformance"
-  | "weightedPerformance"
+  | "averageWinRateDelta"
+  | "beforeAverageWinRate"
+  | "averageWinRate"
+  | "weightedAverageWinRateDelta"
+  | "beforeWeightedAverageWinRate"
+  | "weightedAverageWinRate"
   | "weightCoverage"
   | "usageDelta"
   | "beforeUsage"
@@ -34,7 +34,7 @@ const getValue = (row: ChangeRow, key: ChangeSortKey): number | string => {
 
 const ChangeCharacterTable = ({ rows }: { rows: readonly ChangeRow[] }) => {
   const [sort, setSort] = useState<{ key: ChangeSortKey; direction: "asc" | "desc" }>({
-    key: "performanceDelta",
+    key: "averageWinRateDelta",
     direction: "desc",
   })
   const sortedRows = useMemo(
@@ -82,12 +82,12 @@ const ChangeCharacterTable = ({ rows }: { rows: readonly ChangeRow[] }) => {
               changeSort("character")
             }}
           />
-          {head("Performance change", "performanceDelta")}
-          {head("Before performance", "beforePerformance")}
-          {head("After performance", "performance")}
-          {head("Weighted performance change", "weightedPerformanceDelta")}
-          {head("Before weighted", "beforeWeightedPerformance")}
-          {head("After weighted", "weightedPerformance")}
+          {head("Win rate change", "averageWinRateDelta")}
+          {head("Before win rate", "beforeAverageWinRate")}
+          {head("After win rate", "averageWinRate")}
+          {head("Weighted win rate change", "weightedAverageWinRateDelta")}
+          {head("Before weighted", "beforeWeightedAverageWinRate")}
+          {head("After weighted", "weightedAverageWinRate")}
           {head("Weight coverage", "weightCoverage")}
           {head("Usage change", "usageDelta")}
           {head("Before usage", "beforeUsage")}
@@ -106,31 +106,35 @@ const ChangeCharacterTable = ({ rows }: { rows: readonly ChangeRow[] }) => {
             </TableCell>
             <TableCell className="text-right">
               <MetricValue
-                value={row.performanceDelta}
+                value={row.averageWinRateDelta}
                 format="percentagePoints"
                 tone="directional"
                 signed
               />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.beforePerformance} format="percent" tone="winRate" />
+              <MetricValue value={row.beforeAverageWinRate} format="percent" tone="winRate" />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.performance} format="percent" tone="winRate" />
+              <MetricValue value={row.averageWinRate} format="percent" tone="winRate" />
             </TableCell>
             <TableCell className="text-right">
               <MetricValue
-                value={row.weightedPerformanceDelta}
+                value={row.weightedAverageWinRateDelta}
                 format="percentagePoints"
                 tone="directional"
                 signed
               />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.beforeWeightedPerformance} format="percent" tone="winRate" />
+              <MetricValue
+                value={row.beforeWeightedAverageWinRate}
+                format="percent"
+                tone="winRate"
+              />
             </TableCell>
             <TableCell className="text-right">
-              <MetricValue value={row.weightedPerformance} format="percent" tone="winRate" />
+              <MetricValue value={row.weightedAverageWinRate} format="percent" tone="winRate" />
             </TableCell>
             <TableCell className="text-right">
               <MetricValue value={row.weightCoverage} format="coverage" />

@@ -1,6 +1,7 @@
 import { os } from "@orpc/server"
 import * as z from "zod"
 
+import { getControlComparison } from "@/lib/sf6/analytics/average-win-rate"
 import { getUsagePoints } from "@/lib/sf6/analytics/changes"
 import {
   getCharacterMetric,
@@ -12,12 +13,11 @@ import {
   getPeriodEntries,
   getRankEntries,
 } from "@/lib/sf6/analytics/loaders.server"
-import { getControlComparison } from "@/lib/sf6/analytics/performance"
 import {
   CharacterIdSchema,
+  NonEmptyCharacterSelectionSchema,
   PlayerControlSchema,
   ReportingPeriodSchema,
-  UniqueCharacterIdsSchema,
 } from "@/lib/sf6/model"
 import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank, RankIdSchema, RANKS } from "@/lib/sf6/ranks"
@@ -32,28 +32,28 @@ const CharacterExplorerInputSchema = z.discriminatedUnion("view", [
     view: z.literal("time"),
     rank: RankIdSchema,
     playerControl: PlayerControlSchema,
-    characters: UniqueCharacterIdsSchema.min(1).max(5),
+    characters: NonEmptyCharacterSelectionSchema,
   }),
   z.object({
     view: z.literal("ranks"),
     period: ReportingPeriodSchema,
-    characters: UniqueCharacterIdsSchema.min(1).max(5),
+    characters: NonEmptyCharacterSelectionSchema,
   }),
   z.object({
     view: z.literal("controls"),
     period: ReportingPeriodSchema,
     rank: RankIdSchema,
-    characters: UniqueCharacterIdsSchema.min(1).max(5),
+    characters: NonEmptyCharacterSelectionSchema,
   }),
 ])
 const CharacterPointSchema = z.object({
   period: ReportingPeriodSchema,
-  performance: z.number().min(0).max(100).nullable(),
-  weightedPerformance: z.number().min(0).max(100).nullable(),
+  averageWinRate: z.number().min(0).max(100).nullable(),
+  weightedAverageWinRate: z.number().min(0).max(100).nullable(),
   weightCoverage: z.number().min(0).max(1).nullable(),
   usage: z.number().min(0).max(100).nullable(),
-  performanceDelta: z.number().min(-100).max(100).nullable(),
-  weightedPerformanceDelta: z.number().min(-100).max(100).nullable(),
+  averageWinRateDelta: z.number().min(-100).max(100).nullable(),
+  weightedAverageWinRateDelta: z.number().min(-100).max(100).nullable(),
   usageDelta: z.number().min(-100).max(100).nullable(),
 })
 const TimeOutputSchema = z.object({
@@ -65,8 +65,8 @@ const TimeOutputSchema = z.object({
       stability: z.object({
         firstPeriod: ReportingPeriodSchema.nullable(),
         lastPeriod: ReportingPeriodSchema.nullable(),
-        performanceRange: z.number().min(0).max(100).nullable(),
-        performanceStandardDeviation: z.number().min(0).nullable(),
+        averageWinRateRange: z.number().min(0).max(100).nullable(),
+        averageWinRateStandardDeviation: z.number().min(0).nullable(),
         usageRange: z.number().min(0).max(100).nullable(),
         usageStandardDeviation: z.number().min(0).nullable(),
       }),
@@ -82,13 +82,13 @@ const RankOutputSchema = z.object({
         .object({
           rankId: RankIdSchema,
           label: z.string(),
-          performance: z.number().min(0).max(100).nullable(),
-          weightedPerformance: z.number().min(0).max(100).nullable(),
+          averageWinRate: z.number().min(0).max(100).nullable(),
+          weightedAverageWinRate: z.number().min(0).max(100).nullable(),
           weightCoverage: z.number().min(0).max(1).nullable(),
           usage: z.number().min(0).max(100).nullable(),
         })
         .array(),
-      performanceRange: z.number().min(0).max(100).nullable(),
+      averageWinRateRange: z.number().min(0).max(100).nullable(),
       usageRange: z.number().min(0).max(100).nullable(),
       peakRankId: RankIdSchema.nullable(),
       troughRankId: RankIdSchema.nullable(),
@@ -135,31 +135,31 @@ const characterExplorerProcedure = os
                 : getCharacterMetric(previous, characterId, input.playerControl)
             return {
               period: entry.period,
-              performance: current.performance,
-              weightedPerformance: current.weightedPerformance,
+              averageWinRate: current.averageWinRate,
+              weightedAverageWinRate: current.weightedAverageWinRate,
               weightCoverage: current.weightCoverage,
               usage: current.usage,
-              performanceDelta:
-                before?.performance === null ||
-                before?.performance === undefined ||
-                current.performance === null
+              averageWinRateDelta:
+                before?.averageWinRate === null ||
+                before?.averageWinRate === undefined ||
+                current.averageWinRate === null
                   ? null
-                  : current.performance - before.performance,
-              weightedPerformanceDelta:
-                before?.weightedPerformance === null ||
-                before?.weightedPerformance === undefined ||
-                current.weightedPerformance === null
+                  : current.averageWinRate - before.averageWinRate,
+              weightedAverageWinRateDelta:
+                before?.weightedAverageWinRate === null ||
+                before?.weightedAverageWinRate === undefined ||
+                current.weightedAverageWinRate === null
                   ? null
-                  : current.weightedPerformance - before.weightedPerformance,
+                  : current.weightedAverageWinRate - before.weightedAverageWinRate,
               usageDelta:
                 before?.usage === null || before?.usage === undefined || current.usage === null
                   ? null
                   : current.usage - before.usage,
             }
           })
-          const performanceStability = getCharacterStability(
+          const averageWinRateStability = getCharacterStability(
             points.map((point) => {
-              return { period: point.period, performance: point.performance }
+              return { period: point.period, value: point.averageWinRate }
             }),
             [],
           )
@@ -167,7 +167,7 @@ const characterExplorerProcedure = os
             getUsagePoints(timeEntries, characterId).map((point) => {
               return {
                 period: point.period,
-                performance: point.playRate,
+                value: point.playRate,
               }
             }),
             [],
@@ -178,8 +178,8 @@ const characterExplorerProcedure = os
             stability: {
               firstPeriod: usageStability.firstPeriod,
               lastPeriod: usageStability.lastPeriod,
-              performanceRange: performanceStability.timeRange,
-              performanceStandardDeviation: performanceStability.timeStandardDeviation,
+              averageWinRateRange: averageWinRateStability.timeRange,
+              averageWinRateStandardDeviation: averageWinRateStability.timeStandardDeviation,
               usageRange: usageStability.timeRange,
               usageStandardDeviation: usageStability.timeStandardDeviation,
             },
@@ -225,27 +225,29 @@ const characterExplorerProcedure = os
         view: "ranks" as const,
         series: input.characters.map((characterId) => {
           const points = getRankMetric(rankEntries, characterId, "combined")
-          const performanceValues = points.flatMap((point) =>
-            point.performance === null ? [] : [point.performance],
+          const averageWinRateValues = points.flatMap((point) =>
+            point.averageWinRate === null ? [] : [point.averageWinRate],
           )
           const usageValues = points.flatMap((point) => (point.usage === null ? [] : [point.usage]))
           const peak = points
-            .filter((point) => point.performance !== null)
+            .filter((point) => point.averageWinRate !== null)
             .toSorted(
-              (left, right) => (right.performance ?? -Infinity) - (left.performance ?? -Infinity),
+              (left, right) =>
+                (right.averageWinRate ?? -Infinity) - (left.averageWinRate ?? -Infinity),
             )[0]
           const trough = points
-            .filter((point) => point.performance !== null)
+            .filter((point) => point.averageWinRate !== null)
             .toSorted(
-              (left, right) => (left.performance ?? Infinity) - (right.performance ?? Infinity),
+              (left, right) =>
+                (left.averageWinRate ?? Infinity) - (right.averageWinRate ?? Infinity),
             )[0]
           return {
             characterId,
             points,
-            performanceRange:
-              performanceValues.length === 0
+            averageWinRateRange:
+              averageWinRateValues.length === 0
                 ? null
-                : Math.max(...performanceValues) - Math.min(...performanceValues),
+                : Math.max(...averageWinRateValues) - Math.min(...averageWinRateValues),
             usageRange:
               usageValues.length === 0 ? null : Math.max(...usageValues) - Math.min(...usageValues),
             peakRankId: peak?.rankId ?? null,

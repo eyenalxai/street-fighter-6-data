@@ -44,6 +44,8 @@ const UniqueCharacterIdsSchema = CharacterIdSchema.array().superRefine((characte
 const NonEmptyUniqueCharacterIdsSchema = UniqueCharacterIdsSchema.pipe(
   CharacterIdSchema.array().min(1),
 )
+const CharacterSelectionSchema = UniqueCharacterIdsSchema.max(5)
+const NonEmptyCharacterSelectionSchema = CharacterSelectionSchema.min(1)
 const ControlTypeSchema = z.enum(["C", "M"])
 const PlayerControlSchema = z.enum(["combined", "classic", "modern"])
 const ControlMatchupSchema = z.enum([
@@ -155,6 +157,8 @@ const formatReportingPeriod = (period: string): string => {
 
 export {
   CharacterIdSchema,
+  CharacterSelectionSchema,
+  NonEmptyCharacterSelectionSchema,
   NonEmptyUniqueCharacterIdsSchema,
   CharacterSchema,
   CHARACTERS,

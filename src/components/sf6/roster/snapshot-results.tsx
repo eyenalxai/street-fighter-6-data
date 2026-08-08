@@ -7,7 +7,7 @@ import type { RankId } from "@/lib/sf6/ranks"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
-import { PerformancePopularityChart } from "@/components/sf6/charts/performance-popularity-chart"
+import { AverageWinRatePopularityChart } from "@/components/sf6/charts/average-win-rate-popularity-chart"
 import { MetricSummary } from "@/components/sf6/metric-summary"
 import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableTableHead } from "@/components/sf6/sortable-table-head"
@@ -18,15 +18,14 @@ import { getRank } from "@/lib/sf6/ranks"
 type SnapshotData = Extract<RosterOverviewData, { view: "snapshot" }>
 type SnapshotSortKey =
   | "character"
-  | "performance"
-  | "weightedPerformance"
+  | "averageWinRate"
+  | "weightedAverageWinRate"
   | "weightCoverage"
   | "usage"
-  | "performanceDelta"
+  | "averageWinRateDelta"
   | "usageDelta"
   | "floor"
   | "favorable"
-  | "coverage"
 
 const CharacterMatchupLink = ({
   period,
@@ -74,22 +73,22 @@ const SnapshotResults = ({
   playerControl: PlayerControl
 }) => {
   const [sort, setSort] = useState<{ key: SnapshotSortKey; direction: "asc" | "desc" }>({
-    key: "performance",
+    key: "averageWinRate",
     direction: "desc",
   })
   const availableUsage = data.rows.filter((row) => row.usage !== null)
   const usageReference = availableUsage.length === 0 ? null : 100 / availableUsage.length
   const pointData = data.rows.flatMap((row) => {
     const character = meta.characters.find((item) => item.id === row.characterId)
-    return row.performance === null || row.usage === null
+    return row.averageWinRate === null || row.usage === null
       ? []
       : [
           {
             characterId: row.characterId,
             name: character?.name ?? row.characterId,
-            performance: row.performance,
+            averageWinRate: row.averageWinRate,
             usage: row.usage,
-            weightedPerformance: row.weightedPerformance,
+            weightedAverageWinRate: row.weightedAverageWinRate,
             floor: row.floor,
           },
         ]
@@ -104,15 +103,14 @@ const SnapshotResults = ({
           return sort.direction === "asc" ? result : -result
         }
         const values = {
-          performance: [left.performance, right.performance],
-          weightedPerformance: [left.weightedPerformance, right.weightedPerformance],
+          averageWinRate: [left.averageWinRate, right.averageWinRate],
+          weightedAverageWinRate: [left.weightedAverageWinRate, right.weightedAverageWinRate],
           weightCoverage: [left.weightCoverage, right.weightCoverage],
           usage: [left.usage, right.usage],
-          performanceDelta: [left.performanceDelta, right.performanceDelta],
+          averageWinRateDelta: [left.averageWinRateDelta, right.averageWinRateDelta],
           usageDelta: [left.usageDelta, right.usageDelta],
           floor: [left.floor, right.floor],
           favorable: [left.favorableCount, right.favorableCount],
-          coverage: [left.coverage, right.coverage],
         }[sort.key]
         if (values === undefined) {
           return 0
@@ -161,8 +159,10 @@ const SnapshotResults = ({
         description={`${rankLabel} · ${controlLabel ?? playerControl} · ${formatReportingPeriod(period)}`}
         items={[
           {
-            label: "Performance spread",
-            value: <MetricValue value={data.summary.performanceSpread} format="percentagePoints" />,
+            label: "Win rate spread",
+            value: (
+              <MetricValue value={data.summary.averageWinRateSpread} format="percentagePoints" />
+            ),
           },
           {
             label: "Effective roster size",
@@ -179,29 +179,28 @@ const SnapshotResults = ({
         ]}
       />
       <AnalyticsPanel
-        title="Performance and popularity"
-        description="Characters to the right perform better; characters higher on the chart have a larger usage share. Dashed lines mark 50% performance and equal-share popularity."
+        title="Average win rate and popularity"
+        description="Characters to the right have a higher average win rate; characters higher on the chart have a larger usage share. Dashed lines mark 50% average win rate and equal-share popularity."
       >
-        <PerformancePopularityChart data={pointData} usageReference={usageReference} />
+        <AverageWinRatePopularityChart data={pointData} usageReference={usageReference} />
       </AnalyticsPanel>
       <AnalyticsPanel
         title="Character snapshot"
-        description="Weighted performance uses opponent popularity where both the matchup and opponent usage are available. Coverage describes reported matchup cells."
+        description="Weighted average win rate uses opponent popularity where both the matchup and opponent usage are available."
         contentClassName="p-0"
       >
         <Table>
           <TableHeader>
             <TableRow>
               {head("Character", "character")}
-              {head("Performance", "performance")}
-              {head("Weighted performance", "weightedPerformance")}
+              {head("Average win rate", "averageWinRate")}
+              {head("Weighted average win rate", "weightedAverageWinRate")}
               {head("Weight coverage", "weightCoverage")}
               {head("Usage", "usage")}
-              {head("Performance change", "performanceDelta")}
+              {head("Win rate change", "averageWinRateDelta")}
               {head("Usage change", "usageDelta")}
               {head("Worst matchup", "floor")}
               {head("Favorable", "favorable")}
-              {head("Coverage", "coverage")}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -211,10 +210,10 @@ const SnapshotResults = ({
                   <CharacterMatchupLink period={period} rank={rank} characterId={row.characterId} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.performance} format="percent" tone="winRate" />
+                  <MetricValue value={row.averageWinRate} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.weightedPerformance} format="percent" tone="winRate" />
+                  <MetricValue value={row.weightedAverageWinRate} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
                   <MetricValue value={row.weightCoverage} format="coverage" />
@@ -224,7 +223,7 @@ const SnapshotResults = ({
                 </TableCell>
                 <TableCell className="text-right">
                   <MetricValue
-                    value={row.performanceDelta}
+                    value={row.averageWinRateDelta}
                     format="percentagePoints"
                     tone="directional"
                     signed
@@ -237,10 +236,7 @@ const SnapshotResults = ({
                   <MetricValue value={row.floor} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right font-mono">
-                  {row.favorableCount} / {row.availableCount}
-                </TableCell>
-                <TableCell className="text-right">
-                  <MetricValue value={row.coverage} format="coverage" />
+                  {row.favorableCount} / {row.possibleCount}
                 </TableCell>
               </TableRow>
             ))}

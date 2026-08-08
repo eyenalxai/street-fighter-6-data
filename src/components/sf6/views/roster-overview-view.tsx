@@ -60,7 +60,7 @@ const RosterToolbar = ({
   return (
     <AnalysisToolbar
       title="Roster overview"
-      description="Compare ranked performance, popularity, controls, and environment shape."
+      description="Compare ranked average win rate, popularity, controls, and environment shape."
       views={
         <AnalysisViewTabs
           value={search.view}
@@ -125,9 +125,9 @@ const RosterResults = ({
       data={data}
       meta={meta}
       chartTitle="Modern minus Classic"
-      chartDescription="Positive values mean the character's average performance is higher with Modern controls."
+      chartDescription="Positive values mean the character's average win rate is higher with Modern controls."
       tableTitle="Control-style results"
-      tableDescription="Performance averages both opponent control styles. Usage is each character's share among that control population."
+      tableDescription="Average win rate combines both opponent control styles. Usage is each character's share among that control population."
       unsupportedDescription="Master subdivision snapshots combine all control styles. Choose All Master or a standard rank to compare Classic and Modern players."
     />
   ) : input.view === "ranks" && data.view === "ranks" ? (

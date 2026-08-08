@@ -4,7 +4,7 @@ import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 import type { ControlBlocks } from "@/lib/sf6/snapshots/dia.server"
 import type { UsageBlock } from "@/lib/sf6/snapshots/usage.server"
 
-import { getControlComparison, getPerformanceSummary } from "./performance"
+import { getControlComparison, getAverageWinRateSummary } from "./average-win-rate"
 
 const matchupBlock: ProcessedDiaLeague = {
   p: ["ryu", "ken", "chunli", "guile", "honda", "zangief", "cammy"],
@@ -69,13 +69,12 @@ const controlBlocks: ControlBlocks = {
   },
 }
 
-test("performance weighting renormalizes available opponent usage", () => {
-  const summary = getPerformanceSummary(matchupBlock, "combined", "ryu", usage)
+test("average win rate weighting renormalizes available opponent usage", () => {
+  const summary = getAverageWinRateSummary(matchupBlock, "combined", "ryu", usage)
   expect(summary.unweightedAverage).toBeCloseTo(53.33, 2)
   expect(summary.weightedAverage).toBe(56)
   expect(summary.weightCoverage).toBe(1)
   expect(summary.floor).toBe(30)
-  expect(summary.coverage).toBe(1)
   expect(summary.topThreeLift).toBeCloseTo(11.67, 2)
 })
 
@@ -84,7 +83,7 @@ test("missing usage keeps weighted metrics unavailable without changing unweight
   if (firstUsage === undefined) {
     throw new Error("Test fixture is missing usage")
   }
-  const summary = getPerformanceSummary(matchupBlock, "combined", "ryu", {
+  const summary = getAverageWinRateSummary(matchupBlock, "combined", "ryu", {
     ...usage,
     rows: [{ ...firstUsage, characterId: "ed" }],
   })
@@ -93,8 +92,8 @@ test("missing usage keeps weighted metrics unavailable without changing unweight
   expect(summary.weightCoverage).toBe(0)
 })
 
-test("performance coverage clamps floating-point summation noise", () => {
-  const summary = getPerformanceSummary(
+test("average win rate coverage clamps floating-point summation noise", () => {
+  const summary = getAverageWinRateSummary(
     {
       p: ["ryu", "ken", "chunli", "guile"],
       m: [
@@ -119,7 +118,7 @@ test("performance coverage clamps floating-point summation noise", () => {
   expect(summary.weightCoverage).toBe(1)
 })
 
-test("player-control performance averages both opponent-control pairings", () => {
+test("player-control average win rate averages both opponent-control pairings", () => {
   const classicUsage: UsageBlock = {
     ...usage,
     playerControl: "classic",
@@ -140,7 +139,7 @@ test("player-control performance averages both opponent-control pairings", () =>
   }
   expect(result.classic).toBe(50)
   expect(result.modern).toBe(70)
-  expect(result.performanceDelta).toBe(20)
+  expect(result.averageWinRateDelta).toBe(20)
   expect(result.weightedClassic).toBe(50)
   expect(result.weightedModern).toBe(70)
 })

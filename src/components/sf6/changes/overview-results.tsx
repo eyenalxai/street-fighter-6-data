@@ -11,14 +11,14 @@ type OverviewData = Extract<ChangeExplorerData, { view: "overview" }>
 
 const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
   const scatterData = data.rows.flatMap((row) =>
-    row.performanceDelta === null || row.usageDelta === null
+    row.averageWinRateDelta === null || row.usageDelta === null
       ? []
       : [
           {
             name: getCharacterName(row.characterId),
             usageDelta: row.usageDelta,
-            performanceDelta: row.performanceDelta,
-            weightedPerformanceDelta: row.weightedPerformanceDelta,
+            averageWinRateDelta: row.averageWinRateDelta,
+            weightedAverageWinRateDelta: row.weightedAverageWinRateDelta,
             debut: row.debut,
           },
         ],
@@ -30,9 +30,9 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
           title={`Before · ${formatReportingPeriod(data.fromPeriod)}`}
           items={[
             {
-              label: "Performance spread",
+              label: "Win rate spread",
               value: (
-                <MetricValue value={data.before.performanceSpread} format="percentagePoints" />
+                <MetricValue value={data.before.averageWinRateSpread} format="percentagePoints" />
               ),
             },
             {
@@ -53,8 +53,10 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
           title={`After · ${formatReportingPeriod(data.toPeriod)}`}
           items={[
             {
-              label: "Performance spread",
-              value: <MetricValue value={data.after.performanceSpread} format="percentagePoints" />,
+              label: "Win rate spread",
+              value: (
+                <MetricValue value={data.after.averageWinRateSpread} format="percentagePoints" />
+              ),
             },
             {
               label: "Effective roster size",
@@ -72,8 +74,8 @@ const ChangeOverviewResults = ({ data }: { data: OverviewData }) => {
         />
       </div>
       <AnalyticsPanel
-        title="Performance and popularity movers"
-        description="Characters to the right gained usage; characters higher on the chart gained performance. This visualizes change around the selected periods without making a causal claim."
+        title="Average win rate and popularity movers"
+        description="Characters to the right gained usage; characters higher on the chart gained average win rate. This visualizes change around the selected periods without making a causal claim."
       >
         <ChangeDeltaChart data={scatterData} />
       </AnalyticsPanel>

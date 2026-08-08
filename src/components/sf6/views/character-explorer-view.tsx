@@ -1,10 +1,12 @@
 import { useNavigate } from "@tanstack/react-router"
 
+import type { CharacterInput } from "@/lib/sf6/analysis-scope"
 import type { ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
 import type { CharacterExplorerSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
+import { AnalysisSelectionEmpty } from "@/components/sf6/analysis-selection-empty"
 import { AnalysisToolbar } from "@/components/sf6/analysis-toolbar"
 import { AnalysisViewTabs } from "@/components/sf6/analysis-view-tabs"
 import { CharacterRankResults } from "@/components/sf6/characters/rank-results"
@@ -19,6 +21,7 @@ import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
 import {
   getCharacterPeriodOptions,
   getControlComparisonRanks,
+  hasSelectedCharacters,
 } from "@/lib/sf6/analysis-dependencies"
 import { buildCharacterInput, getActiveInputKey } from "@/lib/sf6/analysis-scope"
 import { characterExplorerQueryOptions } from "@/lib/sf6/query-options"
@@ -36,6 +39,33 @@ type CharacterExplorerViewProps = {
   meta: MetaData
 }
 
+const CharacterQueryView = ({ input, meta }: { input: CharacterInput; meta: MetaData }) => {
+  const { data, displayedInput, isUpdating } = useAnalyticsQuery(
+    characterExplorerQueryOptions(input),
+    input,
+  )
+  return data === undefined ? (
+    <ResultsPending />
+  ) : (
+    <ResultsContent isUpdating={isUpdating}>
+      {displayedInput.view === "time" && data.view === "time" ? (
+        <CharacterTimeResults data={data} meta={meta} />
+      ) : displayedInput.view === "ranks" && data.view === "ranks" ? (
+        <CharacterRankResults data={data} meta={meta} />
+      ) : displayedInput.view === "controls" && data.view === "controls" ? (
+        <ControlComparisonResults
+          data={data}
+          meta={meta}
+          chartTitle="Control win rate difference"
+          chartDescription="Positive values favor Modern player controls for the selected character."
+          tableTitle="Selected character control results"
+          unsupportedDescription="Master subdivision snapshots contain combined control data only. Choose All Master or a standard rank to compare Classic and Modern players."
+        />
+      ) : null}
+    </ResultsContent>
+  )
+}
+
 const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewProps) => {
   const navigate = useNavigate({ from: "/characters" })
   const change = (changes: Partial<CharacterExplorerSearch>) => {
@@ -51,10 +81,6 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
     "all-master"
   const rankValue = search.view === "controls" ? controlRank : search.rank
   const input = buildCharacterInput(search, period)
-  const { data, displayedInput, isUpdating } = useAnalyticsQuery(
-    characterExplorerQueryOptions(input),
-    input,
-  )
   const periods = getCharacterPeriodOptions(
     search.view,
     rankValue,
@@ -120,25 +146,13 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
   )
   return (
     <AnalysisPage toolbar={toolbar} resetKey={getActiveInputKey(input)}>
-      {data === undefined ? (
-        <ResultsPending />
+      {hasSelectedCharacters(search.characters) ? (
+        <CharacterQueryView input={input} meta={meta} />
       ) : (
-        <ResultsContent isUpdating={isUpdating}>
-          {displayedInput.view === "time" && data.view === "time" ? (
-            <CharacterTimeResults data={data} meta={meta} />
-          ) : displayedInput.view === "ranks" && data.view === "ranks" ? (
-            <CharacterRankResults data={data} meta={meta} />
-          ) : displayedInput.view === "controls" && data.view === "controls" ? (
-            <ControlComparisonResults
-              data={data}
-              meta={meta}
-              chartTitle="Control performance difference"
-              chartDescription="Positive values favor Modern player controls for the selected character."
-              tableTitle="Selected character control results"
-              unsupportedDescription="Master subdivision snapshots contain combined control data only. Choose All Master or a standard rank to compare Classic and Modern players."
-            />
-          ) : null}
-        </ResultsContent>
+        <AnalysisSelectionEmpty
+          title="Select characters"
+          description="Choose one or more characters to compare over time, ranks, or control styles."
+        />
       )}
     </AnalysisPage>
   )

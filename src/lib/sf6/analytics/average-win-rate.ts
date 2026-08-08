@@ -13,7 +13,7 @@ import {
 } from "./matchup-cells"
 import { boundedRatio, completeMean, mean, weightedMean } from "./math"
 
-type PerformanceSummary = {
+type AverageWinRateSummary = {
   unweightedAverage: number | null
   weightedAverage: number | null
   weightCoverage: number | null
@@ -21,27 +21,26 @@ type PerformanceSummary = {
   favorableCount: number
   availableCount: number
   possibleCount: number
-  coverage: number | null
   topThreeLift: number | null
   matchupImbalance: number | null
 }
 
 type PlayerControlSummary = {
   playerControl: PlayerControl
-  performance: number | null
-  weightedPerformance: number | null
+  averageWinRate: number | null
+  weightedAverageWinRate: number | null
   weightCoverage: number | null
   usage: number | null
   delta: number | null
-  summary: PerformanceSummary
+  summary: AverageWinRateSummary
 }
-type CharacterPerformance = {
-  performance: number | null
-  weightedPerformance: number | null
-  summary: PerformanceSummary | null
+type CharacterAverageWinRate = {
+  averageWinRate: number | null
+  weightedAverageWinRate: number | null
+  summary: AverageWinRateSummary | null
 }
 
-const emptySummary = (): PerformanceSummary => {
+const emptySummary = (): AverageWinRateSummary => {
   return {
     unweightedAverage: null,
     weightedAverage: null,
@@ -50,18 +49,17 @@ const emptySummary = (): PerformanceSummary => {
     favorableCount: 0,
     availableCount: 0,
     possibleCount: 0,
-    coverage: null,
     topThreeLift: null,
     matchupImbalance: null,
   }
 }
 
-const getPerformanceSummary = (
+const getAverageWinRateSummary = (
   block: ProcessedDiaLeague,
   controlMatchup: ControlMatchup,
   characterId: CharacterId,
   usageBlock?: UsageBlock,
-): PerformanceSummary => {
+): AverageWinRateSummary => {
   const controls = getControlPair(controlMatchup)
   const opponents = getAvailableOpponentCharacterIds(block, controlMatchup).filter(
     (opponentId) => opponentId !== characterId || controls.player !== controls.opponent,
@@ -96,7 +94,6 @@ const getPerformanceSummary = (
     favorableCount: values.filter((value) => value >= 50).length,
     availableCount: values.length,
     possibleCount: opponents.length,
-    coverage: opponents.length === 0 ? null : values.length / opponents.length,
     topThreeLift: average === null || trimmedAverage === null ? null : average - trimmedAverage,
     matchupImbalance: mean(values.map((value) => Math.abs(value - 50))),
   }
@@ -115,29 +112,28 @@ const getPlayerControlSummary = (
     )
     .map((controlMatchup) => {
       const opponentControl = getControlPair(controlMatchup).opponent === "C" ? "classic" : "modern"
-      return getPerformanceSummary(
+      return getAverageWinRateSummary(
         controlBlocks[controlMatchup],
         controlMatchup,
         characterId,
         usageBlocks?.[opponentControl],
       )
     })
-  const performance = completeMean(summaries.map((summary) => summary.unweightedAverage))
+  const averageWinRate = completeMean(summaries.map((summary) => summary.unweightedAverage))
   const weighted = completeMean(summaries.map((summary) => summary.weightedAverage))
   const weightCoverage = completeMean(summaries.map((summary) => summary.weightCoverage))
   const floors = summaries.flatMap((summary) => (summary.floor === null ? [] : [summary.floor]))
   const favorableCount = summaries.reduce((sum, summary) => sum + summary.favorableCount, 0)
   const availableCount = summaries.reduce((sum, summary) => sum + summary.availableCount, 0)
   const possibleCount = summaries.reduce((sum, summary) => sum + summary.possibleCount, 0)
-  const summary: PerformanceSummary = {
-    unweightedAverage: performance,
+  const summary: AverageWinRateSummary = {
+    unweightedAverage: averageWinRate,
     weightedAverage: weighted,
     weightCoverage,
     floor: floors.length === 0 ? null : Math.min(...floors),
     favorableCount,
     availableCount,
     possibleCount,
-    coverage: possibleCount === 0 ? null : availableCount / possibleCount,
     topThreeLift: completeMean(summaries.map((item) => item.topThreeLift)),
     matchupImbalance: completeMean(summaries.map((item) => item.matchupImbalance)),
   }
@@ -146,8 +142,8 @@ const getPlayerControlSummary = (
   )?.playRate
   return {
     playerControl,
-    performance,
-    weightedPerformance: weighted,
+    averageWinRate,
+    weightedAverageWinRate: weighted,
     weightCoverage,
     usage: usage ?? null,
     delta: null,
@@ -179,28 +175,28 @@ const getControlComparison = (
     )
     return {
       characterId,
-      classic: classic.performance,
-      modern: modern.performance,
-      performanceDelta:
-        classic.performance === null || modern.performance === null
+      classic: classic.averageWinRate,
+      modern: modern.averageWinRate,
+      averageWinRateDelta:
+        classic.averageWinRate === null || modern.averageWinRate === null
           ? null
-          : modern.performance - classic.performance,
+          : modern.averageWinRate - classic.averageWinRate,
       classicUsage: classic.usage,
       modernUsage: modern.usage,
       usageDelta:
         classic.usage === null || modern.usage === null ? null : modern.usage - classic.usage,
-      weightedClassic: classic.weightedPerformance,
-      weightedModern: modern.weightedPerformance,
+      weightedClassic: classic.weightedAverageWinRate,
+      weightedModern: modern.weightedAverageWinRate,
       classicWeightCoverage: classic.weightCoverage,
       modernWeightCoverage: modern.weightCoverage,
-      weightedPerformanceDelta:
-        classic.weightedPerformance === null || modern.weightedPerformance === null
+      weightedAverageWinRateDelta:
+        classic.weightedAverageWinRate === null || modern.weightedAverageWinRate === null
           ? null
-          : modern.weightedPerformance - classic.weightedPerformance,
+          : modern.weightedAverageWinRate - classic.weightedAverageWinRate,
     }
   })
 
-const getCharacterPerformance = (
+const getCharacterAverageWinRate = (
   blocks: {
     combined: ProcessedDiaLeague
     controls: ControlBlocks | null
@@ -211,12 +207,17 @@ const getCharacterPerformance = (
   },
   characterId: CharacterId,
   playerControl: PlayerControl,
-): CharacterPerformance => {
+): CharacterAverageWinRate => {
   if (playerControl === "combined" || blocks.controls === null) {
-    const summary = getPerformanceSummary(blocks.combined, "combined", characterId, usage.selected)
+    const summary = getAverageWinRateSummary(
+      blocks.combined,
+      "combined",
+      characterId,
+      usage.selected,
+    )
     return {
-      performance: summary.unweightedAverage,
-      weightedPerformance: summary.weightedAverage,
+      averageWinRate: summary.unweightedAverage,
+      weightedAverageWinRate: summary.weightedAverage,
       summary,
     }
   }
@@ -227,18 +228,18 @@ const getCharacterPerformance = (
     usage.controls,
   )
   return {
-    performance: playerSummary.performance,
-    weightedPerformance: playerSummary.weightedPerformance,
+    averageWinRate: playerSummary.averageWinRate,
+    weightedAverageWinRate: playerSummary.weightedAverageWinRate,
     summary: playerSummary.summary,
   }
 }
 
 export {
   getControlComparison,
-  getCharacterPerformance,
-  getPerformanceSummary,
+  getCharacterAverageWinRate,
+  getAverageWinRateSummary,
   getPlayerControlSummary,
-  type PerformanceSummary,
-  type CharacterPerformance,
+  type AverageWinRateSummary,
+  type CharacterAverageWinRate,
   type PlayerControlSummary,
 }

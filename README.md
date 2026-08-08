@@ -44,10 +44,10 @@ newest advertised period.
 
 ## Workbench sections
 
-- **Roster** — performance/popularity snapshots, control-style differences, and environment landscape.
-- **Characters** — selected-character performance, popularity, rank progression, persistence, and stability.
+- **Roster** — average win rate/popularity snapshots, control-style differences, and environment landscape.
+- **Characters** — selected-character average win rate, popularity, rank progression, persistence, and stability.
 - **Matchups** — complete matchup profiles, control-pairing results, pair progression, profile similarity, and counterpick planning.
-- **Changes** — period-to-period performance, popularity, diversity, balance, matchup flips, and persistence.
+- **Changes** — period-to-period average win rate, popularity, diversity, balance, matchup flips, and persistence.
 
 Each section owns its URL search state. Compatible period, rank, character,
 opponent, control, and selected-opponent choices are carried between links

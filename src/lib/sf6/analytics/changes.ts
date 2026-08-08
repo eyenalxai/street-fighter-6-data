@@ -6,13 +6,13 @@ import { CHARACTERS } from "@/lib/sf6/model"
 import type { MetricEntry } from "./comparisons"
 import type { UsagePoint } from "./usage"
 
+import { getCharacterAverageWinRate } from "./average-win-rate"
 import { getRosterMetrics } from "./comparisons"
 import { getMatchupCell, getPlayerControlMatchups } from "./matchup-cells"
-import { getCharacterPerformance } from "./performance"
 import { getUsageRate, getUsageStats } from "./usage"
 
 type ChangeSummary = {
-  performanceSpread: number | null
+  averageWinRateSpread: number | null
   effectiveRosterSize: number | null
   topFiveShare: number
   matchupImbalance: number | null
@@ -65,21 +65,25 @@ const getMatchupChanges = (
 
 const getChangeSummary = (entry: MetricEntry, playerControl: PlayerControl): ChangeSummary => {
   const rows = getRosterMetrics(entry, null, playerControl)
-  const performances = rows.flatMap((row) => (row.performance === null ? [] : [row.performance]))
+  const averageWinRates = rows.flatMap((row) =>
+    row.averageWinRate === null ? [] : [row.averageWinRate],
+  )
   const matchupValues = rows.flatMap((row) => {
-    const performance = getCharacterPerformance(
+    const averageWinRate = getCharacterAverageWinRate(
       { combined: entry.block, controls: entry.controlBlocks },
       { selected: entry.usage, controls: entry.usageControls },
       row.characterId,
       playerControl,
     )
-    const imbalance = performance.summary?.matchupImbalance
+    const imbalance = averageWinRate.summary?.matchupImbalance
     return imbalance === null || imbalance === undefined ? [] : [imbalance]
   })
   const usageStats = getUsageStats(entry.usage)
   return {
-    performanceSpread:
-      performances.length === 0 ? null : Math.max(...performances) - Math.min(...performances),
+    averageWinRateSpread:
+      averageWinRates.length === 0
+        ? null
+        : Math.max(...averageWinRates) - Math.min(...averageWinRates),
     effectiveRosterSize: usageStats.effectiveRosterSize,
     topFiveShare: usageStats.topFiveShare,
     matchupImbalance:

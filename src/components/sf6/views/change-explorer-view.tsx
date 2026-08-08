@@ -1,10 +1,12 @@
 import { useNavigate } from "@tanstack/react-router"
 
+import type { ChangeInput } from "@/lib/sf6/analysis-scope"
 import type { ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
 import type { ChangeSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
+import { AnalysisSelectionEmpty } from "@/components/sf6/analysis-selection-empty"
 import { AnalysisToolbar } from "@/components/sf6/analysis-toolbar"
 import { AnalysisViewTabs } from "@/components/sf6/analysis-view-tabs"
 import { ChangeMatchupResults } from "@/components/sf6/changes/matchup-results"
@@ -16,6 +18,7 @@ import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
+import { hasSelectedCharacters } from "@/lib/sf6/analysis-dependencies"
 import { buildChangeInput, getActiveInputKey } from "@/lib/sf6/analysis-scope"
 import { changeExplorerQueryOptions } from "@/lib/sf6/query-options"
 import { getPeriodsForRank } from "@/lib/sf6/rank-selection"
@@ -34,6 +37,23 @@ type ChangeExplorerViewProps = {
   meta: MetaData
 }
 
+const ChangeQueryView = ({ input, meta }: { input: ChangeInput; meta: MetaData }) => {
+  const { data, isUpdating } = useAnalyticsQuery(changeExplorerQueryOptions(input), input)
+  return data === undefined ? (
+    <ResultsPending />
+  ) : (
+    <ResultsContent isUpdating={isUpdating}>
+      {data.view === "overview" ? (
+        <ChangeOverviewResults data={data} />
+      ) : data.view === "trends" ? (
+        <ChangeTrendResults data={data} meta={meta} />
+      ) : (
+        <ChangeMatchupResults data={data} meta={meta} />
+      )}
+    </ResultsContent>
+  )
+}
+
 const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplorerViewProps) => {
   const navigate = useNavigate({ from: "/changes" })
   const change = (changes: Partial<ChangeSearch>) => {
@@ -45,14 +65,13 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
     })
   }
   const input = buildChangeInput(search, fromPeriod, toPeriod)
-  const { data, isUpdating } = useAnalyticsQuery(changeExplorerQueryOptions(input), input)
   const periods = getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)
   const showFocusCharacters = search.view === "trends"
   const showPlayerControl = !isMasterSubdivisionRank(search.rank)
   const toolbar = (
     <AnalysisToolbar
       title="Change explorer"
-      description="Compare performance, popularity, matchup, and environment movement."
+      description="Compare average win rate, popularity, matchup, and environment movement."
       views={
         <AnalysisViewTabs
           value={search.view}
@@ -112,18 +131,13 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
   )
   return (
     <AnalysisPage toolbar={toolbar} resetKey={getActiveInputKey(input)}>
-      {data === undefined ? (
-        <ResultsPending />
+      {input.view === "trends" && !hasSelectedCharacters(input.focusCharacters) ? (
+        <AnalysisSelectionEmpty
+          title="Select focus characters"
+          description="Choose one or more characters to compare trends across the selected interval."
+        />
       ) : (
-        <ResultsContent isUpdating={isUpdating}>
-          {data.view === "overview" ? (
-            <ChangeOverviewResults data={data} />
-          ) : data.view === "trends" ? (
-            <ChangeTrendResults data={data} meta={meta} />
-          ) : (
-            <ChangeMatchupResults data={data} meta={meta} />
-          )}
-        </ResultsContent>
+        <ChangeQueryView input={input} meta={meta} />
       )}
     </AnalysisPage>
   )

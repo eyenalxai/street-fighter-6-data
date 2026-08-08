@@ -26,7 +26,6 @@ const CharacterMultiField = ({
   value,
   characters,
   onChange,
-  onClear,
   description,
   className,
   placeholder = "Search characters",
@@ -35,7 +34,6 @@ const CharacterMultiField = ({
   value: readonly CharacterId[]
   characters: MetaData["characters"]
   onChange: (value: CharacterId[]) => void
-  onClear?: () => void
   description?: string
   className?: string
   placeholder?: string
@@ -79,18 +77,18 @@ const CharacterMultiField = ({
             </ComboboxList>
           </ComboboxContent>
         </Combobox>
-        {onClear === undefined ? null : (
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            onClick={onClear}
-            disabled={value.length === 0}
-          >
-            <X data-icon="inline-start" />
-            Clear all
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="default"
+          onClick={() => {
+            onChange([])
+          }}
+          disabled={value.length === 0}
+        >
+          <X data-icon="inline-start" />
+          Clear all
+        </Button>
       </div>
       {description === undefined ? null : <FieldDescription>{description}</FieldDescription>}
     </Field>

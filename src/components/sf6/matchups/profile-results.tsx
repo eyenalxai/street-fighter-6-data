@@ -66,11 +66,7 @@ const MatchupProfileResults = ({
           },
           {
             label: "Favorable matchups",
-            value: `${data.summary.favorableCount} / ${data.summary.availableCount}`,
-          },
-          {
-            label: "Reported coverage",
-            value: <MetricValue value={data.summary.coverage} format="coverage" />,
+            value: `${data.summary.favorableCount} / ${data.summary.possibleCount}`,
           },
           {
             label: "Usage weight coverage",

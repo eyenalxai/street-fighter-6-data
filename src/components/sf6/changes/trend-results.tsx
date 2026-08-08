@@ -16,13 +16,13 @@ const ChangeTrendResults = ({ data, meta }: { data: TrendsData; meta: MetaData }
       color: `var(--chart-${(index % 5) + 1})`,
     }
   })
-  const performanceData =
+  const averageWinRateData =
     data.focusSeries[0]?.points.map((point, index) => {
       const row: { label: string; [key: string]: number | string | null } = {
         label: formatReportingPeriod(point.period),
       }
       for (const item of data.focusSeries) {
-        row[item.characterId] = item.points[index]?.performance ?? null
+        row[item.characterId] = item.points[index]?.averageWinRate ?? null
       }
       return row
     }) ?? []
@@ -39,11 +39,11 @@ const ChangeTrendResults = ({ data, meta }: { data: TrendsData; meta: MetaData }
   return (
     <div className="grid items-start gap-4 lg:grid-cols-2">
       <AnalyticsPanel
-        title="Focused performance persistence"
+        title="Focused average win rate persistence"
         description={`Average win rate from ${formatReportingPeriod(data.fromPeriod)} through ${formatReportingPeriod(data.toPeriod)}.`}
       >
         <MetricTrendChart
-          data={performanceData}
+          data={averageWinRateData}
           series={series}
           xAxisLabel="Reporting period"
           valueFormat="percent"

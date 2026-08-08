@@ -18,7 +18,7 @@ type StabilityData = Extract<RosterOverviewData, { view: "stability" }>
 const RosterStabilityResults = ({ data, meta }: { data: StabilityData; meta: MetaData }) => (
   <AnalyticsPanel
     title="Character consistency"
-    description="Lower time standard deviation and rank range indicate more stable performance. These are separate measures, not a combined score."
+    description="Lower time standard deviation and rank range indicate more stable win rate. These are separate measures, not a combined score."
     contentClassName="p-0"
   >
     <Table>

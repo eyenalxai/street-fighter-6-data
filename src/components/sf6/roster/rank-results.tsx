@@ -18,7 +18,7 @@ const RosterRankResults = ({ data }: { data: RankData }) => {
   const chartData = data.rankLandscape.map((point) => {
     return {
       label: point.label,
-      spread: point.performanceSpread,
+      spread: point.averageWinRateSpread,
       diversity: point.effectiveRosterSize,
     }
   })
@@ -26,15 +26,15 @@ const RosterRankResults = ({ data }: { data: RankData }) => {
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
-          title="Performance spread across ranks"
+          title="Win rate spread across ranks"
           description="Each point is the highest character average minus the lowest character average at that rank."
         >
           <MetricTrendChart
             data={chartData}
-            series={[{ key: "spread", label: "Performance spread", color: "var(--chart-1)" }]}
+            series={[{ key: "spread", label: "Win rate spread", color: "var(--chart-1)" }]}
             xAxisLabel="Rank"
             valueFormat="percentagePoints"
-            valueLabel="Performance spread (percentage points)"
+            valueLabel="Win rate spread (percentage points)"
           />
         </AnalyticsPanel>
         <AnalyticsPanel
@@ -59,7 +59,7 @@ const RosterRankResults = ({ data }: { data: RankData }) => {
           <TableHeader>
             <TableRow>
               <TableHead>Rank</TableHead>
-              <TableHead className="text-right">Performance spread</TableHead>
+              <TableHead className="text-right">Win rate spread</TableHead>
               <TableHead className="text-right">Effective roster size</TableHead>
               <TableHead className="text-right">Top-five usage</TableHead>
             </TableRow>
@@ -69,7 +69,7 @@ const RosterRankResults = ({ data }: { data: RankData }) => {
               <TableRow key={point.rankId}>
                 <TableCell>{point.label}</TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={point.performanceSpread} format="percentagePoints" />
+                  <MetricValue value={point.averageWinRateSpread} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
                   <MetricValue value={point.effectiveRosterSize} format="number" />

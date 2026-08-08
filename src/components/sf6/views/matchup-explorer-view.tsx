@@ -6,6 +6,7 @@ import type { MetaData } from "@/lib/sf6/query-options"
 import type { MatchupSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
+import { AnalysisSelectionEmpty } from "@/components/sf6/analysis-selection-empty"
 import { AnalysisToolbar } from "@/components/sf6/analysis-toolbar"
 import { AnalysisViewTabs } from "@/components/sf6/analysis-view-tabs"
 import { CounterpickResults } from "@/components/sf6/counterpicks/results"
@@ -20,9 +21,8 @@ import { MatchupRankResults } from "@/components/sf6/matchups/rank-results"
 import { MatchupTimeResults } from "@/components/sf6/matchups/time-results"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { Button } from "@/components/ui/button"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
-import { getMatchupPeriodOptions } from "@/lib/sf6/analysis-dependencies"
+import { getMatchupPeriodOptions, hasSelectedCharacters } from "@/lib/sf6/analysis-dependencies"
 import {
   buildCounterpickInput,
   buildMatchupInput,
@@ -125,21 +125,17 @@ const CounterpickView = ({
 }: MatchupExplorerViewProps & {
   onOrderChange: (order: MatchupSearch["order"]) => void
 }) =>
-  search.opponents.length === 0 ? (
-    <Empty className="min-h-48 border border-dashed">
-      <EmptyHeader>
-        <EmptyTitle>Select opponents</EmptyTitle>
-        <EmptyDescription>
-          Choose one or more opponents to calculate counterpick candidates.
-        </EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  ) : (
+  hasSelectedCharacters(search.opponents) ? (
     <CounterpickQueryView
       period={requirePeriod(period)}
       search={search}
       meta={meta}
       onOrderChange={onOrderChange}
+    />
+  ) : (
+    <AnalysisSelectionEmpty
+      title="Select opponents"
+      description="Choose one or more opponents to calculate counterpick candidates."
     />
   )
 
@@ -230,9 +226,6 @@ const MatchupExplorerView = ({ period, search, meta }: MatchupExplorerViewProps)
           className="sm:col-span-2 xl:col-span-2"
           onChange={(value) => {
             change({ opponents: value })
-          }}
-          onClear={() => {
-            change({ opponents: [] })
           }}
           description="Candidates must have a numeric result against every selected opponent."
         />

@@ -10,22 +10,22 @@ const RosterTimeResults = ({ data }: { data: TimeData }) => {
   const chartData = data.time.map((point) => {
     return {
       label: formatReportingPeriod(point.period),
-      spread: point.performanceSpread,
+      spread: point.averageWinRateSpread,
       diversity: point.effectiveRosterSize,
     }
   })
   return (
     <div className="grid items-start gap-4 lg:grid-cols-2">
       <AnalyticsPanel
-        title="Performance spread over time"
+        title="Win rate spread over time"
         description="Highest character average minus lowest character average for each reporting period."
       >
         <MetricTrendChart
           data={chartData}
-          series={[{ key: "spread", label: "Performance spread", color: "var(--chart-1)" }]}
+          series={[{ key: "spread", label: "Win rate spread", color: "var(--chart-1)" }]}
           xAxisLabel="Reporting period"
           valueFormat="percentagePoints"
-          valueLabel="Performance spread (percentage points)"
+          valueLabel="Win rate spread (percentage points)"
         />
       </AnalyticsPanel>
       <AnalyticsPanel

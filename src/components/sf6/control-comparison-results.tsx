@@ -46,14 +46,14 @@ const ControlComparisonResults = ({
     )
   }
   const chartRows = data.rows.flatMap((row) =>
-    row.performanceDelta === null || row.usageDelta === null
+    row.averageWinRateDelta === null || row.usageDelta === null
       ? []
       : [
           {
             name:
               meta.characters.find((character) => character.id === row.characterId)?.short ??
               row.characterId,
-            performanceDelta: row.performanceDelta,
+            averageWinRateDelta: row.averageWinRateDelta,
             usageDelta: row.usageDelta,
           },
         ],
@@ -68,9 +68,9 @@ const ControlComparisonResults = ({
           <TableHeader>
             <TableRow>
               <TableHead>Character</TableHead>
-              <TableHead className="text-right">Classic performance</TableHead>
-              <TableHead className="text-right">Modern performance</TableHead>
-              <TableHead className="text-right">Performance delta</TableHead>
+              <TableHead className="text-right">Classic win rate</TableHead>
+              <TableHead className="text-right">Modern win rate</TableHead>
+              <TableHead className="text-right">Win rate change</TableHead>
               <TableHead className="text-right">Classic usage</TableHead>
               <TableHead className="text-right">Modern usage</TableHead>
               <TableHead className="text-right">Usage delta</TableHead>
@@ -92,7 +92,7 @@ const ControlComparisonResults = ({
                   <MetricValue value={row.modern} format="percent" tone="winRate" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.performanceDelta} format="percentagePoints" signed />
+                  <MetricValue value={row.averageWinRateDelta} format="percentagePoints" signed />
                 </TableCell>
                 <TableCell className="text-right">
                   <MetricValue value={row.classicUsage} format="percent" />

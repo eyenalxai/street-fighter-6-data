@@ -1,7 +1,7 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { ChangeExplorerView } from "@/components/sf6/views/change-explorer-view"
-import { getChangeLoaderDeps } from "@/lib/sf6/analysis-dependencies"
+import { getChangeLoaderDeps, hasSelectedCharacters } from "@/lib/sf6/analysis-dependencies"
 import { buildChangeInput } from "@/lib/sf6/analysis-scope"
 import {
   changeExplorerQueryOptions,
@@ -33,8 +33,10 @@ const Route = createFileRoute("/_analytics/changes")({
     }
     const fromPeriod = resolvePeriod(deps.fromPeriod ?? previous, periods)
     const toPeriod = resolvePeriod(deps.toPeriod ?? latest, periods)
-    const input = buildChangeInput(deps, fromPeriod, toPeriod)
-    void queryClient.prefetchQuery(changeExplorerQueryOptions(input))
+    if (deps.view !== "trends" || hasSelectedCharacters(deps.focusCharacters)) {
+      const input = buildChangeInput(deps, fromPeriod, toPeriod)
+      void queryClient.prefetchQuery(changeExplorerQueryOptions(input))
+    }
     return { fromPeriod, toPeriod }
   },
   component: ChangesPage,

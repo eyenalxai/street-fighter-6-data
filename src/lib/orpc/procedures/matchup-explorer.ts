@@ -73,7 +73,6 @@ const SummarySchema = z.object({
   favorableCount: z.number().int().nonnegative(),
   availableCount: z.number().int().nonnegative(),
   possibleCount: z.number().int().nonnegative(),
-  coverage: z.number().min(0).max(1).nullable(),
   topThreeLift: z.number().min(-100).max(100).nullable(),
   matchupImbalance: z.number().min(0).max(50).nullable(),
 })

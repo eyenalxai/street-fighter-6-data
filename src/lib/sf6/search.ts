@@ -2,6 +2,7 @@ import * as z from "zod"
 
 import {
   CharacterIdSchema,
+  CharacterSelectionSchema,
   ControlMatchupSchema,
   PlayerControlSchema,
   ReportingPeriodSchema,
@@ -20,7 +21,7 @@ const CharacterExplorerSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
   rank: RankIdSchema.default("all-master"),
   playerControl: PlayerControlSchema.default("combined"),
-  characters: UniqueCharacterIdsSchema.min(1).max(5).default(["ryu"]),
+  characters: CharacterSelectionSchema.default(["ryu"]),
   view: z.enum(["time", "ranks", "controls"]).default("time"),
 })
 
@@ -42,7 +43,7 @@ const ChangeSearchSchema = z.object({
   toPeriod: ReportingPeriodSchema.optional(),
   rank: RankIdSchema.default("all-master"),
   playerControl: PlayerControlSchema.default("combined"),
-  focusCharacters: UniqueCharacterIdsSchema.min(1).max(5).default(["ryu"]),
+  focusCharacters: CharacterSelectionSchema.default(["ryu"]),
   view: z.enum(["overview", "trends", "matchups"]).default("overview"),
 })
 

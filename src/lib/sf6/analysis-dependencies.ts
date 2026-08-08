@@ -15,6 +15,9 @@ type MatchupView = MatchupSearch["view"]
 type ChangeView = ChangeSearch["view"]
 type CounterpickOrder = "weighted" | "average" | "floor"
 
+const hasSelectedCharacters = (characters: readonly CharacterId[] | undefined): boolean =>
+  (characters?.length ?? 0) > 0
+
 type RosterSearchValue = {
   view: RosterView
   period?: ReportingPeriod
@@ -225,6 +228,7 @@ const getChangeLoaderDeps = (search: ChangeSearch): ChangeSearchValue => {
 }
 
 export {
+  hasSelectedCharacters,
   getCharacterLoaderDeps,
   getCharacterPeriodOptions,
   getChangeLoaderDeps,

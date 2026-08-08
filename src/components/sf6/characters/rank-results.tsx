@@ -24,10 +24,10 @@ const COLORS = [
 
 const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }) => {
   const points = data.series[0]?.points ?? []
-  const performanceData = points.map((point, index) => {
+  const averageWinRateData = points.map((point, index) => {
     const row: { label: string; [key: string]: number | string | null } = { label: point.label }
     for (const series of data.series) {
-      row[series.characterId] = series.points[index]?.performance ?? null
+      row[series.characterId] = series.points[index]?.averageWinRate ?? null
     }
     return row
   })
@@ -51,11 +51,11 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
-          title="Performance across ranks"
+          title="Average win rate across ranks"
           description="Combined-control average win rate from Rookie through the available Master subdivisions."
         >
           <MetricTrendChart
-            data={performanceData}
+            data={averageWinRateData}
             series={chartSeries}
             xAxisLabel="Rank"
             valueFormat="percent"
@@ -86,10 +86,10 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
           <TableHeader>
             <TableRow>
               <TableHead>Character</TableHead>
-              <TableHead className="text-right">Performance range</TableHead>
+              <TableHead className="text-right">Win rate range</TableHead>
               <TableHead className="text-right">Popularity range</TableHead>
-              <TableHead>Performance peak</TableHead>
-              <TableHead>Performance trough</TableHead>
+              <TableHead>Peak win rate</TableHead>
+              <TableHead>Trough win rate</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -102,7 +102,7 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <MetricValue value={row.performanceRange} format="percentagePoints" />
+                  <MetricValue value={row.averageWinRateRange} format="percentagePoints" />
                 </TableCell>
                 <TableCell className="text-right">
                   <MetricValue value={row.usageRange} format="percentagePoints" />
