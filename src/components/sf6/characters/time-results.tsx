@@ -151,15 +151,7 @@ const CharacterTimeResults = ({ data }: { data: TimeData }) => {
         >
           <MetricTrendChart
             data={averageWinRateData}
-            series={series.map((item) => {
-              return {
-                ...item,
-                label:
-                  averageWinRateMetric === "weighted"
-                    ? `${item.label} weighted`
-                    : `${item.label} average`,
-              }
-            })}
+            series={series}
             xAxisName={AXIS_LABELS.reportingPeriod}
             valueFormat="percent"
             yAxisName={

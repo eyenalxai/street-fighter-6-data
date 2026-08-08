@@ -7,7 +7,7 @@ import { getMetricEntry, getPeriodEntries } from "@/lib/sf6/analytics/loaders.se
 import {
   CharacterIdSchema,
   ControlMatchupSchema,
-  NonEmptyCharacterSelectionSchema,
+  NonEmptyUniqueCharacterIdsSchema,
   PlayerControlSchema,
   ReportingPeriodSchema,
 } from "@/lib/sf6/model"
@@ -36,7 +36,7 @@ const ChangeExplorerInputSchema = z.discriminatedUnion("view", [
     toPeriod: ReportingPeriodSchema,
     rank: RankIdSchema,
     playerControl: PlayerControlSchema,
-    focusCharacters: NonEmptyCharacterSelectionSchema,
+    focusCharacters: NonEmptyUniqueCharacterIdsSchema,
   }),
   z.object({
     view: z.literal("matchups"),

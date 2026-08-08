@@ -12,7 +12,7 @@ import {
 import { getRankStability, getTimeStability } from "@/lib/sf6/analytics/stability"
 import {
   CharacterIdSchema,
-  NonEmptyCharacterSelectionSchema,
+  NonEmptyUniqueCharacterIdsSchema,
   PlayerControlSchema,
   ReportingPeriodSchema,
 } from "@/lib/sf6/model"
@@ -29,18 +29,18 @@ const CharacterExplorerInputSchema = z.discriminatedUnion("view", [
     view: z.literal("time"),
     rank: RankIdSchema,
     playerControl: PlayerControlSchema,
-    characters: NonEmptyCharacterSelectionSchema,
+    characters: NonEmptyUniqueCharacterIdsSchema,
   }),
   z.object({
     view: z.literal("ranks"),
     period: ReportingPeriodSchema,
-    characters: NonEmptyCharacterSelectionSchema,
+    characters: NonEmptyUniqueCharacterIdsSchema,
   }),
   z.object({
     view: z.literal("controls"),
     period: ReportingPeriodSchema,
     rank: RankIdSchema,
-    characters: NonEmptyCharacterSelectionSchema,
+    characters: NonEmptyUniqueCharacterIdsSchema,
   }),
 ])
 const CharacterPointSchema = z.object({

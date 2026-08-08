@@ -142,7 +142,7 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
         onChange={(value) => {
           change({ characters: value })
         }}
-        description="Select up to five characters."
+        description="Select one or more characters to compare."
       />
     </AnalysisToolbar>
   )
