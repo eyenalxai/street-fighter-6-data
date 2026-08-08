@@ -2,11 +2,17 @@
 
 import type { ReactNode } from "react"
 
-import { SystemThemeProvider } from "@/components/system-theme-provider"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+
 import { Toaster } from "@/components/ui/toast"
 
 export const Providers = ({ children }: { children: ReactNode }) => (
-  <SystemThemeProvider>
+  <NextThemesProvider
+    attribute="class"
+    defaultTheme="system"
+    enableSystem
+    disableTransitionOnChange
+  >
     <Toaster>{children}</Toaster>
-  </SystemThemeProvider>
+  </NextThemesProvider>
 )
