@@ -1,0 +1,9 @@
+node_modules
+.output
+dist
+.git
+.oxc_cache
+.tanstack
+data/raw
+.env*
+**/*.gen.ts
