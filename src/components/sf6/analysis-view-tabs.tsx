@@ -30,13 +30,15 @@ const AnalysisViewTabs = <T extends string>({
       }
     }}
   >
-    <TabsList variant="line" aria-label={ariaLabel} className="max-w-full overflow-x-auto">
-      {options.map((option) => (
-        <TabsTrigger key={option.value} value={option.value}>
-          {option.label}
-        </TabsTrigger>
-      ))}
-    </TabsList>
+    <div className="max-w-full overflow-x-auto overflow-y-hidden">
+      <TabsList variant="line" aria-label={ariaLabel} className="w-max">
+        {options.map((option) => (
+          <TabsTrigger key={option.value} value={option.value}>
+            {option.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </div>
   </Tabs>
 )
 
