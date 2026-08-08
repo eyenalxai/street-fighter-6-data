@@ -20,6 +20,10 @@ const ANALYTICS_LINE_CHART_LEGEND_PROPS = {
   wrapperStyle: { paddingTop: 4 },
 }
 const DEFAULT_CHART_DIMENSION = { width: 640, height: 300 }
+const CHART_SIZE_CLASSES = {
+  compact: "h-64 sm:h-72",
+  default: "h-72 sm:h-80",
+} as const
 
 const analyticsXAxisLabel = (value: string, offset = 8) => {
   return {
@@ -47,6 +51,7 @@ type AnalyticsChartProps = {
   children: ReactNode
   className?: string
   initialDimension?: { width: number; height: number }
+  size?: keyof typeof CHART_SIZE_CLASSES
 }
 
 const AnalyticsChart = ({
@@ -54,11 +59,12 @@ const AnalyticsChart = ({
   children,
   className,
   initialDimension = DEFAULT_CHART_DIMENSION,
+  size = "default",
 }: AnalyticsChartProps) => (
   <ChartContainer
     config={config}
     initialDimension={initialDimension}
-    className={cn("min-h-70 min-w-0 w-full", className)}
+    className={cn("aspect-auto min-w-0 w-full", CHART_SIZE_CLASSES[size], className)}
   >
     {children}
   </ChartContainer>
@@ -76,5 +82,6 @@ export {
   analyticsAngledXAxisLabel,
   analyticsXAxisLabel,
   analyticsYAxisLabel,
+  CHART_SIZE_CLASSES,
   AnalyticsChart,
 }

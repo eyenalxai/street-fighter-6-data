@@ -17,7 +17,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatReportingPeriod } from "@/lib/sf6/model"
 
-type TimeData = Extract<CharacterExplorerData, { mode: "time" }>
+type TimeData = Extract<CharacterExplorerData, { view: "time" }>
 
 const COLORS = [
   "var(--chart-1)",
@@ -65,28 +65,29 @@ const CharacterTimeResults = ({ data, meta }: { data: TimeData; meta: MetaData }
   })
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Performance over time"
           description="Toggle between the unweighted character average and an opponent-popularity-weighted estimate. Missing historical characters remain gaps."
+          action={
+            <ToggleGroup
+              value={[performanceMetric]}
+              onValueChange={(value) => {
+                const next = value[0]
+                if (next === "unweighted" || next === "weighted") {
+                  setPerformanceMetric(next)
+                }
+              }}
+              variant="outline"
+              size="sm"
+              spacing={0}
+              aria-label="Performance metric"
+            >
+              <ToggleGroupItem value="unweighted">Unweighted</ToggleGroupItem>
+              <ToggleGroupItem value="weighted">Popularity-weighted</ToggleGroupItem>
+            </ToggleGroup>
+          }
         >
-          <ToggleGroup
-            value={[performanceMetric]}
-            onValueChange={(value) => {
-              const next = value[0]
-              if (next === "unweighted" || next === "weighted") {
-                setPerformanceMetric(next)
-              }
-            }}
-            variant="outline"
-            size="sm"
-            spacing={0}
-            aria-label="Performance metric"
-            className="mb-3"
-          >
-            <ToggleGroupItem value="unweighted">Unweighted</ToggleGroupItem>
-            <ToggleGroupItem value="weighted">Popularity-weighted</ToggleGroupItem>
-          </ToggleGroup>
           <MetricTrendChart
             data={performanceData}
             series={series.map((item) => {

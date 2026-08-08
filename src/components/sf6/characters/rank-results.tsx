@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-type RankData = Extract<CharacterExplorerData, { mode: "ranks" }>
+type RankData = Extract<CharacterExplorerData, { view: "ranks" }>
 const COLORS = [
   "var(--chart-1)",
   "var(--chart-2)",
@@ -49,7 +49,7 @@ const CharacterRankResults = ({ data, meta }: { data: RankData; meta: MetaData }
   })
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Performance across ranks"
           description="Combined-control average win rate from Rookie through the available Master subdivisions."

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 
 import { useMemo } from "react"
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
@@ -41,6 +41,7 @@ const MetricTrendChart = ({
   referenceValue,
   referenceLabel,
   emptyLabel,
+  size = "compact",
 }: {
   data: readonly MetricTrendPoint[]
   series: readonly MetricTrendSeries[]
@@ -50,6 +51,7 @@ const MetricTrendChart = ({
   referenceValue?: number
   referenceLabel?: string
   emptyLabel?: ReactNode
+  size?: ComponentProps<typeof AnalyticsChart>["size"]
 }): ReactNode => {
   const config = useMemo(
     () =>
@@ -77,7 +79,7 @@ const MetricTrendChart = ({
     return emptyLabel ?? null
   }
   return (
-    <AnalyticsChart config={config} className="h-90">
+    <AnalyticsChart config={config} size={size}>
       <LineChart accessibilityLayer data={data} margin={ANALYTICS_LINE_CHART_MARGIN}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
         <XAxis

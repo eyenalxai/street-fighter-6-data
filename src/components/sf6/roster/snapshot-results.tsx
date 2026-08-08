@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import { formatReportingPeriod } from "@/lib/sf6/model"
 import { getRank } from "@/lib/sf6/ranks"
 
-type SnapshotData = Extract<RosterOverviewData, { mode: "snapshot" }>
+type SnapshotData = Extract<RosterOverviewData, { view: "snapshot" }>
 type SnapshotSortKey =
   | "character"
   | "performance"
@@ -45,6 +45,7 @@ const CharacterMatchupLink = ({
       character: characterId,
       opponent,
       controls: "combined" as const,
+      view: "head-to-head" as const,
     }
   }, [characterId, period, rank])
   return (

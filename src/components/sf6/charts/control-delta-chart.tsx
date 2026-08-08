@@ -40,7 +40,7 @@ const ControlDeltaChart = ({ data }: { data: readonly ControlDeltaPoint[] }) => 
   )
 
   return (
-    <AnalyticsChart config={CONTROL_DELTA_CONFIG} className="h-[340px]">
+    <AnalyticsChart config={CONTROL_DELTA_CONFIG} size="default">
       <ScatterChart accessibilityLayer margin={ANALYTICS_SCATTER_CHART_MARGIN}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis

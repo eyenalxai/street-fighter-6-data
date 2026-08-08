@@ -1,13 +1,13 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { CharacterExplorerView } from "@/components/sf6/views/character-explorer-view"
-import { getCharacterModePlayerControl } from "@/lib/sf6/analysis-scope"
+import { getCharacterLoaderDeps, getCharacterPeriodOptions } from "@/lib/sf6/analysis-dependencies"
+import { buildCharacterInput } from "@/lib/sf6/analysis-scope"
 import {
   characterExplorerQueryOptions,
   metaQueryOptions,
   resolvePeriod,
 } from "@/lib/sf6/query-options"
-import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { CharacterExplorerSearchSchema } from "@/lib/sf6/search"
 
 const CharactersPage = () => {
@@ -19,29 +19,18 @@ const CharactersPage = () => {
 
 const Route = createFileRoute("/_analytics/characters")({
   validateSearch: CharacterExplorerSearchSchema,
-  loaderDeps: ({ search }) => {
-    return { search }
-  },
+  loaderDeps: ({ search }) => getCharacterLoaderDeps(search),
   loader: async ({ context: { queryClient }, deps }) => {
     const meta = await queryClient.ensureQueryData(metaQueryOptions())
-    const periods =
-      deps.search.mode === "ranks"
-        ? getRankComparisonPeriods(meta.periods, meta.subdivisionPeriods)
-        : getPeriodsForRank(deps.search.rank, meta.periods, meta.subdivisionPeriods)
-    const period = resolvePeriod(deps.search.period, periods)
-    void queryClient.prefetchQuery(
-      characterExplorerQueryOptions({
-        period,
-        rank: deps.search.rank,
-        playerControl: getCharacterModePlayerControl(
-          deps.search.rank,
-          deps.search.mode,
-          deps.search.playerControl,
-        ),
-        characters: deps.search.characters,
-        mode: deps.search.mode,
-      }),
+    const periods = getCharacterPeriodOptions(
+      deps.view,
+      deps.rank ?? "all-master",
+      meta.periods,
+      meta.subdivisionPeriods,
     )
+    const period = deps.view === "time" ? undefined : resolvePeriod(deps.period, periods)
+    const input = buildCharacterInput(deps, period)
+    void queryClient.prefetchQuery(characterExplorerQueryOptions(input))
     return { period }
   },
   component: CharactersPage,

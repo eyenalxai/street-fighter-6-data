@@ -12,8 +12,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta: MetaData }) => {
+const CounterpickResults = ({
+  data,
+  meta,
+  order,
+  onOrderChange,
+}: {
+  data: CounterpickPlannerData
+  meta: MetaData
+  order: "weighted" | "average" | "floor"
+  onOrderChange: (order: "weighted" | "average" | "floor") => void
+}) => {
   if (data.rows.length === 0) {
     return (
       <Empty className="min-h-48 border border-dashed">
@@ -31,6 +42,25 @@ const CounterpickResults = ({ data, meta }: { data: CounterpickPlannerData; meta
     <AnalyticsPanel
       title="Counterpick candidates"
       description={`Selected opponents represent ${data.selectedUsageShare === null ? "an unknown share" : `${data.selectedUsageShare.toFixed(1)}%`} of the opponent usage population (${data.weightCoverage === null ? "unknown" : `${(data.weightCoverage * 100).toFixed(0)}%`} of available popularity weight). Weighted averages renormalize only over selected opponents; they are not match-volume measurements.`}
+      action={
+        <ToggleGroup
+          value={[order]}
+          onValueChange={(value) => {
+            const next = value[0]
+            if (next === "weighted" || next === "average" || next === "floor") {
+              onOrderChange(next)
+            }
+          }}
+          variant="outline"
+          size="sm"
+          spacing={0}
+          aria-label="Order counterpick candidates"
+        >
+          <ToggleGroupItem value="weighted">Weighted</ToggleGroupItem>
+          <ToggleGroupItem value="average">Average</ToggleGroupItem>
+          <ToggleGroupItem value="floor">Floor</ToggleGroupItem>
+        </ToggleGroup>
+      }
       contentClassName="p-0"
     >
       <div className="overflow-x-auto">

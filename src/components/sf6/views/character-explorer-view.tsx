@@ -1,45 +1,44 @@
 import { useNavigate } from "@tanstack/react-router"
-import * as z from "zod"
 
-import type { PlayerControl, ReportingPeriod, CharacterId } from "@/lib/sf6/model"
+import type { ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
-import type { RankId } from "@/lib/sf6/ranks"
 import type { CharacterExplorerSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
 import { AnalysisToolbar } from "@/components/sf6/analysis-toolbar"
-import { CharacterControlResults } from "@/components/sf6/characters/control-results"
+import { AnalysisViewTabs } from "@/components/sf6/analysis-view-tabs"
 import { CharacterRankResults } from "@/components/sf6/characters/rank-results"
 import { CharacterTimeResults } from "@/components/sf6/characters/time-results"
+import { ControlComparisonResults } from "@/components/sf6/control-comparison-results"
 import { CharacterMultiField } from "@/components/sf6/filters/character-multi-field"
 import { PlayerControlField } from "@/components/sf6/filters/player-control-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
-import { ModeTabs } from "@/components/sf6/mode-tabs"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
-import { getCharacterModePlayerControl } from "@/lib/sf6/analysis-scope"
+import {
+  getCharacterPeriodOptions,
+  getControlComparisonRanks,
+} from "@/lib/sf6/analysis-dependencies"
+import { buildCharacterInput, getActiveInputKey } from "@/lib/sf6/analysis-scope"
 import { characterExplorerQueryOptions } from "@/lib/sf6/query-options"
-import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
 
+const viewOptions = [
+  { value: "time", label: "Over time" },
+  { value: "ranks", label: "Across ranks" },
+  { value: "controls", label: "Control styles" },
+] as const
+
 type CharacterExplorerViewProps = {
-  period: ReportingPeriod
+  period?: ReportingPeriod
   search: CharacterExplorerSearch
   meta: MetaData
 }
 
 const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewProps) => {
   const navigate = useNavigate({ from: "/characters" })
-  const change = (
-    changes: Partial<{
-      period: ReportingPeriod
-      rank: RankId
-      playerControl: PlayerControl
-      characters: CharacterId[]
-      mode: CharacterExplorerSearch["mode"]
-    }>,
-  ) => {
+  const change = (changes: Partial<CharacterExplorerSearch>) => {
     void navigate({
       search: (previous) => {
         return { ...previous, ...changes }
@@ -47,68 +46,66 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
       replace: true,
     })
   }
-  const input = {
-    period,
-    rank: search.rank,
-    playerControl: getCharacterModePlayerControl(search.rank, search.mode, search.playerControl),
-    characters: search.characters,
-    mode: search.mode,
-  }
-  const playerControlDisabled = search.mode !== "time" || isMasterSubdivisionRank(search.rank)
-  const playerControlDescription = isMasterSubdivisionRank(search.rank)
-    ? "Master subdivisions combine all control styles."
-    : search.mode === "ranks"
-      ? "Across-rank comparisons use combined controls for comparable rank coverage."
-      : search.mode === "controls"
-        ? "Control styles compare Classic and Modern populations."
-        : undefined
+  const controlRank =
+    getControlComparisonRanks(meta.ranks).find((rank) => rank.id === search.rank)?.id ??
+    "all-master"
+  const rankValue = search.view === "controls" ? controlRank : search.rank
+  const input = buildCharacterInput(search, period)
   const { data, displayedInput, isUpdating } = useAnalyticsQuery(
     characterExplorerQueryOptions(input),
     input,
   )
+  const periods = getCharacterPeriodOptions(
+    search.view,
+    rankValue,
+    meta.periods,
+    meta.subdivisionPeriods,
+  )
+  const showPeriod = search.view !== "time"
+  const showRank = search.view !== "ranks"
+  const showPlayerControl = search.view === "time" && !isMasterSubdivisionRank(search.rank)
   const toolbar = (
     <AnalysisToolbar
       title="Character explorer"
-      description="Follow selected characters through time, ranks, and player-control populations."
+      description="Follow selected characters through time, ranks, and control styles."
+      views={
+        <AnalysisViewTabs
+          value={search.view}
+          options={viewOptions}
+          aria-label="Character views"
+          onChange={(view) => {
+            change({ view })
+          }}
+        />
+      }
     >
-      <ReportingPeriodField
-        value={period}
-        periods={
-          search.mode === "ranks"
-            ? getRankComparisonPeriods(meta.periods, meta.subdivisionPeriods)
-            : getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)
-        }
-        onChange={(value) => {
-          change({ period: value })
-        }}
-      />
-      <RankField
-        value={search.rank}
-        ranks={meta.ranks}
-        onChange={(value) => {
-          change({ rank: value })
-        }}
-      />
-      <PlayerControlField
-        value={input.playerControl}
-        controls={meta.playerControls}
-        disabled={playerControlDisabled}
-        description={playerControlDescription}
-        onChange={(value) => {
-          change({ playerControl: value })
-        }}
-      />
-      <ModeTabs
-        value={search.mode}
-        options={[
-          { value: "time", label: "Over time" },
-          { value: "ranks", label: "Across ranks" },
-          { value: "controls", label: "Control styles" },
-        ]}
-        onChange={(value) => {
-          change({ mode: z.enum(["time", "ranks", "controls"]).parse(value) })
-        }}
-      />
+      {showPeriod && period !== undefined ? (
+        <ReportingPeriodField
+          value={period}
+          periods={periods}
+          onChange={(value) => {
+            change({ period: value })
+          }}
+        />
+      ) : null}
+      {showRank ? (
+        <RankField
+          value={rankValue}
+          ranks={search.view === "controls" ? getControlComparisonRanks(meta.ranks) : meta.ranks}
+          onChange={(value) => {
+            change({ rank: value })
+          }}
+        />
+      ) : null}
+      {showPlayerControl && input.view === "time" ? (
+        <PlayerControlField
+          value={input.playerControl}
+          controls={meta.playerControls}
+          onChange={(value) => {
+            change({ playerControl: value })
+          }}
+        />
+      ) : null}
       <CharacterMultiField
         label="Characters"
         value={search.characters}
@@ -122,20 +119,24 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
     </AnalysisToolbar>
   )
   return (
-    <AnalysisPage
-      toolbar={toolbar}
-      resetKey={`${period}|${search.rank}|${search.playerControl}|${search.mode}|${search.characters.join(",")}`}
-    >
+    <AnalysisPage toolbar={toolbar} resetKey={getActiveInputKey(input)}>
       {data === undefined ? (
         <ResultsPending />
       ) : (
         <ResultsContent isUpdating={isUpdating}>
-          {displayedInput.mode === "time" && data.mode === "time" ? (
+          {displayedInput.view === "time" && data.view === "time" ? (
             <CharacterTimeResults data={data} meta={meta} />
-          ) : displayedInput.mode === "ranks" && data.mode === "ranks" ? (
+          ) : displayedInput.view === "ranks" && data.view === "ranks" ? (
             <CharacterRankResults data={data} meta={meta} />
-          ) : data.mode === "controls" ? (
-            <CharacterControlResults data={data} meta={meta} />
+          ) : displayedInput.view === "controls" && data.view === "controls" ? (
+            <ControlComparisonResults
+              data={data}
+              meta={meta}
+              chartTitle="Control performance difference"
+              chartDescription="Positive values favor Modern player controls for the selected character."
+              tableTitle="Selected character control results"
+              unsupportedDescription="Master subdivision snapshots contain combined control data only. Choose All Master or a standard rank to compare Classic and Modern players."
+            />
           ) : null}
         </ResultsContent>
       )}

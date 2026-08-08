@@ -1,13 +1,13 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { RosterOverviewView } from "@/components/sf6/views/roster-overview-view"
-import { getRosterModePlayerControl } from "@/lib/sf6/analysis-scope"
+import { getRosterLoaderDeps, getRosterPeriodOptions } from "@/lib/sf6/analysis-dependencies"
+import { buildRosterInput } from "@/lib/sf6/analysis-scope"
 import {
   metaQueryOptions,
   resolvePeriod,
   rosterOverviewQueryOptions,
 } from "@/lib/sf6/query-options"
-import { getPeriodsForRank, getRankComparisonPeriods } from "@/lib/sf6/rank-selection"
 import { RosterSearchSchema } from "@/lib/sf6/search"
 
 const RosterPage = () => {
@@ -19,28 +19,18 @@ const RosterPage = () => {
 
 const Route = createFileRoute("/_analytics/roster")({
   validateSearch: RosterSearchSchema,
-  loaderDeps: ({ search }) => {
-    return { search }
-  },
+  loaderDeps: ({ search }) => getRosterLoaderDeps(search),
   loader: async ({ context: { queryClient }, deps }) => {
     const meta = await queryClient.ensureQueryData(metaQueryOptions())
-    const periods =
-      deps.search.mode === "landscape"
-        ? getRankComparisonPeriods(meta.periods, meta.subdivisionPeriods)
-        : getPeriodsForRank(deps.search.rank, meta.periods, meta.subdivisionPeriods)
-    const period = resolvePeriod(deps.search.period, periods)
-    void queryClient.prefetchQuery(
-      rosterOverviewQueryOptions({
-        period,
-        rank: deps.search.rank,
-        playerControl: getRosterModePlayerControl(
-          deps.search.rank,
-          deps.search.mode,
-          deps.search.playerControl,
-        ),
-        mode: deps.search.mode,
-      }),
+    const periods = getRosterPeriodOptions(
+      deps.view,
+      deps.rank ?? "all-master",
+      meta.periods,
+      meta.subdivisionPeriods,
     )
+    const period = deps.view === "time" ? undefined : resolvePeriod(deps.period, periods)
+    const input = buildRosterInput(deps, period)
+    void queryClient.prefetchQuery(rosterOverviewQueryOptions(input))
     return { period }
   },
   component: RosterPage,

@@ -1,22 +1,31 @@
 import { useNavigate } from "@tanstack/react-router"
 
-import type { CharacterId, PlayerControl, ReportingPeriod } from "@/lib/sf6/model"
+import type { ReportingPeriod } from "@/lib/sf6/model"
 import type { MetaData } from "@/lib/sf6/query-options"
-import type { RankId } from "@/lib/sf6/ranks"
 import type { ChangeSearch } from "@/lib/sf6/search"
 
 import { AnalysisPage } from "@/components/sf6/analysis-page"
 import { AnalysisToolbar } from "@/components/sf6/analysis-toolbar"
-import { ChangeResults } from "@/components/sf6/changes/change-results"
+import { AnalysisViewTabs } from "@/components/sf6/analysis-view-tabs"
+import { ChangeMatchupResults } from "@/components/sf6/changes/matchup-results"
+import { ChangeOverviewResults } from "@/components/sf6/changes/overview-results"
+import { ChangeTrendResults } from "@/components/sf6/changes/trend-results"
 import { CharacterMultiField } from "@/components/sf6/filters/character-multi-field"
 import { PlayerControlField } from "@/components/sf6/filters/player-control-field"
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
 import { useAnalyticsQuery } from "@/hooks/use-analytics-query"
+import { buildChangeInput, getActiveInputKey } from "@/lib/sf6/analysis-scope"
 import { changeExplorerQueryOptions } from "@/lib/sf6/query-options"
-import { getEffectivePlayerControl, getPeriodsForRank } from "@/lib/sf6/rank-selection"
+import { getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
+
+const viewOptions = [
+  { value: "overview", label: "Overview" },
+  { value: "trends", label: "Character trends" },
+  { value: "matchups", label: "Matchup shifts" },
+] as const
 
 type ChangeExplorerViewProps = {
   fromPeriod: ReportingPeriod
@@ -27,15 +36,7 @@ type ChangeExplorerViewProps = {
 
 const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplorerViewProps) => {
   const navigate = useNavigate({ from: "/changes" })
-  const change = (
-    changes: Partial<{
-      fromPeriod: ReportingPeriod
-      toPeriod: ReportingPeriod
-      rank: RankId
-      playerControl: PlayerControl
-      focusCharacters: CharacterId[]
-    }>,
-  ) => {
+  const change = (changes: Partial<ChangeSearch>) => {
     void navigate({
       search: (previous) => {
         return { ...previous, ...changes }
@@ -43,19 +44,25 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
       replace: true,
     })
   }
-  const input = {
-    fromPeriod,
-    toPeriod,
-    rank: search.rank,
-    playerControl: getEffectivePlayerControl(search.rank, search.playerControl),
-    focusCharacters: search.focusCharacters,
-  }
+  const input = buildChangeInput(search, fromPeriod, toPeriod)
   const { data, isUpdating } = useAnalyticsQuery(changeExplorerQueryOptions(input), input)
   const periods = getPeriodsForRank(search.rank, meta.periods, meta.subdivisionPeriods)
+  const showFocusCharacters = search.view === "trends"
+  const showPlayerControl = !isMasterSubdivisionRank(search.rank)
   const toolbar = (
     <AnalysisToolbar
       title="Change explorer"
-      description="Compare performance, popularity, matchup, balance, and diversity movement between reporting periods."
+      description="Compare performance, popularity, matchup, and environment movement."
+      views={
+        <AnalysisViewTabs
+          value={search.view}
+          options={viewOptions}
+          aria-label="Change views"
+          onChange={(view) => {
+            change({ view })
+          }}
+        />
+      }
     >
       <ReportingPeriodField
         label="From period"
@@ -80,36 +87,42 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
           change({ rank: value })
         }}
       />
-      <PlayerControlField
-        value={input.playerControl}
-        controls={meta.playerControls}
-        disabled={isMasterSubdivisionRank(search.rank)}
-        onChange={(value) => {
-          change({ playerControl: value })
-        }}
-      />
-      <CharacterMultiField
-        label="Focus characters"
-        value={search.focusCharacters}
-        characters={meta.characters}
-        className="sm:col-span-2"
-        onChange={(value) => {
-          change({ focusCharacters: value })
-        }}
-        description="Focus series show whether changes persist or revert across the selected interval."
-      />
+      {showPlayerControl && input.playerControl !== undefined ? (
+        <PlayerControlField
+          value={input.playerControl}
+          controls={meta.playerControls}
+          onChange={(value) => {
+            change({ playerControl: value })
+          }}
+        />
+      ) : null}
+      {showFocusCharacters ? (
+        <CharacterMultiField
+          label="Focus characters"
+          value={search.focusCharacters}
+          characters={meta.characters}
+          className="sm:col-span-2"
+          onChange={(value) => {
+            change({ focusCharacters: value })
+          }}
+          description="Focus series show whether changes persist or revert across the selected interval."
+        />
+      ) : null}
     </AnalysisToolbar>
   )
   return (
-    <AnalysisPage
-      toolbar={toolbar}
-      resetKey={`${fromPeriod}|${toPeriod}|${search.rank}|${search.playerControl}|${search.focusCharacters.join(",")}`}
-    >
+    <AnalysisPage toolbar={toolbar} resetKey={getActiveInputKey(input)}>
       {data === undefined ? (
         <ResultsPending />
       ) : (
         <ResultsContent isUpdating={isUpdating}>
-          <ChangeResults data={data} meta={meta} />
+          {data.view === "overview" ? (
+            <ChangeOverviewResults data={data} />
+          ) : data.view === "trends" ? (
+            <ChangeTrendResults data={data} meta={meta} />
+          ) : (
+            <ChangeMatchupResults data={data} meta={meta} />
+          )}
         </ResultsContent>
       )}
     </AnalysisPage>

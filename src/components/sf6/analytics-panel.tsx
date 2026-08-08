@@ -1,6 +1,13 @@
 import type { ReactNode } from "react"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
 type AnalyticsPanelProps = {
@@ -10,6 +17,7 @@ type AnalyticsPanelProps = {
   children: ReactNode
   className?: string
   contentClassName?: string
+  size?: "default" | "sm"
 }
 
 const AnalyticsPanel = ({
@@ -19,14 +27,13 @@ const AnalyticsPanel = ({
   children,
   className,
   contentClassName,
+  size = "sm",
 }: AnalyticsPanelProps) => (
-  <Card className={className}>
-    <CardHeader className="flex flex-row items-start justify-between gap-3">
-      <div className="min-w-0">
-        <CardTitle>{title}</CardTitle>
-        {description === undefined ? null : <CardDescription>{description}</CardDescription>}
-      </div>
-      {action}
+  <Card className={className} size={size}>
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+      {description === undefined ? null : <CardDescription>{description}</CardDescription>}
+      {action === undefined ? null : <CardAction>{action}</CardAction>}
     </CardHeader>
     <CardContent className={cn(contentClassName)}>{children}</CardContent>
   </Card>

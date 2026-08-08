@@ -27,13 +27,25 @@ import { getUsageBlock } from "@/lib/sf6/snapshots/usage.server"
 import { withSnapshotErrors } from "./execute.server"
 import { ControlComparisonResultSchema } from "./shared"
 
-const CharacterExplorerInputSchema = z.object({
-  period: ReportingPeriodSchema,
-  rank: RankIdSchema,
-  playerControl: PlayerControlSchema,
-  characters: UniqueCharacterIdsSchema.min(1).max(5),
-  mode: z.enum(["time", "ranks", "controls"]),
-})
+const CharacterExplorerInputSchema = z.discriminatedUnion("view", [
+  z.object({
+    view: z.literal("time"),
+    rank: RankIdSchema,
+    playerControl: PlayerControlSchema,
+    characters: UniqueCharacterIdsSchema.min(1).max(5),
+  }),
+  z.object({
+    view: z.literal("ranks"),
+    period: ReportingPeriodSchema,
+    characters: UniqueCharacterIdsSchema.min(1).max(5),
+  }),
+  z.object({
+    view: z.literal("controls"),
+    period: ReportingPeriodSchema,
+    rank: RankIdSchema,
+    characters: UniqueCharacterIdsSchema.min(1).max(5),
+  }),
+])
 const CharacterPointSchema = z.object({
   period: ReportingPeriodSchema,
   performance: z.number().min(0).max(100).nullable(),
@@ -45,7 +57,7 @@ const CharacterPointSchema = z.object({
   usageDelta: z.number().min(-100).max(100).nullable(),
 })
 const TimeOutputSchema = z.object({
-  mode: z.literal("time"),
+  view: z.literal("time"),
   series: z
     .object({
       characterId: CharacterIdSchema,
@@ -62,7 +74,7 @@ const TimeOutputSchema = z.object({
     .array(),
 })
 const RankOutputSchema = z.object({
-  mode: z.literal("ranks"),
+  view: z.literal("ranks"),
   series: z
     .object({
       characterId: CharacterIdSchema,
@@ -84,11 +96,11 @@ const RankOutputSchema = z.object({
     .array(),
 })
 const ControlsOutputSchema = z.object({
-  mode: z.literal("controls"),
+  view: z.literal("controls"),
   supported: z.boolean(),
   rows: ControlComparisonResultSchema.array(),
 })
-const CharacterExplorerOutputSchema = z.discriminatedUnion("mode", [
+const CharacterExplorerOutputSchema = z.discriminatedUnion("view", [
   TimeOutputSchema,
   RankOutputSchema,
   ControlsOutputSchema,
@@ -105,12 +117,13 @@ const characterExplorerProcedure = os
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
       const availability = await getSnapshotPeriodAvailability()
-      const periods = getPeriodsForRank(
-        input.rank,
-        availability.regularPeriods,
-        availability.subdivisionPeriods,
-      )
-      if (input.mode === "time") {
+
+      if (input.view === "time") {
+        const periods = getPeriodsForRank(
+          input.rank,
+          availability.regularPeriods,
+          availability.subdivisionPeriods,
+        )
         const timeEntries = await getPeriodEntries(periods, input.rank, input.playerControl)
         const series = input.characters.map((characterId) => {
           const points = timeEntries.map((entry, index) => {
@@ -172,29 +185,27 @@ const characterExplorerProcedure = os
             },
           }
         })
-        return { mode: "time" as const, series }
+        return { view: "time" as const, series }
       }
 
-      if (input.mode === "controls") {
+      if (input.view === "controls") {
         if (isMasterSubdivisionRank(input.rank)) {
-          return { mode: "controls" as const, supported: false, rows: [] }
+          return { view: "controls" as const, supported: false, rows: [] }
         }
         const entry = await getMetricEntry(input.period, input.rank, "classic")
         const combined = await getUsageBlock(input.period, input.rank, "combined")
-        const controlBlocks = entry.controlBlocks
         const modernUsage = entry.usageControls?.modern
-        if (controlBlocks === null || modernUsage === undefined) {
-          return { mode: "controls" as const, supported: false, rows: [] }
-        }
-        const usageBlocks = {
-          combined,
-          classic: entry.usage,
-          modern: modernUsage,
+        if (entry.controlBlocks === null || modernUsage === undefined) {
+          return { view: "controls" as const, supported: false, rows: [] }
         }
         return {
-          mode: "controls" as const,
+          view: "controls" as const,
           supported: true,
-          rows: getControlComparison(controlBlocks, input.characters, usageBlocks),
+          rows: getControlComparison(entry.controlBlocks, input.characters, {
+            combined,
+            classic: entry.usage,
+            modern: modernUsage,
+          }),
         }
       }
 
@@ -211,7 +222,7 @@ const characterExplorerProcedure = os
       )
       const rankEntries = await getRankEntries(selectedPeriod, ranks)
       return {
-        mode: "ranks" as const,
+        view: "ranks" as const,
         series: input.characters.map((characterId) => {
           const points = getRankMetric(rankEntries, characterId, "combined")
           const performanceValues = points.flatMap((point) =>

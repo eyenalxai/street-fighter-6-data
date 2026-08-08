@@ -1,4 +1,4 @@
-import type { CharacterExplorerData, MetaData } from "@/lib/sf6/query-options"
+import type { CharacterExplorerData, MetaData, RosterOverviewData } from "@/lib/sf6/query-options"
 
 import { AnalyticsPanel } from "@/components/sf6/analytics-panel"
 import { CharacterBadge, CharacterName } from "@/components/sf6/character-badge"
@@ -14,42 +14,56 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-type ControlData = Extract<CharacterExplorerData, { mode: "controls" }>
+type ControlData =
+  | Extract<RosterOverviewData, { view: "controls" }>
+  | Extract<CharacterExplorerData, { view: "controls" }>
 
-const CharacterControlResults = ({ data, meta }: { data: ControlData; meta: MetaData }) => {
+type ControlComparisonResultsProps = {
+  data: ControlData
+  meta: MetaData
+  chartTitle: string
+  chartDescription: string
+  tableTitle: string
+  tableDescription?: string
+  unsupportedDescription: string
+}
+
+const ControlComparisonResults = ({
+  data,
+  meta,
+  chartTitle,
+  chartDescription,
+  tableTitle,
+  tableDescription,
+  unsupportedDescription,
+}: ControlComparisonResultsProps) => {
   if (!data.supported) {
     return (
       <Alert>
         <AlertTitle>Control comparison unavailable</AlertTitle>
-        <AlertDescription>
-          Master subdivision snapshots contain combined control data only.
-        </AlertDescription>
+        <AlertDescription>{unsupportedDescription}</AlertDescription>
       </Alert>
     )
   }
+  const chartRows = data.rows.flatMap((row) =>
+    row.performanceDelta === null || row.usageDelta === null
+      ? []
+      : [
+          {
+            name:
+              meta.characters.find((character) => character.id === row.characterId)?.short ??
+              row.characterId,
+            performanceDelta: row.performanceDelta,
+            usageDelta: row.usageDelta,
+          },
+        ],
+  )
   return (
     <div className="flex flex-col gap-4">
-      <AnalyticsPanel
-        title="Control performance difference"
-        description="Positive values favor Modern player controls for the selected character."
-      >
-        <ControlDeltaChart
-          data={data.rows.flatMap((row) =>
-            row.performanceDelta === null || row.usageDelta === null
-              ? []
-              : [
-                  {
-                    name:
-                      meta.characters.find((character) => character.id === row.characterId)
-                        ?.short ?? row.characterId,
-                    performanceDelta: row.performanceDelta,
-                    usageDelta: row.usageDelta,
-                  },
-                ],
-          )}
-        />
+      <AnalyticsPanel title={chartTitle} description={chartDescription}>
+        <ControlDeltaChart data={chartRows} />
       </AnalyticsPanel>
-      <AnalyticsPanel title="Selected character control results" contentClassName="p-0">
+      <AnalyticsPanel title={tableTitle} description={tableDescription} contentClassName="p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -98,4 +112,4 @@ const CharacterControlResults = ({ data, meta }: { data: ControlData; meta: Meta
   )
 }
 
-export { CharacterControlResults }
+export { ControlComparisonResults }

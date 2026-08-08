@@ -7,7 +7,7 @@ import { MetricValue } from "@/components/sf6/metric-value"
 import { SortableTableHead } from "@/components/sf6/sortable-table-head"
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table"
 
-type ChangeRow = ChangeExplorerData["rows"][number]
+type ChangeRow = Extract<ChangeExplorerData, { view: "overview" }>["rows"][number]
 type ChangeSortKey =
   | "character"
   | "performanceDelta"
