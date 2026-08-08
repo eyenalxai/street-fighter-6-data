@@ -15,9 +15,30 @@ const AppShell = ({ children }: AppShellProps) => (
       {children}
     </main>
     <footer className="border-t border-border px-4 py-4 text-xs text-muted-foreground md:px-6">
-      Source: Capcom Buckler ranked battle-diagram and usage-rate snapshots. Usage share is a
-      percentage of the population. Weighted results estimate environment relevance. They do not
-      show match volume.
+      <p>
+        This site uses data from{" "}
+        <a
+          href="https://www.streetfighter.com/6/buckler/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          streetfighter.com/6/buckler
+        </a>
+        .
+      </p>
+      <p>
+        You can find the source code at{" "}
+        <a
+          href="https://github.com/eyenalxai/street-fighter-6-data"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          github.com/eyenalxai/street-fighter-6-data
+        </a>
+        .
+      </p>
     </footer>
   </div>
 )
