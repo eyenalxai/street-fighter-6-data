@@ -1,6 +1,7 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { RosterOverviewView } from "@/components/sf6/views/roster-overview-view"
+import { loadRouteQuery } from "@/lib/query-client"
 import { getRosterLoaderDeps, getRosterPeriodOptions } from "@/lib/sf6/analysis-dependencies"
 import { buildRosterInput } from "@/lib/sf6/analysis-scope"
 import {
@@ -30,7 +31,7 @@ const Route = createFileRoute("/_analytics/roster")({
     )
     const period = deps.view === "time" ? undefined : resolvePeriod(deps.period, periods)
     const input = buildRosterInput(deps, period)
-    void queryClient.prefetchQuery(rosterOverviewQueryOptions(input))
+    await loadRouteQuery(queryClient, rosterOverviewQueryOptions(input))
     return { period }
   },
   component: RosterPage,

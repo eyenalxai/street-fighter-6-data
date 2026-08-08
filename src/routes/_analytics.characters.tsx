@@ -1,6 +1,7 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { CharacterExplorerView } from "@/components/sf6/views/character-explorer-view"
+import { loadRouteQuery } from "@/lib/query-client"
 import {
   getCharacterLoaderDeps,
   getCharacterPeriodOptions,
@@ -35,7 +36,7 @@ const Route = createFileRoute("/_analytics/characters")({
     const period = deps.view === "time" ? undefined : resolvePeriod(deps.period, periods)
     if (hasSelectedCharacters(deps.characters)) {
       const input = buildCharacterInput(deps, period)
-      void queryClient.prefetchQuery(characterExplorerQueryOptions(input))
+      await loadRouteQuery(queryClient, characterExplorerQueryOptions(input))
     }
     return { period }
   },

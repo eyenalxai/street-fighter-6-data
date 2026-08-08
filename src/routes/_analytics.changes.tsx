@@ -1,6 +1,7 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { ChangeExplorerView } from "@/components/sf6/views/change-explorer-view"
+import { loadRouteQuery } from "@/lib/query-client"
 import { getChangeLoaderDeps, hasSelectedCharacters } from "@/lib/sf6/analysis-dependencies"
 import { buildChangeInput } from "@/lib/sf6/analysis-scope"
 import { changeExplorerQueryOptions, metaQueryOptions } from "@/lib/sf6/query-options"
@@ -26,7 +27,7 @@ const Route = createFileRoute("/_analytics/changes")({
     const toPeriod = resolvePeriodWithBoundaryDefault(deps.toPeriod, periods, "latest")
     if (deps.view !== "trends" || hasSelectedCharacters(deps.focusCharacters)) {
       const input = buildChangeInput(deps, fromPeriod, toPeriod)
-      void queryClient.prefetchQuery(changeExplorerQueryOptions(input))
+      await loadRouteQuery(queryClient, changeExplorerQueryOptions(input))
     }
     return { fromPeriod, toPeriod }
   },

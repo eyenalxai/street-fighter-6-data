@@ -1,6 +1,7 @@
 import { createFileRoute, useLoaderData, useSearch } from "@tanstack/react-router"
 
 import { MatchupExplorerView } from "@/components/sf6/views/matchup-explorer-view"
+import { loadRouteQuery } from "@/lib/query-client"
 import {
   getMatchupLoaderDeps,
   getMatchupPeriodOptions,
@@ -36,12 +37,16 @@ const Route = createFileRoute("/_analytics/matchups")({
     const period = deps.view === "time" ? undefined : resolvePeriod(deps.period, periods)
     if (deps.view === "counterpicks") {
       if (hasSelectedCharacters(deps.opponents)) {
-        void queryClient.prefetchQuery(
+        await loadRouteQuery(
+          queryClient,
           counterpickPlannerQueryOptions(buildCounterpickInput(deps, period)),
         )
       }
     } else {
-      void queryClient.prefetchQuery(matchupExplorerQueryOptions(buildMatchupInput(deps, period)))
+      await loadRouteQuery(
+        queryClient,
+        matchupExplorerQueryOptions(buildMatchupInput(deps, period)),
+      )
     }
     return { period }
   },

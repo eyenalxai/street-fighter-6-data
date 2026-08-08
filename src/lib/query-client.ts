@@ -1,3 +1,5 @@
+import type { DefaultError, FetchQueryOptions, QueryKey } from "@tanstack/react-query"
+
 import { StandardRPCJsonSerializer } from "@orpc/client/standard"
 import { defaultShouldDehydrateQuery, keepPreviousData, QueryClient } from "@tanstack/react-query"
 
@@ -57,4 +59,21 @@ const createQueryClient = () =>
     },
   })
 
-export { createQueryClient, type RouterContext }
+const loadRouteQuery = async <
+  TQueryFnData,
+  TError = DefaultError,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+>(
+  queryClient: QueryClient,
+  options: FetchQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+): Promise<void> => {
+  if (typeof window === "undefined") {
+    await queryClient.ensureQueryData(options)
+    return
+  }
+
+  void queryClient.prefetchQuery(options)
+}
+
+export { createQueryClient, loadRouteQuery, type RouterContext }
