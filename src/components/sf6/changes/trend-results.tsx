@@ -22,7 +22,7 @@ const ChangeTrendResults = ({ data }: { data: TrendsData }) => {
     (point) => point?.usage ?? null,
   )
   return (
-    <div className="grid items-start gap-4 lg:grid-cols-2">
+    <div className="grid gap-4 lg:grid-cols-2">
       <AnalyticsPanel
         title="Focused average win rate trend"
         description={formatPeriodRange(data.fromPeriod, data.toPeriod)}
@@ -36,6 +36,7 @@ const ChangeTrendResults = ({ data }: { data: TrendsData }) => {
           yAxisName={AXIS_LABELS.averageWinRate}
           referenceValue={50}
           referenceLabel="50%"
+          size="fill"
           xTickFormatter={formatCompactReportingPeriodTick}
         />
       </AnalyticsPanel>
@@ -50,6 +51,7 @@ const ChangeTrendResults = ({ data }: { data: TrendsData }) => {
           xAxisName={AXIS_LABELS.reportingPeriod}
           valueFormat="percent"
           yAxisName={AXIS_LABELS.usageShare}
+          size="fill"
           xTickFormatter={formatCompactReportingPeriodTick}
         />
       </AnalyticsPanel>

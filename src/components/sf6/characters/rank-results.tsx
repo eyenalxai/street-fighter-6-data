@@ -89,7 +89,7 @@ const CharacterRankResults = ({ data }: { data: RankData }) => {
   const chartSeries = buildCharacterTrendSeries(data.series)
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <AnalyticsPanel
           title="Average win rate across ranks"
           description="Combined-control average win rate from Rookie through the available Master subdivisions."
@@ -103,6 +103,7 @@ const CharacterRankResults = ({ data }: { data: RankData }) => {
             yAxisName={AXIS_LABELS.averageWinRate}
             referenceValue={50}
             referenceLabel="50%"
+            size="fill"
           />
         </AnalyticsPanel>
         <AnalyticsPanel
@@ -116,6 +117,7 @@ const CharacterRankResults = ({ data }: { data: RankData }) => {
             xAxisName={AXIS_LABELS.rank}
             valueFormat="percent"
             yAxisName={AXIS_LABELS.usageShare}
+            size="fill"
           />
         </AnalyticsPanel>
       </div>
