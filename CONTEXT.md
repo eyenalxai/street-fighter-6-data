@@ -67,7 +67,9 @@ ahead-of-watermark snapshots remain stored.
 
 **Period comparison**:
 The comparison view between two reporting periods. Its change is the later
-period's average win rate minus the earlier period's average win rate.
+period's average win rate minus the earlier period's average win rate. When no
+endpoints are selected, Change Explorer compares the earliest available period
+to the latest available period for the selected rank and control scope.
 
 **Analysis control scope**:
 Snapshot and Over Time views use the selected player-control population.

@@ -24,6 +24,17 @@ const periodIndex = (period: ReportingPeriod): number => {
   return year * 12 + month
 }
 
+const getBoundaryPeriod = (
+  periods: readonly ReportingPeriod[],
+  boundary: "earliest" | "latest",
+): ReportingPeriod => {
+  const period = boundary === "earliest" ? periods.at(0) : periods.at(-1)
+  if (period === undefined) {
+    throw new Error("No reporting periods are available for this rank")
+  }
+  return period
+}
+
 const resolveNearestPeriod = (
   requested: ReportingPeriod | undefined,
   periods: readonly ReportingPeriod[],
@@ -49,6 +60,13 @@ const resolveNearestPeriod = (
   )
 }
 
+const resolvePeriodWithBoundaryDefault = (
+  requested: ReportingPeriod | undefined,
+  periods: readonly ReportingPeriod[],
+  defaultBoundary: "earliest" | "latest",
+): ReportingPeriod =>
+  resolveNearestPeriod(requested ?? getBoundaryPeriod(periods, defaultBoundary), periods)
+
 const getEffectiveControls = (rank: RankId, requested: ControlMatchup): ControlMatchup =>
   isMasterSubdivisionRank(rank) ? "combined" : requested
 
@@ -70,10 +88,12 @@ const filterPeriodsInRange = (
 
 export {
   filterPeriodsInRange,
+  getBoundaryPeriod,
   getControlComparisonRank,
   getEffectiveControls,
   getEffectivePlayerControl,
   getPeriodsForRank,
   getRankComparisonPeriods,
   resolveNearestPeriod,
+  resolvePeriodWithBoundaryDefault,
 }
