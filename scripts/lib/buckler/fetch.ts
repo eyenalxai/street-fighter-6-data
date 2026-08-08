@@ -1,4 +1,10 @@
-import { API_BASE, LANG, SITE_BASE, type DatasetConfig, type ReportingPeriod } from "./datasets.ts"
+import {
+  API_BASE,
+  LANG,
+  SITE_BASE,
+  type ReportingPeriod,
+  type SnapshotFamily,
+} from "../../../src/lib/sf6/snapshot-families.ts"
 
 const USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
@@ -14,12 +20,12 @@ type FetchResult =
   | { ok: true; data: unknown; status: number }
   | { ok: false; status: number; error: string }
 
-function apiUrl(dataset: DatasetConfig, period: ReportingPeriod): string {
-  return `${API_BASE}/${LANG}/stats/${dataset.id}/${period}`
+export function apiUrl(family: SnapshotFamily, period: ReportingPeriod): string {
+  return `${API_BASE}/${LANG}/stats/${family.id}/${period}`
 }
 
-function refererUrl(dataset: DatasetConfig, period: ReportingPeriod): string {
-  return `${SITE_BASE}/${LANG}/${dataset.refererPath}/${period}`
+export function refererUrl(family: SnapshotFamily, period: ReportingPeriod): string {
+  return `${SITE_BASE}/${LANG}/${family.refererPath}/${period}`
 }
 
 async function waitForRateLimit(): Promise<void> {
@@ -32,11 +38,11 @@ async function waitForRateLimit(): Promise<void> {
 
 const sleep = async (ms: number): Promise<void> => Bun.sleep(ms)
 
-export async function fetchDatasetPeriod(
-  dataset: DatasetConfig,
+export async function fetchSnapshotPeriod(
+  family: SnapshotFamily,
   period: ReportingPeriod,
 ): Promise<FetchResult> {
-  const url = apiUrl(dataset, period)
+  const url = apiUrl(family, period)
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     await waitForRateLimit()
@@ -46,7 +52,7 @@ export async function fetchDatasetPeriod(
         headers: {
           Accept: "application/json",
           "User-Agent": USER_AGENT,
-          Referer: refererUrl(dataset, period),
+          Referer: refererUrl(family, period),
         },
       })
 

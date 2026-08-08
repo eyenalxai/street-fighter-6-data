@@ -1,7 +1,7 @@
 import { os } from "@orpc/server"
 import * as z from "zod"
 
-import { getAvailableCharacterIds } from "@/lib/sf6/analytics/matchups"
+import { getAvailablePlayerCharacterIds } from "@/lib/sf6/analytics/matchups"
 import {
   CharacterSchema,
   CHARACTERS,
@@ -11,7 +11,8 @@ import {
 } from "@/lib/sf6/model"
 import { sortCharactersByName } from "@/lib/sf6/presentation"
 import { RankSchema, RANKS } from "@/lib/sf6/ranks"
-import { getRegularPeriods, getRankBlock, getSubdivisionPeriods } from "@/lib/sf6/snapshots.server"
+import { getSnapshotPeriodAvailability } from "@/lib/sf6/snapshot-periods.server"
+import { getRankBlock } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 
@@ -29,21 +30,17 @@ const metaProcedure = os
   .output(MetaOutputSchema)
   .handler(async () =>
     withSnapshotErrors(async () => {
-      const periods = await getRegularPeriods()
-      const subdivisionPeriods = await getSubdivisionPeriods()
-      const latestPeriod = periods.at(-1)
-      if (latestPeriod === undefined) {
-        throw new Error("No processed ranked snapshots are available")
-      }
+      const { latestCompletePeriod, regularPeriods, subdivisionPeriods } =
+        await getSnapshotPeriodAvailability()
 
-      const latestBlock = await getRankBlock(latestPeriod, "all-master", "combined")
-      const currentIds = new Set(getAvailableCharacterIds(latestBlock, "combined"))
+      const latestBlock = await getRankBlock(latestCompletePeriod, "all-master", "combined")
+      const currentIds = new Set(getAvailablePlayerCharacterIds(latestBlock, "combined"))
       const characters = sortCharactersByName(
         CHARACTERS.filter((character) => currentIds.has(character.id)),
       )
       return {
-        latestPeriod,
-        periods,
+        latestPeriod: latestCompletePeriod,
+        periods: regularPeriods,
         subdivisionPeriods,
         characters,
         ranks: RANKS,

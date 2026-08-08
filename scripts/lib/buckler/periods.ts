@@ -1,4 +1,4 @@
-import type { DatasetConfig, ReportingPeriod } from "./datasets.ts"
+import type { ReportingPeriod, SnapshotFamily } from "../../../src/lib/sf6/snapshot-families.ts"
 
 function padMonth(month: number): string {
   return String(month).padStart(2, "0")
@@ -26,12 +26,12 @@ export function formatReportingPeriod(date: Date): ReportingPeriod {
   return toReportingPeriod(date.getFullYear(), date.getMonth() + 1)
 }
 
-export function generatePeriods(dataset: DatasetConfig, now = new Date()): ReportingPeriod[] {
+export function generatePeriods(family: SnapshotFamily, now = new Date()): ReportingPeriod[] {
   const adjusted = getAdjustedNow(now)
   const trailingExclusion = getTrailingExclusionCount(now)
   const periods: ReportingPeriod[] = []
 
-  const cursor = new Date(dataset.startYear, dataset.startMonth - 1, 1)
+  const cursor = new Date(family.startYear, family.startMonth - 1, 1)
   const end = new Date(adjusted.getFullYear(), adjusted.getMonth(), 1)
 
   while (cursor <= end) {

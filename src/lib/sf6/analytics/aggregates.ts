@@ -6,8 +6,8 @@ import { CHARACTERS } from "@/lib/sf6/model"
 
 import type { ControlMatchupBlocks } from "./matchups"
 
-import { getAvailableCharacterIds, getMatchupAverage } from "./matchups"
-import { mean, round } from "./math"
+import { getAvailablePlayerCharacterIds, getMatchupAverage } from "./matchups"
+import { completeMean } from "./math"
 
 type SnapshotEntry = {
   period: ReportingPeriod
@@ -50,7 +50,7 @@ const getAvailableAcrossBlocks = (
 ): CharacterId[] => {
   const available = new Set<string>()
   for (const block of blocks) {
-    for (const characterId of getAvailableCharacterIds(block, controlMatchup)) {
+    for (const characterId of getAvailablePlayerCharacterIds(block, controlMatchup)) {
       available.add(characterId)
     }
   }
@@ -104,7 +104,7 @@ const getRankHeatmap = (
       return {
         characterId,
         points,
-        range: minimum === null || maximum === null ? null : round(maximum - minimum),
+        range: minimum === null || maximum === null ? null : maximum - minimum,
       }
     })
     .toSorted((left, right) => (right.range ?? -1) - (left.range ?? -1))
@@ -119,14 +119,12 @@ const getPlayerControlAverage = (
     playerControl === "C"
       ? ["classic-classic", "classic-modern"]
       : ["modern-classic", "modern-modern"]
-  const values = matchupIds
-    .map(
-      (controlMatchup) =>
-        getMatchupAverage(controlBlocks[controlMatchup], controlMatchup, characterId)?.winRate,
-    )
-    .filter((value): value is number => value !== undefined && value !== null)
-  const average = mean(values)
-  return average === null ? null : round(average)
+  const values = matchupIds.map(
+    (controlMatchup) =>
+      getMatchupAverage(controlBlocks[controlMatchup], controlMatchup, characterId)?.winRate,
+  )
+  const average = completeMean(values)
+  return average
 }
 
 const getControlComparison = (controlBlocks: ControlMatchupBlocks): ControlComparisonRow[] =>
@@ -138,7 +136,7 @@ const getControlComparison = (controlBlocks: ControlMatchupBlocks): ControlCompa
         characterId,
         classic,
         modern,
-        delta: classic === null || modern === null ? null : round(modern - classic),
+        delta: classic === null || modern === null ? null : modern - classic,
       }
     })
     .toSorted((left, right) => (right.delta ?? -Infinity) - (left.delta ?? -Infinity))
@@ -163,7 +161,7 @@ const getPeriodComparison = (
         characterId,
         before: beforeValue,
         after: afterValue,
-        delta: beforeValue === null || afterValue === null ? null : round(afterValue - beforeValue),
+        delta: beforeValue === null || afterValue === null ? null : afterValue - beforeValue,
       }
     })
     .toSorted((left, right) => (right.delta ?? -Infinity) - (left.delta ?? -Infinity))

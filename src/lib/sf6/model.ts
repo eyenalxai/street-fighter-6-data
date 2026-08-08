@@ -33,6 +33,17 @@ const CharacterIdSchema = z.enum([
   "alex",
   "ingrid",
 ])
+const UniqueCharacterIdsSchema = CharacterIdSchema.array().superRefine((characterIds, context) => {
+  if (new Set(characterIds).size !== characterIds.length) {
+    context.addIssue({
+      code: "custom",
+      message: "Character IDs must be unique",
+    })
+  }
+})
+const NonEmptyUniqueCharacterIdsSchema = UniqueCharacterIdsSchema.pipe(
+  CharacterIdSchema.array().min(1),
+)
 const ControlTypeSchema = z.enum(["C", "M"])
 const ControlMatchupSchema = z.enum([
   "combined",
@@ -137,6 +148,7 @@ const formatReportingPeriod = (period: ReportingPeriod): string => {
 
 export {
   CharacterIdSchema,
+  NonEmptyUniqueCharacterIdsSchema,
   CharacterSchema,
   CHARACTERS,
   CHARACTER_MAP,
@@ -148,6 +160,7 @@ export {
   getCharacter,
   getCharacterName,
   ReportingPeriodSchema,
+  UniqueCharacterIdsSchema,
   type Character,
   type CharacterId,
   type ControlMatchup,

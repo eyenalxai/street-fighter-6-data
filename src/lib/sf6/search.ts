@@ -1,6 +1,11 @@
 import * as z from "zod"
 
-import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "./model"
+import {
+  CharacterIdSchema,
+  ControlMatchupSchema,
+  ReportingPeriodSchema,
+  UniqueCharacterIdsSchema,
+} from "./model"
 import { ControlComparisonRankIdSchema, RankIdSchema } from "./ranks"
 
 const RosterSearchSchema = z.object({
@@ -26,7 +31,7 @@ const CounterpickSearchSchema = z.object({
   period: ReportingPeriodSchema.optional(),
   rank: RankIdSchema.default("all-master"),
   controls: ControlMatchupSchema.default("combined"),
-  opponents: CharacterIdSchema.array().default([]),
+  opponents: UniqueCharacterIdsSchema.default([]),
 })
 
 const TrendSearchSchema = z.object({

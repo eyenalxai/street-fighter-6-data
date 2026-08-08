@@ -1,8 +1,3 @@
-const round = (value: number, digits = 1): number => {
-  const factor = 10 ** digits
-  return Math.round(value * factor) / factor
-}
-
 const mean = (values: readonly number[]): number | null => {
   if (values.length === 0) {
     return null
@@ -15,4 +10,9 @@ const mean = (values: readonly number[]): number | null => {
   return total / values.length
 }
 
-export { mean, round }
+const completeMean = (values: readonly (number | null | undefined)[]): number | null => {
+  const numbers = values.filter((value): value is number => value !== null && value !== undefined)
+  return numbers.length === values.length ? mean(numbers) : null
+}
+
+export { completeMean, mean }

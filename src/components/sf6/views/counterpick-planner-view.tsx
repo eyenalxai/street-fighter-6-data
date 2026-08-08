@@ -37,22 +37,24 @@ type CounterpickPlannerViewProps = {
   meta: MetaData
 }
 
+const CounterpickEmptyPanel = ({ title, description }: { title: string; description: string }) => (
+  <AnalyticsPanel title={title} description={description}>
+    <Empty className="min-h-48">
+      <EmptyHeader>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  </AnalyticsPanel>
+)
+
 const CounterpickEmptyState = () => (
   <>
     <ResultsStatus message="No opponents selected." />
-    <AnalyticsPanel
+    <CounterpickEmptyPanel
       title="Select opponents"
       description="Choose one or more opponents to calculate counterpick candidates."
-    >
-      <Empty className="min-h-48">
-        <EmptyHeader>
-          <EmptyTitle>No opponents selected</EmptyTitle>
-          <EmptyDescription>
-            Use the Opponents field above to choose who the candidates should be measured against.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    </AnalyticsPanel>
+    />
   </>
 )
 
@@ -71,12 +73,23 @@ const CounterpickDataResults = ({ period, search, meta }: CounterpickPlannerView
     return <ResultsPending />
   }
   const opponent = displayedInput.opponents[0] ?? "ryu"
+  if (data.rows.length === 0) {
+    return (
+      <ResultsContent isUpdating={isUpdating}>
+        <ResultsStatus message="No fully covered counterpick candidates." />
+        <CounterpickEmptyPanel
+          title="No fully covered candidates"
+          description={`${data.excludedCandidateCount} candidate${data.excludedCandidateCount === 1 ? "" : "s"} lacked at least one reported matchup against the selected opponents.`}
+        />
+      </ResultsContent>
+    )
+  }
 
   return (
     <ResultsContent isUpdating={isUpdating}>
       <AnalyticsPanel
         title="Best candidates against selected opponents"
-        description={`${data.rows.length} candidates · average win rate against ${data.opponents.length} selected opponents · highest average first`}
+        description={`${data.rows.length} fully covered candidates · ${data.excludedCandidateCount} excluded for incomplete data · average win rate against ${data.opponents.length} selected opponents · highest average first`}
         contentClassName="p-0"
       >
         <div className="overflow-x-auto">
@@ -212,7 +225,7 @@ const CounterpickPlannerView = ({ period, search, meta }: CounterpickPlannerView
           change({ opponents: [] })
         }}
         placeholder="Search opponents"
-        description="Each candidate is scored against every selected opponent."
+        description="Candidates are ranked only when every selected matchup is reported."
       />
     </AnalysisToolbar>
   )

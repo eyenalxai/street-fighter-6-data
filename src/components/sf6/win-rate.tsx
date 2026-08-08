@@ -22,13 +22,22 @@ const wrToken = (value: number | null | undefined): string => {
 const formatWr = (value: number | null | undefined): string =>
   value === null || value === undefined ? "—" : `${value.toFixed(1)}%`
 
-const formatPercentagePoints = (value: number | null | undefined): string => {
+const getDisplayedDelta = (value: number | null | undefined): number | null => {
   if (value === null || value === undefined) {
+    return null
+  }
+  const rounded = Number(value.toFixed(1))
+  return Object.is(rounded, -0) ? 0 : rounded
+}
+
+const formatPercentagePoints = (value: number | null | undefined): string => {
+  const displayed = getDisplayedDelta(value)
+  if (displayed === null) {
     return "—"
   }
 
-  const sign = value < 0 ? "−" : value > 0 ? "+" : ""
-  return `${sign}${Math.abs(value).toFixed(1)} pp`
+  const sign = displayed < 0 ? "−" : displayed > 0 ? "+" : ""
+  return `${sign}${Math.abs(displayed).toFixed(1)} pp`
 }
 
 const WinRate = ({
@@ -50,8 +59,9 @@ const WinRate = ({
 }
 
 const DeltaValue = ({ value, className }: { value: number | null; className?: string }) => {
-  const positive = value !== null && value > 0.05
-  const negative = value !== null && value < -0.05
+  const displayed = getDisplayedDelta(value)
+  const positive = displayed !== null && displayed > 0
+  const negative = displayed !== null && displayed < 0
   return (
     <span
       className={cn(
@@ -68,4 +78,4 @@ const DeltaValue = ({ value, className }: { value: number | null; className?: st
   )
 }
 
-export { DeltaValue, formatPercentagePoints, formatWr, WinRate, wrToken }
+export { DeltaValue, formatPercentagePoints, formatWr, getDisplayedDelta, WinRate, wrToken }

@@ -19,7 +19,12 @@ import { ControlMatchupField } from "@/components/sf6/filters/control-matchup-fi
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
-import { DeltaValue, formatPercentagePoints, WinRate } from "@/components/sf6/win-rate"
+import {
+  DeltaValue,
+  formatPercentagePoints,
+  getDisplayedDelta,
+  WinRate,
+} from "@/components/sf6/win-rate"
 import { Badge } from "@/components/ui/badge"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
@@ -75,21 +80,22 @@ const PeriodComparisonData = ({
     return <ResultsPending />
   }
   const rows = data.rows.map((row) => {
+    const displayedDelta = getDisplayedDelta(row.delta)
     return {
       ...row,
       short:
         meta.characters.find((character) => character.id === row.characterId)?.short ??
         row.characterId,
-      positiveDelta: row.delta !== null && row.delta > 0 ? row.delta : null,
-      negativeDelta: row.delta !== null && row.delta < 0 ? row.delta : null,
+      positiveDelta: displayedDelta !== null && displayedDelta > 0 ? row.delta : null,
+      negativeDelta: displayedDelta !== null && displayedDelta < 0 ? row.delta : null,
     }
   })
   const changedRows = data.rows.filter((row) => row.delta !== null)
   const biggest = changedRows.toSorted(
     (left, right) => Math.abs(right.delta ?? 0) - Math.abs(left.delta ?? 0),
   )[0]
-  const improved = changedRows.filter((row) => (row.delta ?? 0) > 0).length
-  const declined = changedRows.filter((row) => (row.delta ?? 0) < 0).length
+  const improved = changedRows.filter((row) => (getDisplayedDelta(row.delta) ?? 0) > 0).length
+  const declined = changedRows.filter((row) => (getDisplayedDelta(row.delta) ?? 0) < 0).length
   const rankLabel = getRank(displayedInput.rank)?.label ?? "Rank"
   const controlLabel =
     meta.controls.find((control) => control.id === displayedInput.controls)?.label ??

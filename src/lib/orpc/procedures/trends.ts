@@ -5,7 +5,8 @@ import { getTrend } from "@/lib/sf6/analytics/aggregates"
 import { CharacterIdSchema, ControlMatchupSchema, ReportingPeriodSchema } from "@/lib/sf6/model"
 import { getEffectiveControls, getPeriodsForRank } from "@/lib/sf6/rank-selection"
 import { RankIdSchema } from "@/lib/sf6/ranks"
-import { getRankBlock, getRegularPeriods, getSubdivisionPeriods } from "@/lib/sf6/snapshots.server"
+import { getSnapshotPeriodAvailability } from "@/lib/sf6/snapshot-periods.server"
+import { getRankBlock } from "@/lib/sf6/snapshots.server"
 
 import { withSnapshotErrors } from "./execute.server"
 
@@ -32,10 +33,7 @@ const trendsProcedure = os
   .output(TrendsOutputSchema)
   .handler(async ({ input }) =>
     withSnapshotErrors(async () => {
-      const [regularPeriods, subdivisionPeriods] = await Promise.all([
-        getRegularPeriods(),
-        getSubdivisionPeriods(),
-      ])
+      const { regularPeriods, subdivisionPeriods } = await getSnapshotPeriodAvailability()
       const periods = getPeriodsForRank(input.rank, regularPeriods, subdivisionPeriods)
       const controls = getEffectiveControls(input.rank, input.controls)
       const entries = await Promise.all(

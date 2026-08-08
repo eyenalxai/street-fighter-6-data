@@ -1,7 +1,13 @@
 #!/usr/bin/env bun
 
-import { DATASETS, type DatasetId, type ReportingPeriod } from "./lib/buckler/datasets.ts"
+import {
+  SNAPSHOT_FAMILIES,
+  type ReportingPeriod,
+  type SnapshotFamily,
+  type SnapshotFormat,
+} from "../src/lib/sf6/snapshot-families.ts"
 import { normalizeDia } from "./lib/buckler/normalize-dia.ts"
+import { normalizeUsageRate } from "./lib/buckler/normalize-usagerate.ts"
 import {
   listRawSnapshots,
   processedRelPath,
@@ -13,16 +19,22 @@ type NormalizeStats = {
   normalized: number
   errors: number
 }
+type Normalizer = (raw: unknown) => unknown
+
+const NORMALIZERS: Record<SnapshotFormat, Normalizer> = {
+  dia: normalizeDia,
+  usagerate: normalizeUsageRate,
+}
 
 const formatBytes = (bytes: number): string => bytes.toLocaleString("en-US")
 
 const logLine = (
   action: string,
-  datasetId: DatasetId,
+  familyId: SnapshotFamily["id"],
   period: ReportingPeriod,
   detail?: string,
 ): void => {
-  const file = processedRelPath(datasetId, period)
+  const file = processedRelPath(familyId, period)
   const prefix = action.padEnd(11, " ")
   if (detail) {
     console.log(`${prefix} ${file}  (${detail})`)
@@ -32,35 +44,30 @@ const logLine = (
 }
 
 async function normalizePeriod(
-  datasetId: DatasetId,
+  family: SnapshotFamily,
   period: ReportingPeriod,
   stats: NormalizeStats,
 ): Promise<void> {
   try {
-    const raw = await readSnapshot(datasetId, period)
-    const processed = normalizeDia(raw)
+    const raw = await readSnapshot(family.id, period)
+    const processed = NORMALIZERS[family.format](raw)
 
-    const bytes = await writeProcessed(datasetId, period, processed)
+    const bytes = await writeProcessed(family.id, period, processed)
     stats.normalized += 1
-    logLine("normalize", datasetId, period, `${formatBytes(bytes)} bytes`)
+    logLine("normalize", family.id, period, `${formatBytes(bytes)} bytes`)
   } catch (error) {
     stats.errors += 1
     const message = error instanceof Error ? error.message : String(error)
-    logLine("error", datasetId, period, message)
+    logLine("error", family.id, period, message)
   }
 }
 
-async function normalizeDataset(datasetId: DatasetId, stats: NormalizeStats): Promise<void> {
-  const dataset = DATASETS.find((entry) => entry.id === datasetId)
-  if (dataset === undefined) {
-    return
-  }
-
-  const periods = await listRawSnapshots(datasetId)
-  console.log(`\n[${datasetId}] ${dataset.label} — ${periods.length} raw snapshot(s)`)
+async function normalizeFamily(family: SnapshotFamily, stats: NormalizeStats): Promise<void> {
+  const periods = await listRawSnapshots(family.id)
+  console.log(`\n[${family.id}] ${family.label} — ${periods.length} raw snapshot(s)`)
 
   for (const period of periods) {
-    await normalizePeriod(datasetId, period, stats)
+    await normalizePeriod(family, period, stats)
   }
 }
 
@@ -72,11 +79,9 @@ async function main(): Promise<void> {
 
   console.log("SF6 Buckler normalize")
 
-  const dataset = DATASETS[0]
-  if (dataset === undefined) {
-    throw new Error("No Buckler dataset is configured")
+  for (const family of SNAPSHOT_FAMILIES) {
+    await normalizeFamily(family, stats)
   }
-  await normalizeDataset(dataset.id, stats)
 
   console.log("\nSummary:")
   console.log(`  normalized: ${stats.normalized}`)

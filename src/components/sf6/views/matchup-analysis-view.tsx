@@ -89,12 +89,12 @@ const MatchupAnalysisResults = ({ period, search, meta }: MatchupAnalysisViewPro
       <div className="grid gap-4 lg:grid-cols-2">
         <OpponentMatchupTable
           title="Best opponent matchups"
-          description={`Highest reported win rates for ${characterName} against other characters · ${controlLabel}`}
+          description={`Highest reported win rates for ${characterName} against available opponents · ${controlLabel}`}
           rows={data.best}
         />
         <OpponentMatchupTable
           title="Worst opponent matchups"
-          description={`Lowest reported win rates for ${characterName} against other characters · ${controlLabel}`}
+          description={`Lowest reported win rates for ${characterName} against available opponents · ${controlLabel}`}
           rows={data.worst}
         />
       </div>

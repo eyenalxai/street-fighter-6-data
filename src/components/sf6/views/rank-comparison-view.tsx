@@ -60,7 +60,7 @@ const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps
     return <ResultsPending />
   }
   const rookie = data.points.find((point) => point.rankId === "rookie")?.winRate ?? null
-  const master = data.points.find((point) => point.rankId === "all-master")?.winRate ?? null
+  const allMaster = data.points.find((point) => point.rankId === "all-master")?.winRate ?? null
   const selectedRange =
     data.heatmap.find((row) => row.characterId === displayedInput.character)?.range ?? null
   const characterName = meta.characters.find(
@@ -110,14 +110,14 @@ const RankComparisonResults = ({ period, search, meta }: RankComparisonViewProps
         </AnalyticsPanel>
         <AnalyticsPanel
           title="Rank range"
-          description="Difference between the Master and Rookie average win rates."
+          description="All Master average win rate minus Rookie average win rate."
         >
           <dl className="flex flex-col gap-4">
             <div>
-              <dt className="text-xs text-muted-foreground">Master minus Rookie</dt>
+              <dt className="text-xs text-muted-foreground">All Master minus Rookie</dt>
               <dd>
                 <DeltaValue
-                  value={rookie === null || master === null ? null : master - rookie}
+                  value={rookie === null || allMaster === null ? null : allMaster - rookie}
                   className="text-lg"
                 />
               </dd>

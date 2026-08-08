@@ -18,22 +18,29 @@ App URL: `http://localhost:3000`
 - `bun run dev` — start dev server
 - `bun run build` — build for production
 - `bun run start` — preview production build
-- `bun run sync` — download missing raw Buckler snapshots and check for new periods
-- `bun run normalize` — deterministically regenerate all processed snapshots from local raw data
+- `bun run sync` — download missing raw snapshots for all four Buckler data families and check for new periods
+- `bun run normalize` — deterministically regenerate every processed snapshot from local raw data
 - `bun run format` — format with oxfmt
 - `bun run lint` — lint with oxlint (type-aware, with fixes)
 - `bun run check` — format, lint (with fixes), and type-check
+- `bun test` — run focused regression tests
 - `bun run routes:generate` — regenerate the route tree
 
 ## Data workflow
 
 Run `bun run sync`, then `bun run normalize` when updating the source data.
+Both commands cover `dia`, `dia_master`, `usagerate`, and `usagerate_master`.
 Downloaded files under `data/raw/**` are intentionally ignored. The normalized
 files under `data/processed/**` remain tracked historical data. The application
 reads ranked `dia` snapshots for Rookie through All Master and processed
 `dia_master` snapshots for Master, High Master, Grand Master, and Ultimate
-Master. Master subdivision results combine all control styles. The `usagerate`
-and `usagerate_master` archives remain outside the active matchup UI.
+Master. Master subdivision results combine all control styles. The
+`usagerate` and `usagerate_master` archives remain outside the active matchup
+UI, but all four processed families must contain a period before that period
+is advertised as the latest available data. Older history remains available;
+the common-period watermark only caps the newest advertised period. Processed
+matchup files that arrive before usage-rate files remain stored and become
+active automatically when the lagging families catch up.
 
 ## Workbench sections
 

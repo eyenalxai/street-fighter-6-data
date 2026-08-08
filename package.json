@@ -8,7 +8,8 @@
     "format": "oxfmt",
     "lint": "oxlint --type-aware --fix",
     "routes:generate": "tsr generate",
-    "check": "oxfmt && oxlint --type-aware --fix && tsc --noEmit --pretty",
+    "check": "tsr generate && oxfmt && oxlint --type-aware --fix && tsc --noEmit --pretty && bun test",
+    "test": "bun test",
     "sync": "bun scripts/sync-buckler.ts",
     "normalize": "bun scripts/normalize-buckler.ts"
   },

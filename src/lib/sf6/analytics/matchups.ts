@@ -4,7 +4,7 @@ import type { ProcessedDiaLeague } from "@/lib/sf6/snapshot-schema"
 import { CHARACTERS, CONTROL_MATCHUPS } from "@/lib/sf6/model"
 import { getPlayerCharacterId, getPlayerControl } from "@/lib/sf6/snapshot-schema"
 
-import { mean, round } from "./math"
+import { mean } from "./math"
 
 type MatchupStatus = "numeric" | "unavailable" | "mirror"
 type MatchupCell = {
@@ -23,10 +23,14 @@ type OpponentWinRateRow = {
 }
 type CounterpickCandidateRow = {
   characterId: CharacterId
-  averageWinRate: number | null
-  worstWinRate: number | null
+  averageWinRate: number
+  worstWinRate: number
   atOrAbove50Count: number
-  matchups: { opponentId: CharacterId; winRate: number | null }[]
+  matchups: { opponentId: CharacterId; winRate: number }[]
+}
+type CounterpickCandidatesResult = {
+  rows: CounterpickCandidateRow[]
+  excludedCandidateCount: number
 }
 type ControlMatchupResult = {
   controlMatchup: Exclude<ControlMatchup, "combined">
@@ -34,26 +38,15 @@ type ControlMatchupResult = {
   winRate: number | null
 }
 
-type ControlPair = {
-  player: ControlType | null
-  opponent: ControlType | null
-}
 type ControlMatchupBlocks = Record<Exclude<ControlMatchup, "combined">, ProcessedDiaLeague>
+type AvailabilityRole = "player" | "opponent"
 
-const getControlPair = (controlMatchup: ControlMatchup): ControlPair => {
-  if (controlMatchup === "combined") {
-    return { player: null, opponent: null }
+const getControlPair = (controlMatchup: ControlMatchup): (typeof CONTROL_MATCHUPS)[number] => {
+  const option = CONTROL_MATCHUPS.find((candidate) => candidate.id === controlMatchup)
+  if (option === undefined) {
+    throw new Error(`Unknown control matchup: ${controlMatchup}`)
   }
-  if (controlMatchup === "classic-classic") {
-    return { player: "C", opponent: "C" }
-  }
-  if (controlMatchup === "classic-modern") {
-    return { player: "C", opponent: "M" }
-  }
-  if (controlMatchup === "modern-classic") {
-    return { player: "M", opponent: "C" }
-  }
-  return { player: "M", opponent: "M" }
+  return option
 }
 
 const getPlayerIndex = (
@@ -106,26 +99,36 @@ const getMatchupCell = (
     playerId,
     opponentId,
     status: "numeric",
-    winRate: round(value * 100),
+    winRate: value * 100,
   }
 }
 
 const getAvailableCharacterIds = (
   block: ProcessedDiaLeague,
   controlMatchup: ControlMatchup,
+  role: AvailabilityRole,
 ): CharacterId[] => {
   const controls = getControlPair(controlMatchup)
+  const control = role === "player" ? controls.player : controls.opponent
   const availableIds = new Set(
     block.p
-      .filter(
-        (player) => controlMatchup === "combined" || getPlayerControl(player) === controls.player,
-      )
+      .filter((player) => control === null || getPlayerControl(player) === control)
       .map((player) => getPlayerCharacterId(player)),
   )
   return CHARACTERS.filter((character) => availableIds.has(character.id)).map(
     (character) => character.id,
   )
 }
+
+const getAvailablePlayerCharacterIds = (
+  block: ProcessedDiaLeague,
+  controlMatchup: ControlMatchup,
+): CharacterId[] => getAvailableCharacterIds(block, controlMatchup, "player")
+
+const getAvailableOpponentCharacterIds = (
+  block: ProcessedDiaLeague,
+  controlMatchup: ControlMatchup,
+): CharacterId[] => getAvailableCharacterIds(block, controlMatchup, "opponent")
 
 const getMatchupAverage = (
   block: ProcessedDiaLeague,
@@ -134,24 +137,22 @@ const getMatchupAverage = (
 ): MatchupAverageRow | null => {
   // This is the mean of reported, non-mirror win rates against available opponents.
   const values: number[] = []
-  for (const opponentId of getAvailableCharacterIds(block, controlMatchup)) {
-    if (opponentId !== characterId) {
-      const cell = getMatchupCell(block, controlMatchup, characterId, opponentId)
-      if (cell.status === "numeric" && cell.winRate !== null) {
-        values.push(cell.winRate)
-      }
+  for (const opponentId of getAvailableOpponentCharacterIds(block, controlMatchup)) {
+    const cell = getMatchupCell(block, controlMatchup, characterId, opponentId)
+    if (cell.status === "numeric" && cell.winRate !== null) {
+      values.push(cell.winRate)
     }
   }
 
   const average = mean(values)
-  return average === null ? null : { characterId, winRate: round(average) }
+  return average === null ? null : { characterId, winRate: average }
 }
 
 const getLeaderboard = (
   block: ProcessedDiaLeague,
   controlMatchup: ControlMatchup,
 ): MatchupAverageRow[] =>
-  getAvailableCharacterIds(block, controlMatchup)
+  getAvailablePlayerCharacterIds(block, controlMatchup)
     .map((characterId) => getMatchupAverage(block, controlMatchup, characterId))
     .filter((row): row is MatchupAverageRow => row !== null)
     .toSorted((left, right) => right.winRate - left.winRate)
@@ -161,8 +162,7 @@ const getOpponentWinRates = (
   controlMatchup: ControlMatchup,
   characterId: CharacterId,
 ): OpponentWinRateRow[] =>
-  getAvailableCharacterIds(block, controlMatchup)
-    .filter((opponentId) => opponentId !== characterId)
+  getAvailableOpponentCharacterIds(block, controlMatchup)
     .map((opponentId) => {
       const cell = getMatchupCell(block, controlMatchup, characterId, opponentId)
       return cell.status === "numeric" && cell.winRate !== null
@@ -176,34 +176,48 @@ const getCounterpickCandidates = (
   block: ProcessedDiaLeague,
   controlMatchup: ControlMatchup,
   opponents: readonly CharacterId[],
-): CounterpickCandidateRow[] => {
-  const available = getAvailableCharacterIds(block, controlMatchup)
-  const validOpponents = opponents.filter((opponentId) => available.includes(opponentId))
-  return available
-    .filter((characterId) => !validOpponents.includes(characterId))
-    .map((characterId) => {
-      const matchups = validOpponents.map((opponentId) => {
-        const cell = getMatchupCell(block, controlMatchup, characterId, opponentId)
-        return {
-          opponentId,
-          winRate: cell.status === "numeric" ? cell.winRate : null,
-        }
-      })
-      const values = matchups
-        .map((matchup) => matchup.winRate)
-        .filter((value): value is number => value !== null)
-      const average = mean(values)
+): CounterpickCandidatesResult => {
+  let excludedCandidateCount = 0
+  const rows = getAvailablePlayerCharacterIds(block, controlMatchup).flatMap((characterId) => {
+    const matchups = opponents.map((opponentId) => {
+      const cell = getMatchupCell(block, controlMatchup, characterId, opponentId)
       return {
-        characterId,
-        averageWinRate: average === null ? null : round(average),
-        worstWinRate: values.length === 0 ? null : round(Math.min(...values)),
-        atOrAbove50Count: values.filter((value) => value >= 50).length,
-        matchups,
+        opponentId,
+        winRate: cell.status === "numeric" ? cell.winRate : null,
       }
     })
-    .toSorted(
-      (left, right) => (right.averageWinRate ?? -Infinity) - (left.averageWinRate ?? -Infinity),
+    if (matchups.some((matchup) => matchup.winRate === null)) {
+      excludedCandidateCount += 1
+      return []
+    }
+
+    const completeMatchups = matchups.flatMap((matchup) =>
+      matchup.winRate === null
+        ? []
+        : [{ opponentId: matchup.opponentId, winRate: matchup.winRate }],
     )
+    const values = completeMatchups.map((matchup) => matchup.winRate)
+    const average = mean(values)
+    if (average === null) {
+      excludedCandidateCount += 1
+      return []
+    }
+
+    return [
+      {
+        characterId,
+        averageWinRate: average,
+        worstWinRate: Math.min(...values),
+        atOrAbove50Count: values.filter((value) => value >= 50).length,
+        matchups: completeMatchups,
+      },
+    ]
+  })
+
+  return {
+    rows: rows.toSorted((left, right) => right.averageWinRate - left.averageWinRate),
+    excludedCandidateCount,
+  }
 }
 
 const getControlMatchupResults = (
@@ -233,7 +247,8 @@ const getControlMatchupResults = (
 }
 
 export {
-  getAvailableCharacterIds,
+  getAvailableOpponentCharacterIds,
+  getAvailablePlayerCharacterIds,
   getControlMatchupResults,
   getLeaderboard,
   getMatchupAverage,
@@ -246,5 +261,6 @@ export {
   type OpponentWinRateRow,
   getCounterpickCandidates,
   type CounterpickCandidateRow,
+  type CounterpickCandidatesResult,
   type MatchupStatus,
 }

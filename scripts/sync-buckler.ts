@@ -1,14 +1,11 @@
 #!/usr/bin/env bun
 
 import {
-  API_BASE,
-  DATASETS,
-  DATASET_MAP,
-  LANG,
-  type DatasetId,
+  SNAPSHOT_FAMILIES,
   type ReportingPeriod,
-} from "./lib/buckler/datasets.ts"
-import { fetchDatasetPeriod, serializeSnapshot } from "./lib/buckler/fetch.ts"
+  type SnapshotFamily,
+} from "../src/lib/sf6/snapshot-families.ts"
+import { apiUrl, fetchSnapshotPeriod, serializeSnapshot } from "./lib/buckler/fetch.ts"
 import { generatePeriods } from "./lib/buckler/periods.ts"
 import { snapshotExists, snapshotRelPath, writeSnapshot } from "./lib/buckler/storage.ts"
 
@@ -23,12 +20,12 @@ const formatBytes = (bytes: number): string => bytes.toLocaleString("en-US")
 
 const logLine = (
   action: string,
-  datasetId: DatasetId,
+  family: SnapshotFamily,
   period: ReportingPeriod,
   detail?: string,
 ): void => {
-  const file = snapshotRelPath(datasetId, period)
-  const api = `${API_BASE}/${LANG}/stats/${datasetId}/${period}`
+  const file = snapshotRelPath(family.id, period)
+  const api = apiUrl(family, period)
   const prefix = action.padEnd(11, " ")
 
   if (detail) {
@@ -41,38 +38,37 @@ const logLine = (
   console.log(`${" ".repeat(12)} ${api}`)
 }
 
-async function syncDataset(datasetId: DatasetId, stats: SyncStats): Promise<void> {
-  const dataset = DATASET_MAP[datasetId]
-  const periods = generatePeriods(dataset)
+async function syncFamily(family: SnapshotFamily, stats: SyncStats): Promise<void> {
+  const periods = generatePeriods(family)
 
-  console.log(`\n[${datasetId}] ${dataset.label} — ${periods.length} reporting period(s)`)
+  console.log(`\n[${family.id}] ${family.label} — ${periods.length} reporting period(s)`)
 
   for (const period of periods) {
-    const exists = await snapshotExists(datasetId, period)
+    const exists = await snapshotExists(family.id, period)
 
     if (exists) {
       stats.skipped += 1
       continue
     }
 
-    const result = await fetchDatasetPeriod(dataset, period)
+    const result = await fetchSnapshotPeriod(family, period)
 
     if (!result.ok) {
       if (result.status === 403) {
         stats.unavailable += 1
-        logLine("unavailable", datasetId, period, result.error)
+        logLine("unavailable", family, period, result.error)
         continue
       }
 
       stats.errors += 1
-      logLine("error", datasetId, period, result.error)
+      logLine("error", family, period, result.error)
       continue
     }
 
     const content = serializeSnapshot(result.data)
-    const bytes = await writeSnapshot(datasetId, period, content)
+    const bytes = await writeSnapshot(family.id, period, content)
     stats.downloaded += 1
-    logLine("download", datasetId, period, `${formatBytes(bytes)} bytes`)
+    logLine("download", family, period, `${formatBytes(bytes)} bytes`)
   }
 }
 
@@ -86,11 +82,9 @@ async function main(): Promise<void> {
 
   console.log("SF6 Buckler sync")
 
-  const dataset = DATASETS[0]
-  if (dataset === undefined) {
-    throw new Error("No Buckler dataset is configured")
+  for (const family of SNAPSHOT_FAMILIES) {
+    await syncFamily(family, stats)
   }
-  await syncDataset(dataset.id, stats)
 
   console.log("\nSummary:")
   console.log(`  downloaded:  ${stats.downloaded}`)

@@ -1,8 +1,8 @@
-import { readdir } from "node:fs/promises"
 import path from "node:path"
 
 import type { ControlMatchup, ReportingPeriod } from "@/lib/sf6/model"
 import type { RankId } from "@/lib/sf6/ranks"
+import type { SnapshotFamilyId } from "@/lib/sf6/snapshot-families"
 import type {
   ProcessedDiaLeague,
   ProcessedMasterSnapshot,
@@ -11,6 +11,7 @@ import type {
 
 import { ReportingPeriodSchema } from "@/lib/sf6/model"
 import { isMasterSubdivisionRank } from "@/lib/sf6/ranks"
+import { listProcessedPeriods } from "@/lib/sf6/snapshot-periods.server"
 import {
   ProcessedMasterSnapshotSchema,
   ProcessedRankedSnapshotSchema,
@@ -44,17 +45,8 @@ class SnapshotValidationError extends Error {
   }
 }
 
-const parsePeriods = (entries: string[]): ReportingPeriod[] =>
-  entries
-    .filter((entry) => entry.endsWith(".json"))
-    .map((entry) => entry.slice(0, -".json".length))
-    .flatMap((candidate) => {
-      const parsed = ReportingPeriodSchema.safeParse(candidate)
-      return parsed.success ? [parsed.data] : []
-    })
-    .toSorted()
-
 const createSnapshotStore = <TSnapshot>(
+  familyId: Extract<SnapshotFamilyId, "dia" | "dia_master">,
   directory: string,
   source: string,
   schema: {
@@ -65,15 +57,7 @@ const createSnapshotStore = <TSnapshot>(
 ) => {
   const snapshotCache = new Map<ReportingPeriod, Promise<TSnapshot>>()
 
-  const getAvailablePeriods = async (): Promise<ReportingPeriod[]> => {
-    try {
-      const entries = await readdir(directory)
-      return parsePeriods(entries)
-    } catch (error: unknown) {
-      console.error(`Failed to discover processed ${source} snapshots`, error)
-      return []
-    }
-  }
+  const getAvailablePeriods = async (): Promise<ReportingPeriod[]> => listProcessedPeriods(familyId)
 
   const readValidatedSnapshot = async (period: ReportingPeriod): Promise<TSnapshot> => {
     const filePath = path.join(directory, `${period}.json`)
@@ -125,35 +109,17 @@ const createSnapshotStore = <TSnapshot>(
 }
 
 const regularStore = createSnapshotStore<ProcessedRankedSnapshot>(
+  "dia",
   path.resolve(process.cwd(), "data/processed/dia"),
   "ranked",
   ProcessedRankedSnapshotSchema,
 )
 const subdivisionStore = createSnapshotStore<ProcessedMasterSnapshot>(
+  "dia_master",
   path.resolve(process.cwd(), "data/processed/dia_master"),
   "Master subdivision",
   ProcessedMasterSnapshotSchema,
 )
-
-const getRegularPeriods = async (): Promise<ReportingPeriod[]> => regularStore.getAvailablePeriods()
-const getSubdivisionPeriods = async (): Promise<ReportingPeriod[]> => {
-  const [regularPeriods, subdivisionPeriods] = await Promise.all([
-    regularStore.getAvailablePeriods(),
-    subdivisionStore.getAvailablePeriods(),
-  ])
-  const regularSet = new Set(regularPeriods)
-  return subdivisionPeriods.filter((period) => regularSet.has(period))
-}
-const getAvailablePeriods = getRegularPeriods
-
-const getLatestPeriod = async (): Promise<ReportingPeriod> => {
-  const periods = await getRegularPeriods()
-  const latest = periods.at(-1)
-  if (latest === undefined) {
-    throw new SnapshotReadError(undefined, "ranked")
-  }
-  return latest
-}
 
 const REGULAR_KEYS: Partial<Record<RankId, keyof ProcessedRankedSnapshot["c"]>> = {
   rookie: "1",
@@ -221,12 +187,8 @@ const getRankControlBlocks = async (
 }
 
 export {
-  getAvailablePeriods,
-  getLatestPeriod,
   getRankBlock,
   getRankControlBlocks,
-  getRegularPeriods,
-  getSubdivisionPeriods,
   SnapshotNotFoundError,
   SnapshotReadError,
   SnapshotValidationError,

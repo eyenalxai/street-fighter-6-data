@@ -19,7 +19,12 @@ import {
 import { RankField } from "@/components/sf6/filters/rank-field"
 import { ReportingPeriodField } from "@/components/sf6/filters/reporting-period-field"
 import { ResultsContent, ResultsPending } from "@/components/sf6/results-state"
-import { DeltaValue, formatPercentagePoints, WinRate } from "@/components/sf6/win-rate"
+import {
+  DeltaValue,
+  formatPercentagePoints,
+  getDisplayedDelta,
+  WinRate,
+} from "@/components/sf6/win-rate"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import {
   Table,
@@ -66,13 +71,14 @@ const ControlComparisonResults = ({ period, search, meta }: ControlComparisonVie
   }
   const rankLabel = getRank(displayedInput.rank)?.label ?? "Rank"
   const chartRows = data.rows.map((row) => {
+    const displayedDelta = getDisplayedDelta(row.delta)
     return {
       ...row,
       name:
         meta.characters.find((character) => character.id === row.characterId)?.short ??
         row.characterId,
-      positiveDelta: row.delta !== null && row.delta > 0 ? row.delta : null,
-      negativeDelta: row.delta !== null && row.delta < 0 ? row.delta : null,
+      positiveDelta: displayedDelta !== null && displayedDelta > 0 ? row.delta : null,
+      negativeDelta: displayedDelta !== null && displayedDelta < 0 ? row.delta : null,
     }
   })
 
