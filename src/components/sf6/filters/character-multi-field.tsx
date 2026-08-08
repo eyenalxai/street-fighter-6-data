@@ -27,7 +27,6 @@ const CharacterMultiField = ({
   characters,
   onChange,
   description,
-  className,
   placeholder = "Search characters",
 }: {
   label: string
@@ -35,7 +34,6 @@ const CharacterMultiField = ({
   characters: MetaData["characters"]
   onChange: (value: CharacterId[]) => void
   description?: string
-  className?: string
   placeholder?: string
 }) => {
   const id = useId()
@@ -43,7 +41,7 @@ const CharacterMultiField = ({
   const sortedCharacters = sortCharactersByName(characters)
 
   return (
-    <Field className={className}>
+    <Field className="col-span-2">
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <div className="flex min-w-0 items-start gap-2">
         <Combobox

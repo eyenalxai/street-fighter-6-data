@@ -205,7 +205,6 @@ const MatchupExplorerView = ({ period, search, meta }: MatchupExplorerViewProps)
           label="Opponents"
           value={search.opponents}
           characters={meta.characters}
-          className="sm:col-span-2 xl:col-span-2"
           onChange={(value) => {
             change({ opponents: value })
           }}

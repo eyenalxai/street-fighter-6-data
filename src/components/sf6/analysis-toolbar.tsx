@@ -20,7 +20,7 @@ const AnalysisToolbar = ({ title, description, views, children }: AnalysisToolba
       </div>
       {views}
       {children === undefined ? null : (
-        <FieldGroup className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        <FieldGroup className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-5">
           {children}
         </FieldGroup>
       )}

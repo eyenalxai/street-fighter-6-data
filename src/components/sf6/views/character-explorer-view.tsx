@@ -139,7 +139,6 @@ const CharacterExplorerView = ({ period, search, meta }: CharacterExplorerViewPr
         label="Characters"
         value={search.characters}
         characters={meta.characters}
-        className="sm:col-span-2 xl:col-span-2"
         onChange={(value) => {
           change({ characters: value })
         }}

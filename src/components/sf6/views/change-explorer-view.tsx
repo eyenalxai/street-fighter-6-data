@@ -121,7 +121,6 @@ const ChangeExplorerView = ({ fromPeriod, toPeriod, search, meta }: ChangeExplor
           label="Focus characters"
           value={search.focusCharacters}
           characters={meta.characters}
-          className="sm:col-span-2"
           onChange={(value) => {
             change({ focusCharacters: value })
           }}
