@@ -6,6 +6,7 @@ import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanst
 import type { RouterContext } from "@/lib/query-client"
 
 import { Providers } from "@/components/providers"
+import { createSiteHead } from "@/lib/site-metadata"
 import appCss from "@/styles.css?url"
 
 const RootDocument = ({ children }: Readonly<{ children: ReactNode }>) => (
@@ -43,24 +44,10 @@ const NotFound = () => (
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => {
+    const siteHead = createSiteHead()
     return {
-      meta: [
-        {
-          charSet: "utf8",
-        },
-        {
-          name: "viewport",
-          content: "width=device-width, initial-scale=1",
-        },
-        {
-          title: "SF6 Ranked Lab",
-        },
-        {
-          name: "description",
-          content: "Ranked Street Fighter 6 matchup analytics from Buckler reporting periods.",
-        },
-      ],
-      links: [{ rel: "stylesheet", href: appCss }],
+      meta: siteHead.meta,
+      links: [...siteHead.links, { rel: "stylesheet", href: appCss }],
     }
   },
   component: RootComponent,

@@ -1,4 +1,4 @@
-# SF6 Ranked Lab
+# SF6 Ranked Data
 
 A compact, data-first TanStack Start workbench for ranked Street Fighter 6
 meta, usage, and matchup analysis. It serves committed Buckler snapshots through

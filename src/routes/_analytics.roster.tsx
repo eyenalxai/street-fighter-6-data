@@ -18,18 +18,6 @@ const RosterPage = () => {
 }
 
 const Route = createFileRoute("/_analytics/roster")({
-  head: () => {
-    return {
-      meta: [
-        { title: "Roster overview · SF6 Ranked Lab" },
-        {
-          name: "description",
-          content:
-            "Compare average win rate, usage share, control styles, and environment metrics.",
-        },
-      ],
-    }
-  },
   validateSearch: RosterSearchSchema,
   loaderDeps: ({ search }) => getRosterLoaderDeps(search),
   loader: async ({ context: { queryClient }, deps }) => {
